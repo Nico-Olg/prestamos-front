@@ -1,0 +1,116 @@
+/* Fondo de la página */
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f0f2f5; /* Fondo elegante y claro */
+}
+
+/* Tarjeta de login */
+.form-container {
+  width: 350px;
+  max-width: 90%; /* Asegura que no se desborde en pantallas pequeñas */
+  background-color: #ffffff; /* Fondo blanco para la tarjeta */
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  border-radius: 15px;
+  padding: 30px;
+  box-sizing: border-box;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Asegura que todo dentro esté centrado */
+}
+
+/* Título */
+.title {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin-bottom: 25px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+}
+
+/* Formulario */
+.form {
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+}
+
+/* Input de texto */
+.input {
+  width: 100%; /* Hacer que ocupe todo el ancho disponible */
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+/* Enlace de olvido de contraseña */
+.page-link {
+  width: 100%; /* Asegura que el enlace esté alineado a la derecha dentro del form */
+  text-align: right;
+}
+
+.page-link-label {
+  font-size: 12px;
+  color: #555;
+  cursor: pointer;
+}
+
+.page-link-label:hover {
+  color: teal;
+}
+
+/* Botón de login */
+.form-btn {
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  background-color: teal;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%; /* Asegura que el botón ocupe todo el ancho disponible */
+  transition: background-color 0.3s ease;
+}
+
+.form-btn:hover {
+  background-color: #006666;
+}
+
+/* Texto de registro */
+.sign-up-label {
+  font-size: 12px;
+  color: #777;
+}
+
+.sign-up-link {
+  font-size: 13px;
+  font-weight: bold;
+  color: teal;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.sign-up-link:hover {
+  color: #004d4d;
+}
+
+/* Animación del botón */
+.form-btn:active {
+  transform: scale(0.98);
+}
+
+/* Estilo responsive */
+@media (max-width: 400px) {
+  .form-container {
+    width: 90%;
+  }
+}

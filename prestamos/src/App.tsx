@@ -8,12 +8,14 @@ const AltaCliente = lazy(() => import('./pages/AltaCliente'));
 const Clientes = lazy(() => import('./pages/ClientesPage'));
 const Pagos = lazy(() => import('./pages/PagosPage'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const Login = lazy(() => import('./pages/LoginPage'));
 
 const App: React.FC = () => {
   return (
     <Router>
       <Suspense fallback={<div className="spinner">Loading...</div>}>
         <Routes>
+          <Route path="/login" element={<Login />} />
           <Route path="/" element={<Clientes />} /> {/* Ruta principal */}
           <Route path="/prestamos" element={<PrestamosPage />} />
           <Route path="/crear-prestamo" element={<CrearPrestamo />} />

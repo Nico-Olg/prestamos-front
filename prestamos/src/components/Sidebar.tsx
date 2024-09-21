@@ -14,7 +14,7 @@ const Sidebar: React.FC = () => {
       <button className="btn" onClick={() => handleNavigation('/crear-prestamo')}>Crear Prestamo</button>
       <button className="btn" onClick={() => handleNavigation('/clientes')}>Clientes</button>
       <button className="btn" onClick={() => handleNavigation('/')}>Cobranza</button>
-      <button className="btn" onClick={() => handleNavigation('/prestamos')}>Button 4</button>
+      <button className="btn" onClick={() => handleNavigation('/login')}>Button 4</button>
     </aside>
   );
 };
