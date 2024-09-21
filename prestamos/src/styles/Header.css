@@ -1,0 +1,147 @@
+.header {
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
+  display: flex;
+  justify-content: center; /* Centra el título horizontalmente */
+  align-items: center; /* Centra el contenido verticalmente */
+  height: 100px; /* Ajusta la altura según sea necesario */
+  width: 100%; /* Asegúrate de que el contenedor ocupe todo el ancho */
+  position: relative;
+}
+
+.header__logo {
+  position: absolute;
+  left: 20px;
+  max-width: 120px; /* Ajusta el tamaño del contenedor del logo según necesites */
+  cursor: pointer;
+}
+
+.header__logo img {
+  width: 100%; /* Asegúrate de que la imagen del logo ocupe todo el contenedor */
+  height: auto; /* Mantén la proporción de la imagen */
+}
+
+.header__title {
+  margin: 0;
+  font-size: 1.5em; /* Tamaño del título */
+ 
+}
+
+.header__datetime {
+  position: absolute;
+  right: 20px; /* Coloca la card en la esquina derecha del header */
+  top: 50%; /* Posiciona la card verticalmente al centro del header */
+  transform: translateY(-50%); /* Ajusta la posición vertical para centrarla */
+}
+
+.card {
+  width: 26vh;
+  height: 12vh;
+  border-radius: 15px;
+  box-shadow: rgb(0,0,0,0.7) 5px 10px 50px ,rgb(0,0,0,0.7) -5px 0px 250px;
+  display: flex;
+  color: white;
+  justify-content: center;
+  position: relative;
+  right: 2em;
+  flex-direction: column;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+.day-card {
+  background: linear-gradient(to right, #2d9ac5, #B0E0E6); /* Azul claro a celeste claro */
+}
+
+.night-card {
+  background: linear-gradient(to right, rgb(20, 30, 48), rgb(36, 59, 85)); /* Mantén el gradiente nocturno original */
+}
+
+.card:hover {
+  box-shadow: rgb(0,0,0) 5px 10px 50px ,rgb(0,0,0) -5px 0px 250px;
+}
+
+.time-text {
+  font-size: 2.5vh;
+  margin-top: 0px;
+  margin-left: 15px;
+  font-weight: 600;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.time-sub-text {
+  font-size: 2vh;
+  margin-left: 5px;
+}
+
+.day-text {
+  font-size: 2vh;
+  margin-top: 0px;
+  margin-left: 15px;
+  font-weight: 500;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.moon, .sun {
+  font-size: 3vh;
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  transition: all 0.3s ease-in-out;
+}
+
+.card:hover > .moon, .card:hover > .sun {
+  font-size: 3.5vh;
+}
+
+/* Estilos Responsivos */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    height: auto;
+    padding: 10px;
+  }
+
+  .header__logo {
+    position: static;
+    max-width: 80px;
+    margin-bottom: 10px;
+  }
+
+  .header__title {
+    font-size: 1.2em;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .header__datetime {
+    position: static;
+    transform: none;
+    margin-top: 10px;
+  }
+
+  .card {
+    width: 100%;
+    height: auto;
+    padding: 10px;
+    box-shadow: none;
+  }
+
+  .time-text {
+    font-size: 4vh;
+  }
+
+  .time-sub-text {
+    font-size: 2.5vh;
+  }
+
+  .day-text {
+    font-size: 2.5vh;
+  }
+
+  .moon, .sun {
+    font-size: 4vh;
+  }
+}

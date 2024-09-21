@@ -1,0 +1,27 @@
+.prestamos-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Ocupa toda la altura de la ventana */
+}
+
+.content {
+  display:flex;
+  flex: 1; /* El contenido ocupa todo el espacio restante */
+  overflow-y: auto; /* Si hay contenido desbordante, permite el scroll dentro del contenido */
+  position: relative;
+}
+
+.btn {
+  background: #004dff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 25px;
+  font-family: 'Lato', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  grid-column: 1 / 4;
+  margin-top: 20px;
+  justify-self: center;
+}
