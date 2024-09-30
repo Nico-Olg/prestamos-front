@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import DataTable, { TableColumn } from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
 import "../styles/PrestamosGrid.css";
+import { generarPDF } from "./carpetaPDF";
+
 
 // Definir la interfaz para los datos de los préstamos
 interface Prestamo {
@@ -21,6 +23,8 @@ interface Prestamo {
   periodo_pago: string;
   idPrestamo: number; 
   cobrador: string;
+  codigo: string; 
+  cuotas: number; 
 }
 
 interface PrestamosGridProps {
@@ -40,6 +44,20 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ prestamos }) => {
   const handleRowClicked = (prestamo: Prestamo) => {
     console.log("Prestamo seleccionado:", prestamo.idPrestamo);
     navigate(`/pagos`, { state: { prestamoId: prestamo.idPrestamo } }); // Redirige a PagosPage pasando el ID del préstamo
+  };
+
+  // Modificar esta función para generar el PDF
+  const handleCarpetClicked = (prestamo: Prestamo) => {
+    console.log("Carpeta seleccionada:", prestamo.idPrestamo);
+
+    const cliente = {
+      nombreCompleto: prestamo.apellidoYnombre,
+      direccion: "Dirección ejemplo", // Actualiza esto con la dirección real del cliente
+      barrio: "Barrio ejemplo", // Actualiza esto con el barrio real del cliente
+    };
+
+    // Llama a la función generarPDF con los datos del cliente y el préstamo
+    generarPDF(cliente, prestamo);
   };
 
   const handleSearchName = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,8 +104,8 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ prestamos }) => {
       sortable: true,
     },
     {
-      name: "Teléfono",
-      selector: (row) => row.tel,
+      name: "Prestamo Nro",
+      selector: (row) => row.idPrestamo,
       sortable: true,
     },
     {
@@ -96,26 +114,22 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ prestamos }) => {
       sortable: true,
     },
     
+    
     {
-      name: "Cuotas Pagadas",
-      selector: (row) => row.cuotasPagadas.toString(),
-      sortable: true,
-    },
-    {
-      name: "Cuota",
-      selector: (row) => "$ " + row.montoCuota.toFixed(2),
-      sortable: true,
-    },
-    {
-      name: "Monto Restante",
-      selector: (row) => "$ " + row.montoRestante.toFixed(2),
-      sortable: true,
-    },
-    {
-      name: "Monto Prestamo",
-      selector: (row) => "$ " + row.montoPrestamo.toFixed(2),
-      sortable: true,
-    },
+    name: "Cuota",
+    selector: (row) => `$ ${row.montoCuota ? row.montoCuota.toFixed(2) : "0.00"}`,
+    sortable: true,
+  },
+  {
+    name: "Monto Restante",
+    selector: (row) => `$ ${row.montoRestante ? row.montoRestante.toFixed(2) : "0.00"}`,
+    sortable: true,
+  },
+  {
+    name: "Monto Prestamo",
+    selector: (row) => `$ ${row.montoPrestamo ? row.montoPrestamo.toFixed(2) : "0.00"}`,
+    sortable: true,
+  },
     {
       name: "Tipo de Plan",
       selector: (row) => row.tipoPlan,
@@ -155,6 +169,18 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ prestamos }) => {
         return <ProgressBar percentage={percentage} />;
       },
       sortable: true,
+    },
+    {
+      name: "Acciones",
+      cell: (row) => (
+        <button
+          onClick={() => handleCarpetClicked(row)}
+          className="btn-carpeta"
+        >
+          Carpeta
+        </button>
+      ),
+      button: true
     },
   ];
 

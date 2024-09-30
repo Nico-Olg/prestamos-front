@@ -117,7 +117,8 @@ const FormikStepper = ({ children, productos, ...props }: FormikConfig<FormikVal
       }
     } else if (step === 2) {
       try {
-        const prestamo: PrestamoData = await crearPrestamo(values.dias, values.producto, Number(values.dni), values.periodo, values.monto, values.pagoEnEfectivo);
+        const prestamo: PrestamoData = await crearPrestamo(values.dias, values.producto, Number(values.dni), values.periodo, values.monto, values.pagoEnEfectivo, values.fechaInicio, values.fechaFin);
+        console.log("Datos enviados al backend para crear el préstamo:", values);
         helpers.setValues({
           ...values,
           id: prestamo.id,
@@ -132,15 +133,15 @@ const FormikStepper = ({ children, productos, ...props }: FormikConfig<FormikVal
         console.error("Error al crear el préstamo:", error);
       }
     } else if (step === 3) {
-      try {
-        await actualizarFechaInicio(values.id, values.fechaInicio);
-        helpers.setValues({
-          fechaInicio: values.fechaInicio,
-          fechaFin: dayjs(values.fechaInicio).add(values.dias, "day").format("YYYY-MM-DD"),
-        });
-      } catch (error) {
-        console.error("Error al actualizar la fecha de inicio:", error);
-      }
+      // try {
+      //   await actualizarFechaInicio(values.id, values.fechaInicio);
+      //   helpers.setValues({
+      //     fechaInicio: values.fechaInicio,
+      //     fechaFin: dayjs(values.fechaInicio).add(values.dias, "day").format("YYYY-MM-DD"),
+      //   });
+      // } catch (error) {
+      //   console.error("Error al actualizar la fecha de inicio:", error);
+      // }
     }
 
     setStep((prev) => prev + 1);
@@ -302,7 +303,10 @@ export default function CrearPrestamo() {
                       ))}
                     </Field>
                   </Box>
+
                   <FormField name="dias" label="Cantidad de Días del Préstamo" type="number" />
+                   <FormField name="fechaInicio" label="Fecha Inicio" type="date" />
+                  <FormField name="fechaFin" label="Fecha Fin" />
                   <Field name="pagoEnEfectivo" type="checkbox" component={CheckboxWithLabel} Label={{ label: "Paga en Efectivo" }} />
                 </FormikStep>
                 <FormikStep label="Resumen del Préstamo">
@@ -311,8 +315,7 @@ export default function CrearPrestamo() {
                   <FormField name="monto" label="Monto Solicitado" disabled />
                   <FormField name="montoAPagar" label="Monto Total a Pagar" disabled />
                   <FormField name="montoCuota" label="Valor de las Cuotas" disabled />
-                  <FormField name="fechaInicio" label="Fecha Inicio" type="date" />
-                  <FormField name="fechaFin" label="Fecha Fin" />
+                 
                 </FormikStep>
                 <FormikStep label="Confirmación">
                   <Box paddingBottom={2}>

@@ -1,15 +1,18 @@
 import axios from "axios";
 
-export async function getAllClients() {
-  const username = "admin";
-  const password = "admin";
+// Obtener el token JWT del localStorage
+function getAuthToken() {
+  return localStorage.getItem('token');
+}
 
+export async function getAllClients() {
   try {
+    const token = getAuthToken();
     const response = await axios.get("http://localhost:8080/clientes/findAll", {
-      auth: {
-        username,
-        password,
+      headers: {
+        'Authorization': `Bearer ${token}`, // Agregar el token en el header
       },
+      withCredentials: true,
     });
 
     return response.data; // Devolver los datos de los clientes
@@ -22,17 +25,14 @@ export async function getAllClients() {
   }
 }
 
-// Nueva función para obtener préstamos activos
 export async function getPrestamosPorCliente() {
-  const username = "admin";
-  const password = "admin";
-
   try {
+    const token = getAuthToken();
     const response = await axios.get("http://localhost:8080/prestamos/activos", {
-      auth: {
-        username,
-        password,
+      headers: {
+        'Authorization': `Bearer ${token}`, // Agregar el token en el header
       },
+      withCredentials: true,
     });
 
     return response.data; // Devolver los datos de los préstamos activos
@@ -46,14 +46,13 @@ export async function getPrestamosPorCliente() {
 }
 
 export async function getProductos() {
-  const username = "admin";
-  const password = "admin";
   try {
+    const token = getAuthToken();
     const response = await axios.get("http://localhost:8080/productos/ver-todos", {
-      auth: {
-        username,
-        password,
-      },     
+      headers: {
+        'Authorization': `Bearer ${token}`, // Agregar el token en el header
+      },
+      withCredentials: true,
     });
     return response.data;
   } catch (error) {
@@ -64,15 +63,15 @@ export async function getProductos() {
     }
   }
 }
+
 export async function getCobradores() {
-  const username = "admin";
-  const password = "admin";
   try {
+    const token = getAuthToken();
     const response = await axios.get("http://localhost:8080/cobradores/findAll", {
-      auth: {
-        username,
-        password,
-      },     
+      headers: {
+        'Authorization': `Bearer ${token}`, // Agregar el token en el header
+      },
+      withCredentials: true,
     });
     return response.data;
   } catch (error) {
@@ -83,3 +82,35 @@ export async function getCobradores() {
     }
   }
 }
+export async function getAllCobradores() {
+  const token = getAuthToken();
+  const response = await axios.get("http://localhost:8080/cobradores/findAll", {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  return response.data;
+}
+
+export async function getClientesPorCobrador(cobradorId: number) {
+  const token = getAuthToken();
+  const response = await axios.get(`http://localhost:8080/cobradores/${cobradorId}/clientes`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  return response.data;
+}
+export async function getPagosDeHoy() {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await axios.get('http://localhost:8080/pagos/pagos-hoy', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching pagos de hoy: ", error);
+    throw error;
+  }
+}
+
+

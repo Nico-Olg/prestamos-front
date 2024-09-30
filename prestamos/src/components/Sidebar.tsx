@@ -13,7 +13,7 @@ const Sidebar: React.FC = () => {
     <aside className="sidebar">
       <button className="btn" onClick={() => handleNavigation('/crear-prestamo')}>Crear Prestamo</button>
       <button className="btn" onClick={() => handleNavigation('/clientes')}>Clientes</button>
-      <button className="btn" onClick={() => handleNavigation('/')}>Cobranza</button>
+      <button className="btn" onClick={() => handleNavigation('/cobradores')}>Cobranza</button>
       <button className="btn" onClick={() => handleNavigation('/login')}>Button 4</button>
     </aside>
   );

@@ -6,47 +6,83 @@ import PagosGrid from '../components/PagosGrid';
 import '../styles/PagosPage.css';
 import IngresosEgresosChart from '../components/IngresosEgresosChartProps';
 import { getPagosPorPrestamo } from '../apis/postApi';
+import Swal from 'sweetalert2';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { IconButton } from '@mui/material';
 
 const PagosPage: React.FC = () => {
   const location = useLocation();
-  console.log('Location:', location.state);
   const prestamoId = location.state?.prestamoId;
   const navigate = useNavigate();
   const [pagos, setPagos] = useState([]);
-  const [ingresos, setTotalIngresos] = useState<number>(0);
-  const [egresos, setTotalEgresos] = useState<number>(0);
+  const [ingresos, setIngresos] = useState(0);  // Definir el estado para ingresos
+  const [egresos, setEgresos] = useState(0);    // Definir el estado para egresos
 
   useEffect(() => {
     if (prestamoId) {
       const fetchPagos = async () => {
         try {
-           const pagosData = await getPagosPorPrestamo(prestamoId);
-          
+          const pagosData = await getPagosPorPrestamo(prestamoId);
           setPagos(pagosData);
+
+          // Aquí puedes calcular ingresos y egresos si tienes esa lógica
+          const totalIngresos = pagosData.reduce((acc, pago) => acc + pago.ingreso, 0);  // Solo un ejemplo
+          const totalEgresos = pagosData.reduce((acc, pago) => acc + pago.egreso, 0);    // Solo un ejemplo
+          setIngresos(totalIngresos);
+          setEgresos(totalEgresos);
         } catch (error) {
           console.log('Error fetching pagos: ', error);
         }
       };
-
       fetchPagos();
     }
   }, [prestamoId]);
+
+  const handlePagoCuota = async (pagoId: number, atrasado: boolean) => {
+    if (atrasado) {
+      const result = await Swal.fire({
+        icon: 'warning',
+        title: 'Pago Atrasado',
+        text: 'Este pago está atrasado. ¿Desea continuar con el pago?',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, continuar',
+        cancelButtonText: 'Cancelar',
+      });
+
+      if (result.isConfirmed) {
+        realizarPago(pagoId);
+      }
+    } else {
+      realizarPago(pagoId);
+    }
+  };
+
+  const realizarPago = async (pagoId: number) => {
+    try {
+      Swal.fire({
+        icon: 'success',
+        title: 'Pago Realizado',
+        text: 'El pago se realizó con éxito.',
+      });
+    } catch (error) {
+      console.log('Error realizando el pago: ', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Hubo un problema al realizar el pago.',
+      });
+    }
+  };
 
   return (
     <div className="pagos-page">
       <Header title="Gestión de Pagos" />
       <div className="content">
         <Sidebar />
-        <PagosGrid
-          setTotalIngresos={setTotalIngresos}
-          setTotalEgresos={setTotalEgresos}
-          pagos={pagos} // Pasa los pagos obtenidos a PagosGrid
-        />
+        <PagosGrid pagos={pagos} handlePagoCuota={handlePagoCuota} />
         <IconButton component="button" onClick={() => navigate(-1)} className="btn back">
           <ArrowBackIcon />
-          </IconButton>
+        </IconButton>
         <IngresosEgresosChart ingresos={ingresos} egresos={egresos} />
       </div>
     </div>

@@ -1,23 +1,26 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/Login.css'; // Asegúrate de que este archivo CSS tenga el estilo que proporcionaste
+import { login } from '../apis/postApi'; // Importa la función login
+import '../styles/Login.css';
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState<string>('');
-   const [dni, setDni] = useState<string>(''); // Cambiado a DNI
+  const [dni, setDni] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [error, setError] = useState<string | null>(null); // Para manejar errores
   const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      // Implementar lógica de autenticación aquí, por ejemplo:
-      // const response = await axios.post('/api/login', { email, password });
-      navigate('/');
-    } catch (error) {
-      console.error('Error en la autenticación', error);
-    }
-  };
+ const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  try {
+    const token = await login(dni, password); // Llamada a la API
+    localStorage.setItem('token', token); // Guarda el token en localStorage
+    navigate('/'); // Redirige al usuario a la página principal
+  } catch (error) {
+    console.error('Error en la autenticación', error);
+    setError('Credenciales incorrectas. Inténtalo de nuevo.'); // Muestra el error al usuario
+  }
+};
+
 
   return (
     <div className="login-page">
@@ -25,11 +28,11 @@ const Login: React.FC = () => {
         <p className="title">Bienvenido</p>
         <form className="form" onSubmit={handleLogin}>
           <input
-               type="text" // Cambiado a tipo texto
+            type="text"
             className="input"
-            placeholder="DNI" // Cambiado el placeholder a DNI
+            placeholder="DNI"
             value={dni}
-            onChange={(e) => setDni(e.target.value)} // Actualiza el valor de DNI
+            onChange={(e) => setDni(e.target.value)}
             required
           />
           <input
@@ -40,9 +43,7 @@ const Login: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <p className="page-link">
-            <span className="page-link-label">Forgot Password?</span>
-          </p>
+          {error && <p className="error-message">{error}</p>}
           <button type="submit" className="form-btn">
             Log in
           </button>

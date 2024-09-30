@@ -7,58 +7,76 @@ import { altaCliente } from '../apis/postApi';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify'; // Importa react-toastify
 import 'react-toastify/dist/ReactToastify.css'; // Importa los estilos de toastify
+import { getCobradores } from '../apis/getApi';
 
 interface ClienteData {
-  nombre_y_apellido: string;
-  barrio_comercial: string;
+  apellidoYnombre: string;
+  barrioComercial: string;
   dni: number;
-  barrio_particular: string;
+  barrioParticular: string;
   tel: number;
-  direccion_comercial: string;
-  direccion_particular: string;
-  fecha_nac: string;
+  direccionComercial: string;
+  direccionParticular: string;
+  fechaNac: string;
   rubro: string;
   tel2?: string;
   socio?: string;
 }
 
+interface Cobrador {
+  id: number;
+  nombreyApellido: string;
+}
+
 const AltaCliente: React.FC = () => {
   const [barrios, setBarrios] = useState<string[]>([]);
   const [rubros, setRubros] = useState<string[]>([]);
-  const navigate = useNavigate(); // Hook para navegar
+  const [cobradores, setCobradores] = useState<Cobrador[]>([]); // Estado para los cobradores
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     const barriosInstance = new Barrios();
-
     setBarrios(barriosInstance.getBarrios());
     setRubros(barriosInstance.getRubros());
+
+    // Llamada para obtener los cobradores desde la API
+    const fetchCobradores = async () => {
+      try {
+        const cobradoresData = await getCobradores(); // Obtener los cobradores
+        setCobradores(cobradoresData); // Actualizar el estado con los cobradores
+      } catch (error) {
+        console.error('Error fetching cobradores:', error);
+      }
+    };
+
+    fetchCobradores();
   }, []);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const clienteData: ClienteData = {
-      nombre_y_apellido: formData.get('nombre') as string,
-      barrio_comercial: formData.get('barrio_comercial') as string,
+      apellidoYnombre: formData.get('nombre') as string,
+      barrioComercial: formData.get('barrio_comercial') as string,
       dni: Number(formData.get('dni')),
-      barrio_particular: formData.get('barrio_particular') as string,
+      barrioParticular: formData.get('barrio_particular') as string,
       tel: Number(formData.get('tel')),
-      direccion_comercial: formData.get('direccion_comercial') as string,
-      direccion_particular: formData.get('direccion_particular') as string,
-      fecha_nac: formData.get('fecha_nac') as string,
+      direccionComercial: formData.get('direccion_comercial') as string,
+      direccionParticular: formData.get('direccion_particular') as string,
+      fechaNac: formData.get('fecha_nac') as string,
       rubro: formData.get('rubro') as string,
       tel2: formData.get('tel2') as string,
       socio: formData.get('socio') as string,
     };
 
     try {
-      const response = await altaCliente(clienteData);
-      toast.success('Cliente creado con éxito!'); // Mostrar notificación de éxito
+      await altaCliente(clienteData);
+      toast.success('Cliente creado con éxito!');
       setTimeout(() => {
-        navigate('/'); // Redirigir a la página principal después de la notificación
-      }, 3000); // Espera 3 segundos antes de redirigir
-    } catch (error: any) {         
-      toast.error(error.message); // Mostrar notificación de error
+        navigate('/'); 
+      }, 3000); 
+    } catch (error: any) {
+      toast.error(error.message); 
     }
   };
 
@@ -134,14 +152,15 @@ const AltaCliente: React.FC = () => {
               <label htmlFor="socio">Socio / Conyugue</label>
               <input type="text" id="socio" name="socio" />
             </div>
-            <div className="form-group cobrador">
+         <div className="form-group cobrador">
               <label htmlFor="cobrador">Cobrador</label>
-              <select id="cobrador" name="cobrador">
+              <select id="cobrador" name="cobrador" required>
                 <option value="">Seleccione Cobrador</option>
-                <option value="Diario">Pablo</option>
-                <option value="Semanal">Nati</option>
-                <option value="Quincenal">Nico</option>
-                <option value="Mensual">Fer</option>
+                {cobradores.map((cobrador) => (
+                  <option key={cobrador.id} value={cobrador.id}>
+                    {cobrador.nombreyApellido}
+                  </option>
+                ))}
               </select>
             </div>
             <button type="submit" className="btn">

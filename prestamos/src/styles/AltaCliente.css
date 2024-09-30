@@ -95,22 +95,7 @@ body {
 .form-group.cobrador {
   grid-column: 2/ 3;
 }
-.btn {
-  background: #004dff;
-  color: white;
-  border: none;
-  border-radius: 25px;
-  padding: 12px 30px;
-  font-family: 'Poppins', sans-serif;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  grid-column: 1 / 4;
-  margin-top: 20px;
-  justify-self: center;
-}
-
-.btn:hover {
-  background-color: #003bb3;
+.btn{
+  grid-column: 2/3;
 }
 

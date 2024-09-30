@@ -1,85 +1,67 @@
 import React, { useEffect, useState } from "react";
 import DataTable, { TableColumn } from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
-import { getAllClients } from "../apis/getApi"; 
-import { getPrestamosPorCliente } from "../apis/postApi"; 
-import "../styles/ClientesGrid.css";
-import PrestamosPage from "../pages/PrestamosPage";
+import { getAllCobradores } from "../apis/getApi"; // Asegúrate de agregar esta función en tu getApi
+import "../styles/ClientesGrid.css"; // Reutilizamos el mismo archivo de estilos de ClientesGrid
 
-// Definir la interfaz para los datos de los clientes
-interface Cliente {
-  apellidoYnombre: string;
+interface Cobrador {
+  id: number;
+  nombreyApellido: string;
   dni: number;
-  fechaNac: string;
-  direccionComercial: string;
-  barrioComercial: string;
-  direccionParticular: string;
-  barrioParticular: string;
+  zona: number;
   tel: string;
-  fechaAlta: string;
 }
 
-const ClientesGrid: React.FC = () => {
-  const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [filteredClientes, setFilteredClientes] = useState<Cliente[]>([]);
+const CobradoresGrid: React.FC = () => {
+  const [cobradores, setCobradores] = useState<Cobrador[]>([]);
+  const [filteredCobradores, setFilteredCobradores] = useState<Cobrador[]>([]);
   const [searchName, setSearchName] = useState<string>("");
   const [searchDNI, setSearchDNI] = useState<string>("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchClientes = async () => {
+    const fetchCobradores = async () => {
       try {
-        const clients = await getAllClients();
-        setClientes(clients);
-        setFilteredClientes(clients);
+        const data = await getAllCobradores(); // Función que obtiene todos los cobradores
+        setCobradores(data);
+        setFilteredCobradores(data);
       } catch (error) {
-        console.log("Error fetching clientes: ", error);
+        console.log("Error fetching cobradores: ", error);
       }
     };
 
-    fetchClientes();
+    fetchCobradores();
   }, []);
 
-  const handleRowClicked = async (cliente: Cliente) => {
-  console.log("Cliente seleccionado:", cliente);
-  try {
-    const prestamos = await getPrestamosPorCliente(cliente.dni);
-    navigate("/prestamos", { state: { dni: cliente.dni } }); // Navegar a PrestamosPage pasando el DNI del cliente
-  } catch (error) {
-    console.log("Error fetching prestamos del cliente: ", error);
-  }
-};
-
+  const handleRowClicked = (cobrador: Cobrador) => {
+    navigate(`/cobradores/${cobrador.id}/clientes`, { state: { cobradorId: cobrador.id } });
+  };
 
   const handleSearchName = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value.replace(/[^A-Za-z\s]/g, ""); // Eliminar cualquier carácter que no sea una letra o espacio
+    const value = event.target.value.replace(/[^A-Za-z\s]/g, "");
     setSearchName(value);
     filterData(value, searchDNI);
   };
 
   const handleSearchDNI = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value.replace(/\D/g, ""); // Eliminar cualquier carácter que no sea un número
+    const value = event.target.value.replace(/\D/g, "");
     setSearchDNI(value);
     filterData(searchName, value);
   };
 
- const filterData = (name: string, dni: string) => {
-  const filteredData = clientes.filter(
-    (cliente) =>
-      cliente.apellidoYnombre && // Asegura que apellidoYnombre no sea null
-      cliente.apellidoYnombre.toLowerCase().includes(name.toLowerCase()) &&
-      (dni === "" || (cliente.dni && cliente.dni.toString().startsWith(dni)))
-  );
+  const filterData = (name: string, dni: string) => {
+    const filteredData = cobradores.filter(
+      (cobrador) =>
+        cobrador.nombreyApellido.toLowerCase().includes(name.toLowerCase()) &&
+        (dni === "" || (cobrador.dni && cobrador.dni.toString().startsWith(dni)))
+    );
+    setFilteredCobradores(filteredData);
+  };
 
-  setFilteredClientes(filteredData);
-};
-
-
-
-  const columns: TableColumn<Cliente>[] = [
+  const columns: TableColumn<Cobrador>[] = [
     {
       name: "Nombre",
-      selector: (row) => row.apellidoYnombre,
+      selector: (row) => row.nombreyApellido,
       sortable: true,
     },
     {
@@ -88,38 +70,13 @@ const ClientesGrid: React.FC = () => {
       sortable: true,
     },
     {
-      name: "Fecha de Nacimiento",
-      selector: (row) => row.fechaNac,
-      sortable: true,
-    },
-    {
-      name: "Dirección Comercial",
-      selector: (row) => row.direccionComercial,
-      sortable: true,
-    },
-    {
-      name: "Barrio Comercial",
-      selector: (row) => row.barrioComercial,
-      sortable: true,
-    },
-    {
-      name: "Dirección Particular",
-      selector: (row) => row.direccionParticular,
-      sortable: true,
-    },
-    {
-      name: "Barrio Particular",
-      selector: (row) => row.barrioParticular,
+      name: "Zona",
+      selector: (row) => row.zona.toString(),
       sortable: true,
     },
     {
       name: "Teléfono",
       selector: (row) => row.tel,
-      sortable: true,
-    },
-    {
-      name: "Fecha de Alta",
-      selector: (row) => row.fechaAlta,
       sortable: true,
     },
   ];
@@ -160,14 +117,14 @@ const ClientesGrid: React.FC = () => {
 
         <DataTable
           columns={columns}
-          data={filteredClientes}
+          data={filteredCobradores}
           pagination
           highlightOnHover
           onRowClicked={handleRowClicked}
         />
         <div className="button-container">
-          <button className="btn" onClick={() => navigate("/alta-cliente")}>
-            Añadir Cliente
+          <button className="btn" onClick={() => navigate("/alta-cobrador")}>
+            Añadir Cobrador
           </button>
         </div>
       </div>
@@ -175,4 +132,4 @@ const ClientesGrid: React.FC = () => {
   );
 };
 
-export default ClientesGrid;
+export default CobradoresGrid;
