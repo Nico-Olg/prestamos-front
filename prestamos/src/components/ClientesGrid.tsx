@@ -2,9 +2,8 @@ import React, { useEffect, useState } from "react";
 import DataTable, { TableColumn } from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
 import { getAllClients } from "../apis/getApi"; 
-import { getPrestamosPorCliente } from "../apis/postApi"; 
+// import { getPrestamosPorCliente } from "../apis/postApi"; 
 import "../styles/ClientesGrid.css";
-import PrestamosPage from "../pages/PrestamosPage";
 
 // Definir la interfaz para los datos de los clientes
 interface Cliente {
@@ -43,7 +42,7 @@ const ClientesGrid: React.FC = () => {
   const handleRowClicked = async (cliente: Cliente) => {
   console.log("Cliente seleccionado:", cliente);
   try {
-    const prestamos = await getPrestamosPorCliente(cliente.dni);
+    // const prestamos = await getPrestamosPorCliente(cliente.dni);
     navigate("/prestamos", { state: { dni: cliente.dni } }); // Navegar a PrestamosPage pasando el DNI del cliente
   } catch (error) {
     console.log("Error fetching prestamos del cliente: ", error);

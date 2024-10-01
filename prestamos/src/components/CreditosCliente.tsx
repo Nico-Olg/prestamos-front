@@ -1,27 +1,25 @@
-import React, { useEffect, useState } from "react";
-import DataTable, { TableColumn } from "react-data-table-component";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import React from "react";
+
 import "../styles/PrestamosGrid.css";
 
 // Definir la interfaz para los datos de los préstamos
-interface Prestamo {
-  apellidoYnombre: string;
-  dni: number;
-  tel: string;
-  producto: string;
-  cuotasPagadas: number;
-  montoCuota: number;
-  montoRestante: number;
-  montoPrestamo: number;
-  tipoPlan: string;
-  fechaInicio: string;
-  fechaFinalizacion: string;
-  al_dia: boolean;
-  periodo_pago: string;
-}
+// interface Prestamo {
+//   apellidoYnombre: string;
+//   dni: number;
+//   tel: string;
+//   producto: string;
+//   cuotasPagadas: number;
+//   montoCuota: number;
+//   montoRestante: number;
+//   montoPrestamo: number;
+//   tipoPlan: string;
+//   fechaInicio: string;
+//   fechaFinalizacion: string;
+//   al_dia: boolean;
+//   periodo_pago: string;
+// }
 
-const CreditoCliente: React.FC = (cliente) => {
+const CreditoCliente: React.FC = (/*cliente*/) => {
     return (
         <div>
             <h1>cliente.dni</h1>

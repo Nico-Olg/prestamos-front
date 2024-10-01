@@ -3,7 +3,7 @@ import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import '../styles/AltaUsuario.css';
 import { useNavigate } from 'react-router-dom';
-import { nuevoUsuario } from '../apis/postAPI';
+import { nuevoUsuario } from '../apis/postApi';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
