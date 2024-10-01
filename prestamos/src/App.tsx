@@ -79,7 +79,7 @@ const App: React.FC = () => {
          
           <Route path="/cobradores/:id/clientes" element={
             <ProtectedRoute>
-            <ClientesPorCobradores />
+            <ClientesPorCobradores clientes={[]} />
             </ProtectedRoute>
           } />
            <Route path="/cobradores" element={
