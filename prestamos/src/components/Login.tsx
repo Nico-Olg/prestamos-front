@@ -14,7 +14,7 @@ const Login: React.FC = () => {
   try {
     const token = await login(dni, password); // Llamada a la API
     localStorage.setItem('token', token); // Guarda el token en localStorage
-    navigate('/'); // Redirige al usuario a la página principal
+    navigate('/clientes'); // Redirige al usuario a la página principal
   } catch (error) {
     console.error('Error en la autenticación', error);
     setError('Credenciales incorrectas. Inténtalo de nuevo.'); // Muestra el error al usuario

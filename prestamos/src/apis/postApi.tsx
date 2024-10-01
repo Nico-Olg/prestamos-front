@@ -265,4 +265,27 @@ export async function registrarPago(pagoId: number) {
     }
   }
 }
+export async function nuevoUsuario(usuarioData: { nombre: string, dni: number, rol: string, password: string }) {
+  try {
+    const token = getAuthToken();
+    const response = await axios.post(
+      'http://localhost:8080/usuarios/nuevo-usuario',
+      usuarioData,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`, // Agregar el token en el header
+        },
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Error al crear el usuario: ${error.response?.data}`);
+    } else {
+      throw new Error('Error desconocido al crear el usuario');
+    }
+  }
+}
+
 

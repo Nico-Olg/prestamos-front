@@ -23,13 +23,17 @@ const PagosPage: React.FC = () => {
       const fetchPagos = async () => {
         try {
           const pagosData = await getPagosPorPrestamo(prestamoId);
-          setPagos(pagosData);
+           const pagosConCuotas = pagosData.map((pago: any, index: number) => ({
+            ...pago,                // Mantener las propiedades originales
+            nroCuota: index + 1,    // Agregar la propiedad nroCuota
+          }));
+          setPagos(pagosConCuotas);
 
           // Aquí puedes calcular ingresos y egresos si tienes esa lógica
-          const totalIngresos = pagosData.reduce((acc, pago) => acc + pago.ingreso, 0);  // Solo un ejemplo
-          const totalEgresos = pagosData.reduce((acc, pago) => acc + pago.egreso, 0);    // Solo un ejemplo
-          setIngresos(totalIngresos);
-          setEgresos(totalEgresos);
+          // const totalIngresos = pagosData.reduce((acc, pago) => acc + pago.ingreso, 0);  // Solo un ejemplo
+          // const totalEgresos = pagosData.reduce((acc, pago) => acc + pago.egreso, 0);    // Solo un ejemplo
+          // setIngresos(totalIngresos);
+          // setEgresos(totalEgresos);
         } catch (error) {
           console.log('Error fetching pagos: ', error);
         }
@@ -74,19 +78,22 @@ const PagosPage: React.FC = () => {
     }
   };
 
-  return (
-    <div className="pagos-page">
-      <Header title="Gestión de Pagos" />
-      <div className="content">
-        <Sidebar />
-        <PagosGrid pagos={pagos} handlePagoCuota={handlePagoCuota} />
-        <IconButton component="button" onClick={() => navigate(-1)} className="btn back">
-          <ArrowBackIcon />
-        </IconButton>
-        <IngresosEgresosChart ingresos={ingresos} egresos={egresos} />
-      </div>
+ return (
+  <div className="pagos-page">
+    <Header title="Gestión de Pagos" />
+    <div className="content">
+      <Sidebar />
+      <PagosGrid pagos={pagos} handlePagoCuota={handlePagoCuota} />
+      
+      {/* Botón de volver flotante */}
+      <IconButton component="button" onClick={() => navigate(-1)} className="back-button">
+        <ArrowBackIcon />
+      </IconButton>
+
+      <IngresosEgresosChart ingresos={ingresos} egresos={egresos} />
     </div>
-  );
+  </div>
+);
 };
 
 export default PagosPage;

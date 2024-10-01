@@ -1,15 +1,16 @@
 import React from 'react';
 import DataTable, { TableColumn } from 'react-data-table-component';
+import '../styles/PagosGrid.css';
 
 interface Pago {
   id: number;
-  cliente: {
-    nombre: string;
-    dni: number;
-  };
   monto: number;
   fechaPago: string;
-  atrasado: boolean; // Atributo que indica si el pago está atrasado
+  atrasado: boolean;
+  formaPago: string;
+  producto: string | null;
+  billetes: {};
+  nroCuota: number;
 }
 
 interface PagosGridProps {
@@ -20,13 +21,8 @@ interface PagosGridProps {
 const PagosGrid: React.FC<PagosGridProps> = ({ pagos, handlePagoCuota }) => {
   const columns: TableColumn<Pago>[] = [
     {
-      name: 'Cliente',
-      selector: (row) => row.cliente.nombre,
-      sortable: true,
-    },
-    {
-      name: 'DNI',
-      selector: (row) => row.cliente.dni.toString(),
+      name: 'Nro. Cuota',
+      selector: (row) => row.nroCuota,
       sortable: true,
     },
     {
@@ -52,7 +48,42 @@ const PagosGrid: React.FC<PagosGridProps> = ({ pagos, handlePagoCuota }) => {
     },
   ];
 
-  return <DataTable columns={columns} data={pagos} pagination />;
+  return (
+    <div className="pagos-grid">
+      <DataTable
+        columns={columns}
+        data={pagos}
+        pagination
+        paginationPerPage={10} // Configura la cantidad de filas por página
+        highlightOnHover
+        customStyles={customStyles} // Aplica los estilos personalizados
+        paginationComponentOptions={{
+          rowsPerPageText: 'Filas por página:',
+          rangeSeparatorText: 'de',
+        }}
+      />
+    </div>
+  );
 };
 
 export default PagosGrid;
+
+const customStyles = {
+  rows: {
+    style: {
+      minHeight: '50px', // Define la altura mínima de las filas
+    },
+  },
+  headCells: {
+    style: {
+      backgroundColor: '#848b91', // Color del encabezado
+      color: '#fff',
+      fontWeight: 'bold',
+    },
+  },
+  cells: {
+    style: {
+      padding: '10px', // Padding para las celdas
+    },
+  },
+};

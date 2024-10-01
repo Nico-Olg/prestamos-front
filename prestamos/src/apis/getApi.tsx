@@ -112,5 +112,24 @@ export async function getPagosDeHoy() {
     throw error;
   }
 }
+export async function getUsuarios() {
+  try {
+    const token = getAuthToken();
+    const response = await axios.get("http://localhost:8080/usuarios/usuarios", {
+      headers: {
+        'Authorization': `Bearer ${token}`, // Agregar el token en el header
+      },
+      withCredentials: true,
+    });
+    return response.data;
+  }
+  catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Error al obtener los usuarios: ${error.response?.status} ${error.response?.statusText}`);
+    } else {
+      throw new Error('Error desconocido al obtener los usuarios');
+    }
+  }
+}
 
 

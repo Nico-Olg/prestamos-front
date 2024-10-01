@@ -2,6 +2,10 @@
   width: 200px;
   padding: 20px;
   margin-top: 3%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Asegura que el botón "Cerrar Sesión" se quede al final */
+  height: 60vh; /* Asegura que el sidebar ocupe toda la altura */
 }
 
 .btn {
@@ -12,29 +16,57 @@
   padding: 10px 25px;
   font-family: 'Lato', sans-serif;
   font-weight: 500;
-  background: transparent;
+  background: rgb(0, 77, 255);
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
   display: inline-block;
-  box-shadow: inset 2px 2px 2px 0px rgba(255,255,255,.5),
-              7px 7px 20px 0px rgba(0,0,0,.1),
-              4px 4px 5px 0px rgba(0,0,0,.1);
+  box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, .5),
+              7px 7px 20px 0px rgba(0, 0, 0, .1),
+              4px 4px 5px 0px rgba(0, 0, 0, .1);
   outline: none;
   font-size: 15px;
   margin-bottom: 30%;
-  display: flex; /* Utiliza flexbox para centrar el contenido */
-  justify-content: center; /* Centra el contenido horizontalmente */
-  align-items: center; /* Centra el contenido verticalmente */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .btn:hover {
-  box-shadow: 4px 4px 6px 0 rgba(255,255,255,.5),
-              -4px -4px 6px 0 rgba(116, 125, 136, .5), 
-              inset -4px -4px 6px 0 rgba(255,255,255,.2),
+  box-shadow: 4px 4px 6px 0 rgba(255, 255, 255, .5),
+              -4px -4px 6px 0 rgba(116, 125, 136, .5),
+              inset -4px -4px 6px 0 rgba(255, 255, 255, .2),
               inset 4px 4px 6px 0 rgba(0, 0, 0, .4);
 }
 
-.btn:last-child {
-  margin-bottom: 0; /* Elimina el margen inferior del último botón */
+.btn-logout {
+  width: 130px;
+  height: 40px;
+  color: #fff;
+  border-radius: 5px;
+  padding: 10px 25px;
+  font-family: 'Lato', sans-serif;
+  font-weight: 500;
+  background: rgb(255, 77, 77); /* Color rojo para el botón de Cerrar Sesión */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  display: inline-block;
+  box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, .5),
+              7px 7px 20px 0px rgba(0, 0, 0, .1),
+              4px 4px 5px 0px rgba(0, 0, 0, .1);
+  outline: none;
+  font-size: 15px;
+  margin-top: auto; /* Asegura que el botón quede al final del sidebar */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-logout:hover {
+  background-color: #d9534f; /* Un rojo más oscuro en hover */
+  box-shadow: 4px 4px 6px 0 rgba(255, 255, 255, .5),
+              -4px -4px 6px 0 rgba(116, 125, 136, .5),
+              inset -4px -4px 6px 0 rgba(255, 255, 255, .2),
+              inset 4px 4px 6px 0 rgba(0, 0, 0, .4);
 }

@@ -1,4 +1,4 @@
-.clientes-page {
+.pagos-page {
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -7,9 +7,33 @@
 .content {
   display: flex;
   flex: 1;
+  position: relative;
 }
-.content .recharts-responsive-container {
-  width: 100%; 
-  height: 100%;
-  margin-top: 50px;
+
+.back-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #004dff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.back-button:hover {
+  background-color: #003bb5; /* Un color ligeramente más oscuro en hover */
+}
+
+.back-button svg {
+  fill: white;
+  width: 24px;
+  height: 24px;
 }
