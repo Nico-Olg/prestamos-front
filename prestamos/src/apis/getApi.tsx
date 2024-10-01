@@ -1,4 +1,5 @@
 import axios from "axios";
+import API_BASE_URL from './config'; // Importa la URL base
 
 // Obtener el token JWT del localStorage
 function getAuthToken() {
@@ -8,7 +9,7 @@ function getAuthToken() {
 export async function getAllClients() {
   try {
     const token = getAuthToken();
-    const response = await axios.get("http://localhost:8080/clientes/findAll", {
+    const response = await axios.get(`${API_BASE_URL}/clientes/findAll`, {
       headers: {
         'Authorization': `Bearer ${token}`, // Agregar el token en el header
       },
@@ -28,7 +29,7 @@ export async function getAllClients() {
 export async function getPrestamosPorCliente() {
   try {
     const token = getAuthToken();
-    const response = await axios.get("http://localhost:8080/prestamos/activos", {
+    const response = await axios.get(`${API_BASE_URL}/prestamos/activos`, {
       headers: {
         'Authorization': `Bearer ${token}`, // Agregar el token en el header
       },
@@ -48,7 +49,7 @@ export async function getPrestamosPorCliente() {
 export async function getProductos() {
   try {
     const token = getAuthToken();
-    const response = await axios.get("http://localhost:8080/productos/ver-todos", {
+    const response = await axios.get(`${API_BASE_URL}/productos/ver-todos`, {
       headers: {
         'Authorization': `Bearer ${token}`, // Agregar el token en el header
       },
@@ -67,7 +68,7 @@ export async function getProductos() {
 export async function getCobradores() {
   try {
     const token = getAuthToken();
-    const response = await axios.get("http://localhost:8080/cobradores/findAll", {
+    const response = await axios.get(`${API_BASE_URL}/cobradores/findAl`, {
       headers: {
         'Authorization': `Bearer ${token}`, // Agregar el token en el header
       },
@@ -84,7 +85,7 @@ export async function getCobradores() {
 }
 export async function getAllCobradores() {
   const token = getAuthToken();
-  const response = await axios.get("http://localhost:8080/cobradores/findAll", {
+  const response = await axios.get(`${API_BASE_URL}/cobradores/findAll`, {
     headers: { 'Authorization': `Bearer ${token}` },
   });
   return response.data;
@@ -92,7 +93,7 @@ export async function getAllCobradores() {
 
 export async function getClientesPorCobrador(cobradorId: number) {
   const token = getAuthToken();
-  const response = await axios.get(`http://localhost:8080/cobradores/${cobradorId}/clientes`, {
+  const response = await axios.get(`${API_BASE_URL}/cobradores/${cobradorId}/clientes`, {
     headers: { 'Authorization': `Bearer ${token}` },
   });
   return response.data;
@@ -100,7 +101,7 @@ export async function getClientesPorCobrador(cobradorId: number) {
 export async function getPagosDeHoy() {
   try {
     const token = localStorage.getItem('token');
-    const response = await axios.get('http://localhost:8080/pagos/pagos-hoy', {
+    const response = await axios.get(`${API_BASE_URL}/pagos/pagos-hoy`, {
       headers: {
         'Authorization': `Bearer ${token}`
       },
@@ -115,7 +116,7 @@ export async function getPagosDeHoy() {
 export async function getUsuarios() {
   try {
     const token = getAuthToken();
-    const response = await axios.get("http://localhost:8080/usuarios/usuarios", {
+    const response = await axios.get(`${API_BASE_URL}/usuarios/usuarios`, {
       headers: {
         'Authorization': `Bearer ${token}`, // Agregar el token en el header
       },

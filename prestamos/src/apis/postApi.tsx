@@ -1,5 +1,6 @@
 import axios from "axios";
 import { boolean } from "yup";
+import API_BASE_URL from './config'; // Importa la URL base
 
 // Obtener el token JWT del localStorage
 function getAuthToken() {
@@ -10,7 +11,7 @@ export async function getPrestamosPorCliente(dni: number) {
   try {
     const token = getAuthToken();
     const response = await axios.post(
-      'http://localhost:8080/prestamos/prestamos-por-Cliente',
+      `${API_BASE_URL}/prestamos/prestamos-por-Cliente`,
       { param: { dni } },
       {
         headers: {
@@ -34,7 +35,7 @@ export async function getPagosPorPrestamo(prestamoId: number) {
   try {
     const token = getAuthToken();
     const response = await axios.post(
-      'http://localhost:8080/pagos/obtener-pagos',
+      `${API_BASE_URL}/pagos/obtener-pagos`,
       { param: { id: prestamoId } },
       {
         headers: {
@@ -58,7 +59,7 @@ export async function getClientebyDni(dni: number) {
   try {
     const token = getAuthToken();
     const response = await axios.post(
-      `http://localhost:8080/clientes/buscar-dni`,
+      `${API_BASE_URL}/clientes/buscar-dni`,
       { dni },
       {
         headers: {
@@ -92,7 +93,7 @@ export async function crearPrestamo(
   try {
     const token = getAuthToken();
     const response = await axios.post(
-      'http://localhost:8080/prestamos/crear-prestamo',
+      `${API_BASE_URL}/prestamos/crear-prestamo`,
       {
         param: {
           cantidadCuotas,
@@ -127,7 +128,7 @@ export async function actualizarFechaInicio(prestamoId: number, fechaInicio: str
   try {
     const token = getAuthToken();
     const response = await axios.post(
-      'http://localhost:8080/prestamos/actualizar-fechaInicio',
+      `${API_BASE_URL}/prestamos/actualizar-fechaInicio`,
       {
         param: {
           prestamoId,
@@ -156,7 +157,7 @@ export async function eliminarPrestamo(prestamoId: number) {
   try {
     const token = getAuthToken();
     const response = await axios.delete(
-      `http://localhost:8080/prestamos/borrar-prestamo/${prestamoId}`,
+      `${API_BASE_URL}/prestamos/borrar-prestamo/${prestamoId}`,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -195,7 +196,7 @@ export async function altaCliente(clienteData: ClienteData) {
   try {
     const token = getAuthToken();
     const response = await axios.post(
-      'http://localhost:8080/clientes/nuevo-cliente',
+      `${API_BASE_URL}/clientes/nuevo-cliente`,
       clienteData,
       {
         headers: {
@@ -217,7 +218,7 @@ export async function altaCliente(clienteData: ClienteData) {
 export async function login(dni: string, password: string) {
   try {
     const response = await axios.post(
-      'http://localhost:8080/usuarios/login',
+      `${API_BASE_URL}/usuarios/login`,
       { dni, password },
       {
         headers: {
@@ -246,7 +247,7 @@ export async function registrarPago(pagoId: number) {
   try {
     const token = getAuthToken();
     const response = await axios.post(
-      `http://localhost:8080/pagos/registrar/${pagoId}`,
+      `${API_BASE_URL}/pagos/registrar/${pagoId}`,
       {}, // Puedes enviar un cuerpo vacío si no necesitas otros parámetros
       {
         headers: {
@@ -269,7 +270,7 @@ export async function nuevoUsuario(usuarioData: { nombre: string, dni: number, r
   try {
     const token = getAuthToken();
     const response = await axios.post(
-      'http://localhost:8080/usuarios/nuevo-usuario',
+      `${API_BASE_URL}/usuarios/nuevo-usuario`,
       usuarioData,
       {
         headers: {
