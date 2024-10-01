@@ -11,6 +11,7 @@ import { getCobradores } from '../apis/getApi';
 
 interface ClienteData {
   apellidoYnombre: string;
+  barrio_comercial: string;
   barrioComercial: string;
   dni: number;
   barrioParticular: string;
@@ -67,6 +68,7 @@ const AltaCliente: React.FC = () => {
       rubro: formData.get('rubro') as string,
       tel2: formData.get('tel2') as string,
       socio: formData.get('socio') as string,
+      barrio_comercial: ''
     };
 
     try {

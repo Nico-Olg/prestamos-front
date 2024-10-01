@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ReactNode } from "react";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import { Formik, Field, Form, FormikConfig, FormikValues, useFormikContext } from "formik";
@@ -19,7 +19,7 @@ import { CheckboxWithLabel, TextField } from "formik-material-ui";
 import * as Yup from "yup";
 import "../styles/CrearPrestamo.css";
 import { useNavigate } from "react-router-dom";
-import { getClientebyDni, crearPrestamo, eliminarPrestamo, actualizarFechaInicio } from "../apis/postApi";
+import { getClientebyDni, crearPrestamo } from "../apis/postApi";
 import { getProductos } from "../apis/getApi"; // Importar las funciones getProductos, getAllClients y getPrestamosPorCliente
 import dayjs from "dayjs"; // Usaremos dayjs para manejar fechas
 
@@ -93,14 +93,14 @@ const FormikStepper = ({ children, productos, ...props }: FormikConfig<FormikVal
   const [prestamoCreado, setPrestamoCreado] = useState<number | null>(null);
   const navigate = useNavigate();
 
-  const childrenArray = React.Children.toArray(children) as React.ReactElement<FormikStepProps>[];
+  const childrenArray = React.Children.toArray(children as ReactNode[]) as React.ReactElement<FormikStepProps>[];
   const currentChild = childrenArray[step];
 
   const isLastStep = () => step === childrenArray.length - 1;
 
   const handleSubmit = async (values: FormikValues, helpers: any) => {
     if (isLastStep()) {
-      navigate("/"); // Redirige a la página principal si es el último paso
+      navigate("/clientes"); // Redirige a la página principal si es el último paso
       return;
     }
 
@@ -133,6 +133,7 @@ const FormikStepper = ({ children, productos, ...props }: FormikConfig<FormikVal
         console.error("Error al crear el préstamo:", error);
       }
     } else if (step === 3) {
+      prestamoCreado;
       // try {
       //   await actualizarFechaInicio(values.id, values.fechaInicio);
       //   helpers.setValues({
@@ -188,7 +189,7 @@ const FormikStepper = ({ children, productos, ...props }: FormikConfig<FormikVal
 };
 
 export default function CrearPrestamo() {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const initialValues = {
     dni: "",
     nombre: "",

@@ -4,7 +4,7 @@ import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import PagosGrid from '../components/PagosGrid';
 import '../styles/PagosPage.css';
-import IngresosEgresosChart from '../components/IngresosEgresosChartProps';
+// import IngresosEgresosChart from '../components/IngresosEgresosChartProps';
 import { getPagosPorPrestamo } from '../apis/postApi';
 import Swal from 'sweetalert2';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -15,8 +15,8 @@ const PagosPage: React.FC = () => {
   const prestamoId = location.state?.prestamoId;
   const navigate = useNavigate();
   const [pagos, setPagos] = useState([]);
-  const [ingresos, setIngresos] = useState(0);  // Definir el estado para ingresos
-  const [egresos, setEgresos] = useState(0);    // Definir el estado para egresos
+  // const [ingresos, setIngresos] = useState(0);  // Definir el estado para ingresos
+  // const [egresos, setEgresos] = useState(0);    // Definir el estado para egresos
 
   useEffect(() => {
     if (prestamoId) {
@@ -61,12 +61,12 @@ const PagosPage: React.FC = () => {
     }
   };
 
-  const realizarPago = async (pagoId: number) => {
+  const realizarPago = async (_pagoId: number) => {
     try {
       Swal.fire({
         icon: 'success',
         title: 'Pago Realizado',
-        text: 'El pago se realizó con éxito.',
+        text: 'El pago se realizó con éxito., {pagoId}',
       });
     } catch (error) {
       console.log('Error realizando el pago: ', error);
@@ -90,7 +90,7 @@ const PagosPage: React.FC = () => {
         <ArrowBackIcon />
       </IconButton>
 
-      <IngresosEgresosChart ingresos={ingresos} egresos={egresos} />
+      {/* <IngresosEgresosChart ingresos={ingresos} egresos={egresos} /> */}
     </div>
   </div>
 );

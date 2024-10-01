@@ -1,5 +1,4 @@
 import axios from "axios";
-import { boolean } from "yup";
 import API_BASE_URL from './config'; // Importa la URL base
 
 // Obtener el token JWT del localStorage
