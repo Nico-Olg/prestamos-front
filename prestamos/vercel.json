@@ -1,11 +1,16 @@
 {
-  "build": {
-    "env": {
-      "NODE_ENV": "production"
+    "build": {
+        "env": {
+            "NODE_ENV": "production"
+        },
+        "commands": {
+            "build": "npm run build"
+        },
+        "outputDirectory": "dist"
     },
-    "commands": {
-      "build": "npm run build"
-    },
-    "outputDirectory": "dist"
-  }
+    "git": {
+        "deploymentEnabled": {
+            "main": true
+        }
+    }
 }
