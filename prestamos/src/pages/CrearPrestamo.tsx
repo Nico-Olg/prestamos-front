@@ -20,37 +20,8 @@ import * as Yup from "yup";
 import "../styles/CrearPrestamo.css";
 import { useNavigate } from "react-router-dom";
 import { getClientebyDni, crearPrestamo } from "../apis/postApi";
-import { getProductos } from "../apis/getApi"; // Importar las funciones getProductos, getAllClients y getPrestamosPorCliente
-import dayjs from "dayjs"; // Usaremos dayjs para manejar fechas
-
-const sleep = (time: number) =>
-  new Promise((resolve) => setTimeout(resolve, time));
-
-interface ClienteData {
-  dni: string;
-  apellidoYnombre: string;
-  direccionParticular: string;
-  tel: string;
-  barrioComercial: string;
-  barrioParticular: string;
-  fechaNac: string;
-  fechaAlta: string;
-  [key: string]: string | number | undefined;
-}
-
-interface PrestamoData {
-  id: number;
-  total: number;
-  cantidadCuotas: number;
-  codigoProducto: number;
-  dni_cliente: number;
-  periodo_pago: string;
-  monto: number;
-  fechaInicio: string;
-  fechaFin: string;
-  pagoEnEfectivo: boolean;
-  montoCuota: number;
-}
+import { getProductos } from "../apis/getApi";
+import dayjs from "dayjs";
 
 interface ProductoData {
   id: number;
@@ -64,6 +35,7 @@ interface FormikStepProps {
   children: React.ReactNode;
 }
 
+// Actualiza el valor de "fechaFin" cuando se cambia la fecha de inicio o los días
 function FechaFinUpdater() {
   const { values, setFieldValue } = useFormikContext<FormikValues>();
 
@@ -73,6 +45,29 @@ function FechaFinUpdater() {
       setFieldValue("fechaFin", fechaFin);
     }
   }, [values.fechaInicio, values.dias, setFieldValue]);
+
+  return null;
+}
+
+// Actualiza el valor del monto basado en el producto seleccionado y ajusta las opciones de días
+function MontoProductoUpdater({ productos }: { productos: ProductoData[] }) {
+  const { values, setFieldValue } = useFormikContext<FormikValues>();
+
+  useEffect(() => {
+    const productoSeleccionado = productos.find(producto => producto.id === values.producto);
+    if (productoSeleccionado) {
+      if (productoSeleccionado.descripcion !== "Efectivo") {
+        setFieldValue("monto", productoSeleccionado.valor);
+      }
+
+      // Cambia las opciones de días según el producto
+      const opcionesDias =
+        productoSeleccionado.descripcion === "Efectivo"
+          ? [15, 20, 30, 40]
+          : [15, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 150];
+      setFieldValue("diasOpciones", opcionesDias);
+    }
+  }, [productos, values.producto, setFieldValue]);
 
   return null;
 }
@@ -90,7 +85,6 @@ const FormField = ({ name, label, type = "text", disabled = false, children }: {
 const FormikStepper = ({ children, productos, ...props }: FormikConfig<FormikValues> & { productos: ProductoData[] }) => {
   const [step, setStep] = useState(0);
   const [completed, setCompleted] = useState(false);
-  const [prestamoCreado, setPrestamoCreado] = useState<number | null>(null);
   const navigate = useNavigate();
 
   const childrenArray = React.Children.toArray(children as ReactNode[]) as React.ReactElement<FormikStepProps>[];
@@ -106,7 +100,7 @@ const FormikStepper = ({ children, productos, ...props }: FormikConfig<FormikVal
 
     if (step === 0) {
       try {
-        const cliente: ClienteData = await getClientebyDni(Number(values.dni));
+        const cliente = await getClientebyDni(Number(values.dni));
         helpers.setValues({
           ...values,
           ...cliente,
@@ -117,8 +111,7 @@ const FormikStepper = ({ children, productos, ...props }: FormikConfig<FormikVal
       }
     } else if (step === 2) {
       try {
-        const prestamo: PrestamoData = await crearPrestamo(values.dias, values.producto, Number(values.dni), values.periodo, values.monto, values.pagoEnEfectivo, values.fechaInicio, values.fechaFin);
-        console.log("Datos enviados al backend para crear el préstamo:", values);
+        const prestamo = await crearPrestamo(values.dias, values.producto, Number(values.dni), values.periodo, values.monto, values.pagoEnEfectivo, values.fechaInicio, values.fechaFin);
         helpers.setValues({
           ...values,
           id: prestamo.id,
@@ -128,21 +121,9 @@ const FormikStepper = ({ children, productos, ...props }: FormikConfig<FormikVal
           montoCuota: prestamo.montoCuota,
         });
         setCompleted(true);
-        setPrestamoCreado(prestamo.id);
       } catch (error) {
         console.error("Error al crear el préstamo:", error);
       }
-    } else if (step === 3) {
-      prestamoCreado;
-      // try {
-      //   await actualizarFechaInicio(values.id, values.fechaInicio);
-      //   helpers.setValues({
-      //     fechaInicio: values.fechaInicio,
-      //     fechaFin: dayjs(values.fechaInicio).add(values.dias, "day").format("YYYY-MM-DD"),
-      //   });
-      // } catch (error) {
-      //   console.error("Error al actualizar la fecha de inicio:", error);
-      // }
     }
 
     setStep((prev) => prev + 1);
@@ -154,6 +135,8 @@ const FormikStepper = ({ children, productos, ...props }: FormikConfig<FormikVal
       {({ isSubmitting }) => (
         <Form autoComplete="off">
           <FechaFinUpdater />
+          <MontoProductoUpdater productos={productos} /> {/* Monto basado en producto */}
+          
           <Stepper alternativeLabel activeStep={step}>
             {childrenArray.map((child, index) => (
               <Step key={index} completed={step > index || completed}>
@@ -189,7 +172,6 @@ const FormikStepper = ({ children, productos, ...props }: FormikConfig<FormikVal
 };
 
 export default function CrearPrestamo() {
-  // const navigate = useNavigate();
   const initialValues = {
     dni: "",
     nombre: "",
@@ -241,7 +223,7 @@ export default function CrearPrestamo() {
                 initialValues={initialValues}
                 productos={productos} // Pasar los productos como prop
                 onSubmit={async (values, { setSubmitting }) => {
-                  await sleep(3000);
+                  await new Promise((resolve) => setTimeout(resolve, 3000));
                   console.log("Préstamo creado con éxito", values);
                   setSubmitting(false);
                 }}
@@ -268,7 +250,7 @@ export default function CrearPrestamo() {
                     dias: Yup.number().required("La cantidad de días es obligatoria").min(1, "Debe ser al menos 1 día"),
                   })}
                 >
-                 <Box paddingBottom={2}>
+                  <Box paddingBottom={2}>
                     <Field
                       name="producto"
                       as={Select}
@@ -304,7 +286,6 @@ export default function CrearPrestamo() {
                       ))}
                     </Field>
                   </Box>
-
                   <FormField name="dias" label="Cantidad de Días del Préstamo" type="number" />
                    <FormField name="fechaInicio" label="Fecha Inicio" type="date" />
                   <FormField name="fechaFin" label="Fecha Fin" />
@@ -316,7 +297,6 @@ export default function CrearPrestamo() {
                   <FormField name="monto" label="Monto Solicitado" disabled />
                   <FormField name="montoAPagar" label="Monto Total a Pagar" disabled />
                   <FormField name="montoCuota" label="Valor de las Cuotas" disabled />
-                 
                 </FormikStep>
                 <FormikStep label="Confirmación">
                   <Box paddingBottom={2}>

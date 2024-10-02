@@ -75,7 +75,7 @@ const AltaCliente: React.FC = () => {
       await altaCliente(clienteData);
       toast.success('Cliente creado con éxito!');
       setTimeout(() => {
-        navigate('/'); 
+        navigate('/clientes'); 
       }, 3000); 
     } catch (error: any) {
       toast.error(error.message); 

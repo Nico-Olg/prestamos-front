@@ -68,7 +68,7 @@ export async function getProductos() {
 export async function getCobradores() {
   try {
     const token = getAuthToken();
-    const response = await axios.get(`${API_BASE_URL}/cobradores/findAl`, {
+    const response = await axios.get(`${API_BASE_URL}/cobradores/findAll`, {
       headers: {
         'Authorization': `Bearer ${token}`, // Agregar el token en el header
       },
@@ -82,13 +82,6 @@ export async function getCobradores() {
       throw new Error('Error desconocido al obtener los cobradores');
     }
   }
-}
-export async function getAllCobradores() {
-  const token = getAuthToken();
-  const response = await axios.get(`${API_BASE_URL}/cobradores/findAll`, {
-    headers: { 'Authorization': `Bearer ${token}` },
-  });
-  return response.data;
 }
 
 export async function getClientesPorCobrador(cobradorId: number) {

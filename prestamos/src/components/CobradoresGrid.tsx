@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import DataTable, { TableColumn } from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
-import { getAllCobradores } from "../apis/getApi"; // Asegúrate de agregar esta función en tu getApi
+import { getCobradores } from "../apis/getApi"; // Asegúrate de agregar esta función en tu getApi
 import "../styles/ClientesGrid.css"; // Reutilizamos el mismo archivo de estilos de ClientesGrid
 
 interface Cobrador {
@@ -22,7 +22,7 @@ const CobradoresGrid: React.FC = () => {
   useEffect(() => {
     const fetchCobradores = async () => {
       try {
-        const data = await getAllCobradores(); // Función que obtiene todos los cobradores
+        const data = await getCobradores(); // Función que obtiene todos los cobradores
         setCobradores(data);
         setFilteredCobradores(data);
       } catch (error) {

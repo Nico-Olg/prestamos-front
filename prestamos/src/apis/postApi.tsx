@@ -288,4 +288,55 @@ export async function nuevoUsuario(usuarioData: { nombre: string, dni: number, r
   }
 }
 
+export async function altaCobrador(cobradorData: {
+  nombreyApellido: string;
+  dni: number;
+  zona: number;
+  tel: string;
+}) {
+  try {
+    const token = getAuthToken();
+    const response = await axios.post(
+      `${API_BASE_URL}/cobradores/nuevo-cobrador`,
+      cobradorData,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Error al crear el cobrador: ${error.response?.data}`);
+    } else {
+      throw new Error('Error desconocido al crear el cobrador');
+    }
+  }
+}
+export function altaProducto(producto: { descripcion: string, valor: number, esDinero: boolean }) {
+  try {
+    const token = getAuthToken();
+    const response = axios.post(
+      `${API_BASE_URL}/productos/agregar-producto`,
+      producto,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        withCredentials: true,
+      }
+    );
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Error al crear el producto: ${error.response?.data}`);
+    } else {
+      throw new Error('Error desconocido al crear el producto');
+    }
+  }
+}
+
+
 

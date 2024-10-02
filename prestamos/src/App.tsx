@@ -14,6 +14,9 @@ const Cobradores = lazy(() => import('./pages/CobranzaPage'));
 const ClientesPorCobradores = lazy(() => import('./pages/ClientesPorCobradorPage'));
 const Usuarios = lazy(() => import('./pages/UsuariosPage'));
 const AltaUsuario = lazy(() => import('./pages/AltaUsuario'));
+const AltaCobrador = lazy(() => import('./pages/AltaCobrador'));
+const ProductosPage = lazy(() => import('./pages/ProductosPage'));
+const NuevoProducto = lazy(() => import('./pages/NuevoProducto'));
 
 // Componente de ruta protegida
 const ProtectedRoute: React.FC<{ children: JSX.Element }> = ({ children }) => {
@@ -95,6 +98,21 @@ const App: React.FC = () => {
           <Route path="/alta-usuario" element={
               <ProtectedRoute>
               <AltaUsuario />
+              </ProtectedRoute>
+          } />
+          <Route path="/alta-cobrador" element={
+              <ProtectedRoute>
+              <AltaCobrador />
+              </ProtectedRoute>
+          } />
+          <Route path="/productos" element={
+              <ProtectedRoute>
+              <ProductosPage />
+              </ProtectedRoute>
+          } />
+          <Route path="/nuevo-producto" element={
+              <ProtectedRoute>
+              <NuevoProducto />
               </ProtectedRoute>
           } />
           {/* Ruta de fallback */}
