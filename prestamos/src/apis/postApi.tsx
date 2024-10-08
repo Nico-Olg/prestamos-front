@@ -187,7 +187,9 @@ interface ClienteData {
   rubro: string;
   tel2?: string;
   socio?: string;
-  cobrador?: number;
+  cobrador:{
+    id: number; 
+  } 
 }
 
 
@@ -334,6 +336,29 @@ export function altaProducto(producto: { descripcion: string, valor: number, esD
       throw new Error(`Error al crear el producto: ${error.response?.data}`);
     } else {
       throw new Error('Error desconocido al crear el producto');
+    }
+  }
+}
+export function modificarCuotas(  monto_cuota: number, prestamoId: number ) {
+  try {
+    const token = getAuthToken();
+    const response = axios.post(
+      `${API_BASE_URL}/prestamos/modificar-valor-cuota`,
+      {monto_cuota,
+      prestamoId,},
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        withCredentials: true,
+      }
+    );
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Error al modificar las cuotas: ${error.response?.data}`);
+    } else {
+      throw new Error('Error desconocido al modificar las cuotas');
     }
   }
 }

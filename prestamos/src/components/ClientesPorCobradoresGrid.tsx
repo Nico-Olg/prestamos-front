@@ -1,96 +1,140 @@
 import React, { useState, useEffect } from "react";
-import { getPagosDeHoy } from "../apis/getApi"; // Asegúrate de tener este endpoint que filtre pagos por fecha
 import DataTable, { TableColumn } from "react-data-table-component";
-import "../styles/ClientesGrid.css"; // Puedes reutilizar los estilos
-import Modal from "react-modal"; // Para ventana emergente
-import { registrarPago } from "../apis/postApi";
+import { useNavigate } from "react-router-dom";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import "../styles/ClientesPorCobradoresGrid.css";
 
-interface Pago {
-  id: number;
-  clienteNombre: string;
-  dni: string;
-  direccion: string;
-  articulo: string;
-  montoPrestamo: number;
-  montoCuota: number;
-  formaPago: string;
-  efectivo: boolean;
+interface Cliente {
+  apellidoYnombre: string;
+  dni: number;
+  fechaNac: string;
+  direccionComercial: string;
+  barrioComercial: string;
+  direccionParticular: string;
+  barrioParticular: string;
+  tel: string;
+  fechaAlta: string;
 }
 
-const PagosDelDiaGrid: React.FC = () => {
-  const [pagos, setPagos] = useState<Pago[]>([]);
-  const [selectedPago, setSelectedPago] = useState<Pago | null>(null);
-  const [modalIsOpen, setModalIsOpen] = useState(false);
+interface ClientesPorCobradorGridProps {
+  clientes: Cliente[];
+}
 
+const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({ clientes }) => {
+  const [filteredClientes, setFilteredClientes] = useState<Cliente[]>(clientes);
+  const [searchName, setSearchName] = useState<string>("");
+  const [searchDNI, setSearchDNI] = useState<string>("");
+
+  const navigate = useNavigate();
+
+  // Actualiza el estado de filteredClientes cuando cambian las props de clientes
   useEffect(() => {
-    const fetchPagos = async () => {
-      try {
-        const data = await getPagosDeHoy(); // Endpoint que obtenga pagos que vencen hoy
-        setPagos(data);
-      } catch (error) {
-        console.log("Error fetching pagos: ", error);
-      }
-    };
-    fetchPagos();
-  }, []);
+    setFilteredClientes(clientes);
+  }, [clientes]);
 
-  const handleRowClicked = (pago: Pago) => {
-    setSelectedPago(pago);
-    setModalIsOpen(true);
+  // Filtrado de clientes por nombre y DNI
+  const filterData = (name: string, dni: string) => {
+    const filteredData = clientes.filter(
+      (cliente) =>
+        cliente.apellidoYnombre.toLowerCase().includes(name.toLowerCase()) &&
+        (dni === "" || cliente.dni.toString().startsWith(dni))
+    );
+    setFilteredClientes(filteredData);
   };
 
-  const handlePago = async () => {
-    if (selectedPago) {
-      try {
-        // Llama al API para registrar el pago
-        await registrarPago(selectedPago.id);
-        setModalIsOpen(false);
-        // Refresca la lista de pagos
-        const data = await getPagosDeHoy();
-        setPagos(data);
-      } catch (error) {
-        console.log("Error processing pago: ", error);
-      }
-    }
+  const handleSearchName = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value.replace(/[^A-Za-z\s]/g, ""); // Eliminar caracteres no válidos
+    setSearchName(value);
+    filterData(value, searchDNI);
   };
 
-  const columns: TableColumn<Pago>[] = [
-    { name: "Nombre", selector: (row) => row.clienteNombre, sortable: true },
-    { name: "DNI", selector: (row) => row.dni, sortable: true },
-    { name: "Dirección", selector: (row) => row.direccion, sortable: true },
-    { name: "Artículo", selector: (row) => row.articulo, sortable: true },
-    { name: "Monto Préstamo", selector: (row) => `$${row.montoPrestamo}`, sortable: true },
-    { name: "Monto Cuota", selector: (row) => `$${row.montoCuota}`, sortable: true },
-    { name: "Forma de Pago", selector: (row) => row.formaPago, sortable: true },
-    { name: "Efectivo", selector: (row) => (row.efectivo ? "Sí" : "No"), sortable: true }
+  const handleSearchDNI = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value.replace(/\D/g, ""); // Solo permitir números
+    setSearchDNI(value);
+    filterData(searchName, value);
+  };
+
+  // Método para manejar el reordenamiento
+  const handleOnDragEnd = (result: any) => {
+    if (!result.destination) return;
+
+    const reorderedClientes = Array.from(filteredClientes);
+    const [movedCliente] = reorderedClientes.splice(result.source.index, 1);
+    reorderedClientes.splice(result.destination.index, 0, movedCliente);
+
+    setFilteredClientes(reorderedClientes);
+  };
+
+  // Definir las columnas de la tabla
+  const columns: TableColumn<Cliente>[] = [
+    { name: "Nombre", selector: (row) => row.apellidoYnombre, sortable: true },
+    { name: "DNI", selector: (row) => row.dni.toString(), sortable: true },
+    { name: "Fecha de Nacimiento", selector: (row) => row.fechaNac, sortable: true },
+    { name: "Dirección Comercial", selector: (row) => row.direccionComercial, sortable: true },
+    { name: "Barrio Comercial", selector: (row) => row.barrioComercial, sortable: true },
+    { name: "Dirección Particular", selector: (row) => row.direccionParticular, sortable: true },
+    { name: "Barrio Particular", selector: (row) => row.barrioParticular, sortable: true },
+    { name: "Teléfono", selector: (row) => row.tel, sortable: true },
+    { name: "Fecha de Alta", selector: (row) => row.fechaAlta, sortable: true },
   ];
 
   return (
-    <div className="pagos-grid">
-      <h2>Pagos del Día</h2>
-      <DataTable
-        columns={columns}
-        data={pagos}
-        pagination
-        highlightOnHover
-        onRowClicked={handleRowClicked}
-      />
+    <div className="clientes-grid">
+      <div className="group">
+        <div className="buscarPornombre">
+          <input
+            type="search"
+            placeholder="Buscar por nombre"
+            value={searchName}
+            onChange={handleSearchName}
+            className="input"
+          />
+        </div>
+        <div className="buscarPorDNI">
+          <input
+            type="search"
+            placeholder="Buscar por DNI"
+            value={searchDNI}
+            onChange={handleSearchDNI}
+            className="input"
+          />
+        </div>
+      </div>
 
-      {/* Modal para confirmar pago */}
-      <Modal isOpen={modalIsOpen} onRequestClose={() => setModalIsOpen(false)}>
-        {selectedPago && (
-          <div>
-            <h3>Confirmar Pago</h3>
-            <p>Cliente: {selectedPago.clienteNombre}</p>
-            <p>Artículo: {selectedPago.articulo}</p>
-            <p>Monto Cuota: ${selectedPago.montoCuota}</p>
-            <button onClick={handlePago}>Confirmar</button>
-            <button onClick={() => setModalIsOpen(false)}>Cancelar</button>
-          </div>
-        )}
-      </Modal>
+      <DragDropContext onDragEnd={handleOnDragEnd}>
+        <Droppable droppableId="clientes-table">
+          {(provided) => (
+            <div {...provided.droppableProps} ref={provided.innerRef}>
+              <DataTable
+                columns={columns}
+                data={filteredClientes.map((cliente, index) => ({
+                  ...cliente,
+                  index: index, // Añadir índice para usar en Draggable
+                }))}
+                customStyles={{
+                  rows: {
+                    style: {
+                      cursor: "grab", // Mostrar ícono de arrastre
+                    },
+                  },
+                }}
+                highlightOnHover
+                pagination
+                noDataComponent={<span>No hay datos para mostrar</span>}
+              />
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
+
+      <div className="button-container">
+        <button className="btn" onClick={() => navigate("/clientes")}>
+          Añadir Cliente
+        </button>
+      </div>
     </div>
   );
 };
 
-export default PagosDelDiaGrid;
+export default ClientesPorCobradoresGrid;

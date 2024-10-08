@@ -1,30 +1,41 @@
-import React from "react";
-// import { Cliente } from "../pages/ClientesPorCobrador"; // Importa el tipo Cliente si está en otro archivo
+import React, { useEffect, useState } from 'react';
+import Header from '../components/Header';
+import Sidebar from '../components/Sidebar';
+import '../styles/ClientesPage.css';
+import ClientesPorCobradoresGrid from '../components/ClientesPorCobradoresGrid';
+import { useLocation } from 'react-router-dom';
+import { getClientesPorCobrador } from '../apis/getApi';
+// import Footer from '../components/Footer';
 
+const ClientesPorCobradorPage: React.FC = () => {
+  const location = useLocation();
+  const id = location.state?.id;
+  const [clientes, setClientes] = useState([]);
 
-interface Cliente {
-  apellidoYnombre: string;
-  dni: number;
-  direccion: string;
-  tel: string;
-}
-interface ClientesPorCobradoresGridProps {
-  clientes: Cliente[];
-}
+  useEffect(() => {
+    console.log('id: ', id);
+    if (id) {
+      const fetchClientes = async () => {
+        try {
+          const clientesData = await getClientesPorCobrador(id);
+          setClientes(clientesData);
+        } catch (error) {
+          console.log('Error fetching prestamos: ', error);
+        }
+      };
 
-const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradoresGridProps> = ({ clientes }) => {
+      fetchClientes();
+    }
+  }, [id]);
   return (
-    <div className="clientes-grid">
-      {clientes.map((cliente, index) => (
-        <div key={index} className="cliente-item">
-          <p>{cliente.apellidoYnombre}</p>
-          <p>{cliente.dni}</p>
-          <p>{cliente.direccion}</p>
-          <p>{cliente.tel}</p>
-        </div>
-      ))}
+    <div className="clientes-page">
+      <Header title="Clientes de Cobrador" />
+      <div className="content">
+        <Sidebar />
+        <ClientesPorCobradoresGrid clientes = {clientes} />
+      </div>
     </div>
   );
 };
 
-export default ClientesPorCobradoresGrid;
+export default ClientesPorCobradorPage;

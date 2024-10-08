@@ -34,7 +34,7 @@ const CobradoresGrid: React.FC = () => {
   }, []);
 
   const handleRowClicked = (cobrador: Cobrador) => {
-    navigate(`/cobradores/${cobrador.id}/clientes`, { state: { cobradorId: cobrador.id } });
+    navigate(`/cobradores/${cobrador.id}/clientes`, { state: { id: cobrador.id } });
   };
 
   const handleSearchName = (event: React.ChangeEvent<HTMLInputElement>) => {
