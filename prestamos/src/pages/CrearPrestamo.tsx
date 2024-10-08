@@ -19,7 +19,7 @@ import { CheckboxWithLabel, TextField } from "formik-material-ui";
 import * as Yup from "yup";
 import "../styles/CrearPrestamo.css";
 import { useNavigate } from "react-router-dom";
-import { getClientebyDni, crearPrestamo } from "../apis/postApi";
+import { getClientebyDni, crearPrestamo, modificarCuotas } from "../apis/postApi";
 import { getProductos } from "../apis/getApi";
 import dayjs from "dayjs";
 
@@ -71,6 +71,62 @@ function MontoProductoUpdater({ productos }: { productos: ProductoData[] }) {
 
   return null;
 }
+
+const FormFieldWithModifyButton = ({ name, label, disabledInitially }: { name: string; label: string; disabledInitially?: boolean }) => {
+  const [isEditable, setIsEditable] = useState(disabledInitially);
+  const { values, setFieldValue } = useFormikContext<FormikValues>();
+
+  const handleModifyClick = () => {
+    setIsEditable(!isEditable);
+  };
+
+  const handleSaveClick = async () => {
+    try {
+      // Llamada al endpoint para modificar la cuota
+      const updatedPrestamo = await modificarCuotas( values.montoCuota,values.id);
+      // Actualizar los valores del préstamo con la respuesta del backend
+      setFieldValue("montoAPagar", updatedPrestamo.data.total);
+      setFieldValue("montoCuota", updatedPrestamo.data.montoCuota);
+    } catch (error) {
+      console.error("Error al modificar la cuota:", error);
+    } finally {
+      setIsEditable(false); // Volver a desactivar el campo después de guardar
+    }
+  };
+
+  return (
+    <Box paddingBottom={2}>
+      <Grid container alignItems="center" spacing={2}>
+        <Grid item xs={8}>
+          <Field
+            fullWidth
+            name={name}
+            component={TextField}
+            label={label}
+            type="number"
+            disabled={!isEditable}
+          />
+        </Grid>
+        <Grid item xs={4}>
+          {isEditable ? (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSaveClick}
+              startIcon={<CircularProgress size="1rem" />} // Mostrar un spinner mientras se guarda
+            >
+              Guardar
+            </Button>
+          ) : (
+            <Button variant="outlined" onClick={handleModifyClick}>
+              Modificar
+            </Button>
+          )}
+        </Grid>
+      </Grid>
+    </Box>
+  );
+};
 
 const FormikStep = ({ children }: FormikStepProps) => <>{children}</>;
 
@@ -296,7 +352,7 @@ export default function CrearPrestamo() {
                   <FormField name="apellidoYnombre" label="Apellido y Nombre" disabled />
                   <FormField name="monto" label="Monto Solicitado" disabled />
                   <FormField name="montoAPagar" label="Monto Total a Pagar" disabled />
-                  <FormField name="montoCuota" label="Valor de las Cuotas" disabled />
+                   <FormFieldWithModifyButton name="montoCuota" label="Valor de las Cuotas" disabledInitially />
                 </FormikStep>
                 <FormikStep label="Confirmación">
                   <Box paddingBottom={2}>

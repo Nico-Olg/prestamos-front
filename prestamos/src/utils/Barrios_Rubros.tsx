@@ -339,6 +339,7 @@
     "San Pedro Nolasco",
     "San Rafael",
     "San Ramón",
+    "San Roque",
     "San Salvador",
     "San Vicente",
     "Santa Cecilia",
@@ -443,6 +444,9 @@
       "Jugueteria",
       "Zapateria",
       "Indumentaria",
+      "Articulo de Limpieza",
+      "Manicura",
+      "Almacen",
 
     ];
    }

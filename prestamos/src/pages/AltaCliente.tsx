@@ -22,6 +22,9 @@ interface ClienteData {
   rubro: string;
   tel2?: string;
   socio?: string;
+  cobrador :{
+    id: number; 
+  }
 }
 
 interface Cobrador {
@@ -68,7 +71,9 @@ const AltaCliente: React.FC = () => {
       rubro: formData.get('rubro') as string,
       tel2: formData.get('tel2') as string,
       socio: formData.get('socio') as string,
-      barrio_comercial: ''
+      barrio_comercial: '',
+      cobrador: { id: Number(formData.get('cobrador')) },
+     
     };
 
     try {

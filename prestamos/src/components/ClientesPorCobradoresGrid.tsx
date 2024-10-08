@@ -1,96 +1,267 @@
-import React, { useState, useEffect } from "react";
-import { getPagosDeHoy } from "../apis/getApi"; // Asegúrate de tener este endpoint que filtre pagos por fecha
-import DataTable, { TableColumn } from "react-data-table-component";
-import "../styles/ClientesGrid.css"; // Puedes reutilizar los estilos
-import Modal from "react-modal"; // Para ventana emergente
-import { registrarPago } from "../apis/postApi";
+import React, { useState, useEffect, useCallback } from "react";
+import { DndProvider, useDrag, useDrop } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { guardarOrdenClientes } from "../apis/postApi";
+import jsPDF from "jspdf"; // Import jsPDF
+import "jspdf-autotable"; // Import AutoTable for jsPDF
 
-interface Pago {
+// Extend jsPDF to include autoTable
+declare module "jspdf" {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
+}
+import "../styles/ClientesPorCobradoresGrid.css";
+
+interface Cliente {
   id: number;
-  clienteNombre: string;
-  dni: string;
-  direccion: string;
-  articulo: string;
-  montoPrestamo: number;
-  montoCuota: number;
-  formaPago: string;
-  efectivo: boolean;
+  apellidoYnombre: string;
+  dni: number;
+  fechaNac: string;
+  direccionComercial: string;
+  barrioComercial: string;
+  direccionParticular: string;
+  barrioParticular: string;
+  tel: string;
+  fechaAlta: string;
 }
 
-const PagosDelDiaGrid: React.FC = () => {
-  const [pagos, setPagos] = useState<Pago[]>([]);
-  const [selectedPago, setSelectedPago] = useState<Pago | null>(null);
-  const [modalIsOpen, setModalIsOpen] = useState(false);
+interface ClientesPorCobradorGridProps {
+  clientes: Cliente[];
+  cobradorId: number;
+  nombreCobrador: string;
+}
 
-  useEffect(() => {
-    const fetchPagos = async () => {
-      try {
-        const data = await getPagosDeHoy(); // Endpoint que obtenga pagos que vencen hoy
-        setPagos(data);
-      } catch (error) {
-        console.log("Error fetching pagos: ", error);
-      }
-    };
-    fetchPagos();
-  }, []);
+const ItemType = "CLIENTE";
 
-  const handleRowClicked = (pago: Pago) => {
-    setSelectedPago(pago);
-    setModalIsOpen(true);
-  };
+const ClienteRow: React.FC<{
+  cliente: Cliente;
+  index: number;
+  moveCliente: (dragIndex: number, hoverIndex: number) => void;
+}> = ({ cliente, index, moveCliente }) => {
+  const ref = React.useRef<HTMLTableRowElement>(null);
 
-  const handlePago = async () => {
-    if (selectedPago) {
-      try {
-        // Llama al API para registrar el pago
-        await registrarPago(selectedPago.id);
-        setModalIsOpen(false);
-        // Refresca la lista de pagos
-        const data = await getPagosDeHoy();
-        setPagos(data);
-      } catch (error) {
-        console.log("Error processing pago: ", error);
-      }
-    }
-  };
+  const [, drop] = useDrop({
+    accept: ItemType,
+    hover(item: { index: number }, monitor) {
+      if (!ref.current) return;
+      const dragIndex = item.index;
+      const hoverIndex = index;
 
-  const columns: TableColumn<Pago>[] = [
-    { name: "Nombre", selector: (row) => row.clienteNombre, sortable: true },
-    { name: "DNI", selector: (row) => row.dni, sortable: true },
-    { name: "Dirección", selector: (row) => row.direccion, sortable: true },
-    { name: "Artículo", selector: (row) => row.articulo, sortable: true },
-    { name: "Monto Préstamo", selector: (row) => `$${row.montoPrestamo}`, sortable: true },
-    { name: "Monto Cuota", selector: (row) => `$${row.montoCuota}`, sortable: true },
-    { name: "Forma de Pago", selector: (row) => row.formaPago, sortable: true },
-    { name: "Efectivo", selector: (row) => (row.efectivo ? "Sí" : "No"), sortable: true }
-  ];
+      if (dragIndex === hoverIndex) return;
+
+      const hoverBoundingRect = ref.current?.getBoundingClientRect();
+      const hoverMiddleY =
+        (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      const clientOffset = monitor.getClientOffset();
+      const hoverClientY = clientOffset?.y! - hoverBoundingRect.top;
+
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
+
+      moveCliente(dragIndex, hoverIndex);
+      item.index = hoverIndex;
+    },
+  });
+
+  const [{ isDragging }, drag] = useDrag({
+    type: ItemType,
+    item: { index },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  drag(drop(ref));
 
   return (
-    <div className="pagos-grid">
-      <h2>Pagos del Día</h2>
-      <DataTable
-        columns={columns}
-        data={pagos}
-        pagination
-        highlightOnHover
-        onRowClicked={handleRowClicked}
-      />
-
-      {/* Modal para confirmar pago */}
-      <Modal isOpen={modalIsOpen} onRequestClose={() => setModalIsOpen(false)}>
-        {selectedPago && (
-          <div>
-            <h3>Confirmar Pago</h3>
-            <p>Cliente: {selectedPago.clienteNombre}</p>
-            <p>Artículo: {selectedPago.articulo}</p>
-            <p>Monto Cuota: ${selectedPago.montoCuota}</p>
-            <button onClick={handlePago}>Confirmar</button>
-            <button onClick={() => setModalIsOpen(false)}>Cancelar</button>
-          </div>
-        )}
-      </Modal>
-    </div>
+    <tr
+      ref={ref}
+      style={{
+        opacity: isDragging ? 0.5 : 1,
+        cursor: "move",
+      }}
+    >
+      <td>{cliente.apellidoYnombre}</td>
+      <td>{cliente.dni}</td>
+      <td>{cliente.fechaNac}</td>
+      <td>{cliente.direccionComercial}</td>
+      <td>{cliente.barrioComercial}</td>
+      <td>{cliente.direccionParticular}</td>
+      <td>{cliente.barrioParticular}</td>
+      <td>{cliente.tel}</td>
+      <td>{cliente.fechaAlta}</td>
+    </tr>
   );
 };
 
-export default PagosDelDiaGrid;
+const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
+  clientes,
+  cobradorId,
+  nombreCobrador,
+}) => {
+  const [orderedClientes, setOrderedClientes] = useState<Cliente[]>(clientes);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    // Cargar el orden guardado en sessionStorage si existe
+    const savedClientes = sessionStorage.getItem(`ordenClientes_${cobradorId}`);
+    if (savedClientes) {
+      setOrderedClientes(JSON.parse(savedClientes));
+    } else {
+      setOrderedClientes(clientes);
+    }
+  }, [clientes, cobradorId]);
+
+  // Guardar el orden en la sesión
+  const saveToSession = (clientes: Cliente[]) => {
+    sessionStorage.setItem(
+      `ordenClientes_${cobradorId}`,
+      JSON.stringify(clientes)
+    );
+  };
+
+  const moveCliente = useCallback(
+    (dragIndex: number, hoverIndex: number) => {
+      const updatedClientes = [...orderedClientes];
+      const [draggedCliente] = updatedClientes.splice(dragIndex, 1);
+      updatedClientes.splice(hoverIndex, 0, draggedCliente);
+      setOrderedClientes(updatedClientes);
+      saveToSession(updatedClientes); // Guardar en sesión
+    },
+    [orderedClientes, cobradorId]
+  );
+
+  // Manejar el guardado al cerrar la ventana o sesión
+  useEffect(() => {
+    const handleBeforeUnload = async () => {
+      const savedClientes = sessionStorage.getItem(
+        `ordenClientes_${cobradorId}`
+      );
+      if (savedClientes) {
+        try {
+          // Guardar en la base de datos antes de cerrar
+          await guardarOrdenClientes(cobradorId, JSON.parse(savedClientes));
+        } catch (error) {
+          console.error("Error al guardar el orden de clientes", error);
+        }
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () =>
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [cobradorId]);
+
+  // Obtener los clientes de la página actual
+  const currentClientes = orderedClientes.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const totalPages = Math.ceil(orderedClientes.length / itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Función para generar el PDF
+  const handleGeneratePDF = () => {
+    const doc = new jsPDF();
+     doc.text(`Clientes de: ${nombreCobrador}`, 10, 10);
+    doc.autoTable({
+      head: [
+        [
+          "Nombre",
+          "DNI",
+          "Fecha de Nacimiento",
+          "Dirección Comercial",
+          "Barrio Comercial",
+          "Dirección Particular",
+          "Barrio Particular",
+          "Teléfono",
+          "Fecha de Alta",
+        ],
+      ],
+      body: orderedClientes.map((cliente) => [
+        cliente.apellidoYnombre,
+        cliente.dni.toString(),
+        cliente.fechaNac,
+        cliente.direccionComercial,
+        cliente.barrioComercial,
+        cliente.direccionParticular,
+        cliente.barrioParticular,
+        cliente.tel,
+        cliente.fechaAlta,
+      ]),
+    });
+     doc.save(`clientes_${nombreCobrador}.pdf`); // Descargar el archivo PDF
+  };
+
+  return (
+    <>
+      <DndProvider backend={HTML5Backend}>
+        <div>
+          <table className="table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>DNI</th>
+              <th>Fecha de Nacimiento</th>
+              <th>Dirección Comercial</th>
+              <th>Barrio Comercial</th>
+              <th>Dirección Particular</th>
+              <th>Barrio Particular</th>
+              <th>Teléfono</th>
+              <th>Fecha de Alta</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentClientes.map((cliente, index) => (
+              <ClienteRow
+                key={cliente.id}
+                cliente={cliente}
+                index={index + (currentPage - 1) * itemsPerPage}
+                moveCliente={moveCliente}
+              />
+            ))}
+          </tbody>
+          
+        </table>
+          <div className="pagination-container">
+        <ul className="pagination">
+          {Array.from({ length: totalPages }).map((_, pageIndex) => (
+            <li
+              key={pageIndex}
+              className={pageIndex + 1 === currentPage ? "active" : ""}
+            >
+              <button onClick={() => handlePageChange(pageIndex + 1)}>
+                {pageIndex + 1}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      
+
+      {/* Botón para generar PDF */}
+      <div className="button-container">
+        <button className="btn btn-primary" onClick={handleGeneratePDF}>
+          Generar PDF
+        </button>
+      </div>
+      
+        </div>
+        
+        
+      </DndProvider>
+      
+       
+     
+    </>
+  );
+};
+
+export default ClientesPorCobradoresGrid;
