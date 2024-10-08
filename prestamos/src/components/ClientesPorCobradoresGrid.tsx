@@ -1,9 +1,20 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import React, { useState, useEffect, useCallback } from "react";
+import { DndProvider, useDrag, useDrop } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { guardarOrdenClientes } from "../apis/postApi";
+import jsPDF from "jspdf"; // Import jsPDF
+import "jspdf-autotable"; // Import AutoTable for jsPDF
+
+// Extend jsPDF to include autoTable
+declare module "jspdf" {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
+}
 import "../styles/ClientesPorCobradoresGrid.css";
 
 interface Cliente {
+  id: number;
   apellidoYnombre: string;
   dni: number;
   fechaNac: string;
@@ -17,150 +28,239 @@ interface Cliente {
 
 interface ClientesPorCobradorGridProps {
   clientes: Cliente[];
+  cobradorId: number;
+  nombreCobrador: string;
 }
 
-const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({ clientes }) => {
-  const [filteredClientes, setFilteredClientes] = useState<Cliente[]>([]); // Inicializar como array vacío
-  const [searchName, setSearchName] = useState<string>("");
-  const [searchDNI, setSearchDNI] = useState<string>("");
+const ItemType = "CLIENTE";
 
-  const navigate = useNavigate();
+const ClienteRow: React.FC<{
+  cliente: Cliente;
+  index: number;
+  moveCliente: (dragIndex: number, hoverIndex: number) => void;
+}> = ({ cliente, index, moveCliente }) => {
+  const ref = React.useRef<HTMLTableRowElement>(null);
 
-  // Cargar clientes del localStorage al recargar la página
+  const [, drop] = useDrop({
+    accept: ItemType,
+    hover(item: { index: number }, monitor) {
+      if (!ref.current) return;
+      const dragIndex = item.index;
+      const hoverIndex = index;
+
+      if (dragIndex === hoverIndex) return;
+
+      const hoverBoundingRect = ref.current?.getBoundingClientRect();
+      const hoverMiddleY =
+        (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      const clientOffset = monitor.getClientOffset();
+      const hoverClientY = clientOffset?.y! - hoverBoundingRect.top;
+
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
+
+      moveCliente(dragIndex, hoverIndex);
+      item.index = hoverIndex;
+    },
+  });
+
+  const [{ isDragging }, drag] = useDrag({
+    type: ItemType,
+    item: { index },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  drag(drop(ref));
+
+  return (
+    <tr
+      ref={ref}
+      style={{
+        opacity: isDragging ? 0.5 : 1,
+        cursor: "move",
+      }}
+    >
+      <td>{cliente.apellidoYnombre}</td>
+      <td>{cliente.dni}</td>
+      <td>{cliente.fechaNac}</td>
+      <td>{cliente.direccionComercial}</td>
+      <td>{cliente.barrioComercial}</td>
+      <td>{cliente.direccionParticular}</td>
+      <td>{cliente.barrioParticular}</td>
+      <td>{cliente.tel}</td>
+      <td>{cliente.fechaAlta}</td>
+    </tr>
+  );
+};
+
+const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
+  clientes,
+  cobradorId,
+  nombreCobrador,
+}) => {
+  const [orderedClientes, setOrderedClientes] = useState<Cliente[]>(clientes);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   useEffect(() => {
-    const savedClientes = localStorage.getItem("clientes");
+    // Cargar el orden guardado en sessionStorage si existe
+    const savedClientes = sessionStorage.getItem(`ordenClientes_${cobradorId}`);
     if (savedClientes) {
-      setFilteredClientes(JSON.parse(savedClientes));
+      setOrderedClientes(JSON.parse(savedClientes));
     } else {
-      setFilteredClientes(clientes); // Si no hay nada en localStorage, usar los props de clientes
+      setOrderedClientes(clientes);
     }
-  }, [clientes]);
+  }, [clientes, cobradorId]);
 
-  // Guardar clientes reordenados en localStorage
-  useEffect(() => {
-    if (filteredClientes.length > 0) {
-      localStorage.setItem("clientes", JSON.stringify(filteredClientes));
-    }
-  }, [filteredClientes]);
-
-  const filterData = (name: string, dni: string) => {
-    const filteredData = clientes.filter(
-      (cliente) =>
-        cliente.apellidoYnombre.toLowerCase().includes(name.toLowerCase()) &&
-        (dni === "" || cliente.dni.toString().startsWith(dni))
+  // Guardar el orden en la sesión
+  const saveToSession = (clientes: Cliente[]) => {
+    sessionStorage.setItem(
+      `ordenClientes_${cobradorId}`,
+      JSON.stringify(clientes)
     );
-    setFilteredClientes(filteredData);
   };
 
-  const handleSearchName = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value.replace(/[^A-Za-z\s]/g, "");
-    setSearchName(value);
-    filterData(value, searchDNI);
+  const moveCliente = useCallback(
+    (dragIndex: number, hoverIndex: number) => {
+      const updatedClientes = [...orderedClientes];
+      const [draggedCliente] = updatedClientes.splice(dragIndex, 1);
+      updatedClientes.splice(hoverIndex, 0, draggedCliente);
+      setOrderedClientes(updatedClientes);
+      saveToSession(updatedClientes); // Guardar en sesión
+    },
+    [orderedClientes, cobradorId]
+  );
+
+  // Manejar el guardado al cerrar la ventana o sesión
+  useEffect(() => {
+    const handleBeforeUnload = async () => {
+      const savedClientes = sessionStorage.getItem(
+        `ordenClientes_${cobradorId}`
+      );
+      if (savedClientes) {
+        try {
+          // Guardar en la base de datos antes de cerrar
+          await guardarOrdenClientes(cobradorId, JSON.parse(savedClientes));
+        } catch (error) {
+          console.error("Error al guardar el orden de clientes", error);
+        }
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () =>
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [cobradorId]);
+
+  // Obtener los clientes de la página actual
+  const currentClientes = orderedClientes.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const totalPages = Math.ceil(orderedClientes.length / itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
-  const handleSearchDNI = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value.replace(/\D/g, "");
-    setSearchDNI(value);
-    filterData(searchName, value);
-  };
-
-  const handleOnDragEnd = (result: any) => {
-    if (!result.destination) return;
-
-    const reorderedClientes = Array.from(filteredClientes);
-    const [movedCliente] = reorderedClientes.splice(result.source.index, 1);
-    reorderedClientes.splice(result.destination.index, 0, movedCliente);
-
-    setFilteredClientes(reorderedClientes); // Actualiza el estado y guarda en localStorage
+  // Función para generar el PDF
+  const handleGeneratePDF = () => {
+    const doc = new jsPDF();
+     doc.text(`Clientes de: ${nombreCobrador}`, 10, 10);
+    doc.autoTable({
+      head: [
+        [
+          "Nombre",
+          "DNI",
+          "Fecha de Nacimiento",
+          "Dirección Comercial",
+          "Barrio Comercial",
+          "Dirección Particular",
+          "Barrio Particular",
+          "Teléfono",
+          "Fecha de Alta",
+        ],
+      ],
+      body: orderedClientes.map((cliente) => [
+        cliente.apellidoYnombre,
+        cliente.dni.toString(),
+        cliente.fechaNac,
+        cliente.direccionComercial,
+        cliente.barrioComercial,
+        cliente.direccionParticular,
+        cliente.barrioParticular,
+        cliente.tel,
+        cliente.fechaAlta,
+      ]),
+    });
+     doc.save(`clientes_${nombreCobrador}.pdf`); // Descargar el archivo PDF
   };
 
   return (
-    <div className="clientes-grid">
-      <div className="group">
-        <div className="buscarPornombre">
-          <input
-            type="search"
-            placeholder="Buscar por nombre"
-            value={searchName}
-            onChange={handleSearchName}
-            className="input"
-          />
-        </div>
-        <div className="buscarPorDNI">
-          <input
-            type="search"
-            placeholder="Buscar por DNI"
-            value={searchDNI}
-            onChange={handleSearchDNI}
-            className="input"
-          />
-        </div>
+    <>
+      <DndProvider backend={HTML5Backend}>
+        <div>
+          <table className="table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>DNI</th>
+              <th>Fecha de Nacimiento</th>
+              <th>Dirección Comercial</th>
+              <th>Barrio Comercial</th>
+              <th>Dirección Particular</th>
+              <th>Barrio Particular</th>
+              <th>Teléfono</th>
+              <th>Fecha de Alta</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentClientes.map((cliente, index) => (
+              <ClienteRow
+                key={cliente.id}
+                cliente={cliente}
+                index={index + (currentPage - 1) * itemsPerPage}
+                moveCliente={moveCliente}
+              />
+            ))}
+          </tbody>
+          
+        </table>
+          <div className="pagination-container">
+        <ul className="pagination">
+          {Array.from({ length: totalPages }).map((_, pageIndex) => (
+            <li
+              key={pageIndex}
+              className={pageIndex + 1 === currentPage ? "active" : ""}
+            >
+              <button onClick={() => handlePageChange(pageIndex + 1)}>
+                {pageIndex + 1}
+              </button>
+            </li>
+          ))}
+        </ul>
       </div>
 
-      <DragDropContext onDragEnd={handleOnDragEnd}>
-        <Droppable droppableId="clientes-droppable">
-          {(provided) => (
-            <table
-              className="table"
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-            >
-              <thead>
-                <tr>
-                  <th>Nombre</th>
-                  <th>DNI</th>
-                  <th>Fecha de Nacimiento</th>
-                  <th>Dirección Comercial</th>
-                  <th>Barrio Comercial</th>
-                  <th>Dirección Particular</th>
-                  <th>Barrio Particular</th>
-                  <th>Teléfono</th>
-                  <th>Fecha de Alta</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredClientes.map((cliente, index) => (
-                  <Draggable
-                    key={cliente.dni.toString()}
-                    draggableId={cliente.dni.toString()}
-                    index={index}
-                  >
-                    {(provided) => (
-                      <tr
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        style={{
-                          ...provided.draggableProps.style,
-                          cursor: "grab",
-                        }}
-                      >
-                        <td>{cliente.apellidoYnombre}</td>
-                        <td>{cliente.dni}</td>
-                        <td>{cliente.fechaNac}</td>
-                        <td>{cliente.direccionComercial}</td>
-                        <td>{cliente.barrioComercial}</td>
-                        <td>{cliente.direccionParticular}</td>
-                        <td>{cliente.barrioParticular}</td>
-                        <td>{cliente.tel}</td>
-                        <td>{cliente.fechaAlta}</td>
-                      </tr>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </tbody>
-            </table>
-          )}
-        </Droppable>
-      </DragDropContext>
+      
 
+      {/* Botón para generar PDF */}
       <div className="button-container">
-        <button className="btn" onClick={() => navigate("/clientes")}>
-          Añadir Cliente
+        <button className="btn btn-primary" onClick={handleGeneratePDF}>
+          Generar PDF
         </button>
       </div>
-    </div>
+      
+        </div>
+        
+        
+      </DndProvider>
+      
+       
+     
+    </>
   );
 };
 

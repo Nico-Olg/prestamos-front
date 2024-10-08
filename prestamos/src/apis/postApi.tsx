@@ -363,5 +363,28 @@ export function modificarCuotas(  monto_cuota: number, prestamoId: number ) {
   }
 }
 
+export async function guardarOrdenClientes(cobradorId: number, clientes: ClienteData[]) {
+  try {
+    const token = getAuthToken();
+    const response = await axios.post(
+      `${API_BASE_URL}/cobradores/${cobradorId}/guardar-orden-clientes`,
+      clientes,  // Enviar la lista de clientes con el campo de orden actualizado
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`, // Agregar el token en el header
+        },
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Error al guardar el orden de los clientes: ${error.response?.data}`);
+    } else {
+      throw new Error('Error desconocido al guardar el orden de los clientes');
+    }
+  }
+}
+
 
 

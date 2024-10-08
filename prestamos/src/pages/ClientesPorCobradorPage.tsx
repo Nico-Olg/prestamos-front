@@ -1,38 +1,45 @@
 import React, { useEffect, useState } from 'react';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
-import '../styles/ClientesPage.css';
-import ClientesPorCobradoresGrid from '../components/ClientesPorCobradoresGrid';
-import { useLocation } from 'react-router-dom';
 import { getClientesPorCobrador } from '../apis/getApi';
-// import Footer from '../components/Footer';
+import ClientesPorCobradoresGrid from '../components/ClientesPorCobradoresGrid';
+import '../styles/ClientesPage.css';
+import { useLocation } from 'react-router-dom';
 
 const ClientesPorCobradorPage: React.FC = () => {
-  const location = useLocation();
-  const id = location.state?.id;
   const [clientes, setClientes] = useState([]);
+  const [cobradorId, setCobradorId] = useState<number | null>(null);
+  const [nombreCobrador, setNombreCobrador] = useState<string | null>(null);
+  const location = useLocation();
 
   useEffect(() => {
-    console.log('id: ', id);
-    if (id) {
-      const fetchClientes = async () => {
-        try {
-          const clientesData = await getClientesPorCobrador(id);
-          setClientes(clientesData);
-        } catch (error) {
-          console.log('Error fetching prestamos: ', error);
-        }
-      };
+    const fetchClientes = async () => {
+      try {
+        const id = location.state?.id; // Ejemplo de ID de cobrador
+       const nombre = location.state?.nombreyApellido || ""; // Obtén el nombre del cobrador del estado
+        setCobradorId(id);
+        setNombreCobrador(nombre); // Asigna el nombre del cobrador
+        const clientesData = await getClientesPorCobrador(id);
+        setClientes(clientesData);
+      } catch (error) {
+        console.error('Error fetching clientes:', error);
+      }
+    };
 
-      fetchClientes();
-    }
-  }, [id]);
+    fetchClientes();
+  }, [location]);
+
   return (
     <div className="clientes-page">
-      <Header title="Clientes de Cobrador" />
+      <Header title={`Clientes del Cobrador: ${nombreCobrador  || ''}`}/>
       <div className="content">
         <Sidebar />
-        <ClientesPorCobradoresGrid clientes = {clientes} />
+       
+          {cobradorId && (
+          <ClientesPorCobradoresGrid clientes={clientes} cobradorId={cobradorId} nombreCobrador={nombreCobrador || ''}/>
+        )}
+        
+        
       </div>
     </div>
   );
