@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import DataTable, { TableColumn } from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import "../styles/ClientesPorCobradoresGrid.css";
@@ -27,12 +26,10 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({ cli
 
   const navigate = useNavigate();
 
-  // Actualiza el estado de filteredClientes cuando cambian las props de clientes
   useEffect(() => {
     setFilteredClientes(clientes);
   }, [clientes]);
 
-  // Filtrado de clientes por nombre y DNI
   const filterData = (name: string, dni: string) => {
     const filteredData = clientes.filter(
       (cliente) =>
@@ -43,13 +40,13 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({ cli
   };
 
   const handleSearchName = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value.replace(/[^A-Za-z\s]/g, ""); // Eliminar caracteres no válidos
+    const value = event.target.value.replace(/[^A-Za-z\s]/g, ""); 
     setSearchName(value);
     filterData(value, searchDNI);
   };
 
   const handleSearchDNI = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value.replace(/\D/g, ""); // Solo permitir números
+    const value = event.target.value.replace(/\D/g, ""); 
     setSearchDNI(value);
     filterData(searchName, value);
   };
@@ -64,19 +61,6 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({ cli
 
     setFilteredClientes(reorderedClientes);
   };
-
-  // Definir las columnas de la tabla
-  const columns: TableColumn<Cliente>[] = [
-    { name: "Nombre", selector: (row) => row.apellidoYnombre, sortable: true },
-    { name: "DNI", selector: (row) => row.dni.toString(), sortable: true },
-    { name: "Fecha de Nacimiento", selector: (row) => row.fechaNac, sortable: true },
-    { name: "Dirección Comercial", selector: (row) => row.direccionComercial, sortable: true },
-    { name: "Barrio Comercial", selector: (row) => row.barrioComercial, sortable: true },
-    { name: "Dirección Particular", selector: (row) => row.direccionParticular, sortable: true },
-    { name: "Barrio Particular", selector: (row) => row.barrioParticular, sortable: true },
-    { name: "Teléfono", selector: (row) => row.tel, sortable: true },
-    { name: "Fecha de Alta", selector: (row) => row.fechaAlta, sortable: true },
-  ];
 
   return (
     <div className="clientes-grid">
@@ -102,28 +86,59 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({ cli
       </div>
 
       <DragDropContext onDragEnd={handleOnDragEnd}>
-        <Droppable droppableId="clientes-table">
+        <Droppable droppableId="clientes-droppable">
           {(provided) => (
-            <div {...provided.droppableProps} ref={provided.innerRef}>
-              <DataTable
-                columns={columns}
-                data={filteredClientes.map((cliente, index) => ({
-                  ...cliente,
-                  index: index, // Añadir índice para usar en Draggable
-                }))}
-                customStyles={{
-                  rows: {
-                    style: {
-                      cursor: "grab", // Mostrar ícono de arrastre
-                    },
-                  },
-                }}
-                highlightOnHover
-                pagination
-                noDataComponent={<span>No hay datos para mostrar</span>}
-              />
-              {provided.placeholder}
-            </div>
+            <table
+              className="table"
+              {...provided.droppableProps}
+              ref={provided.innerRef}
+            >
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>DNI</th>
+                  <th>Fecha de Nacimiento</th>
+                  <th>Dirección Comercial</th>
+                  <th>Barrio Comercial</th>
+                  <th>Dirección Particular</th>
+                  <th>Barrio Particular</th>
+                  <th>Teléfono</th>
+                  <th>Fecha de Alta</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredClientes.map((cliente, index) => (
+                  <Draggable
+                    key={cliente.dni.toString()}
+                    draggableId={cliente.dni.toString()}
+                    index={index}
+                  >
+                    {(provided) => (
+                      <tr
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        style={{
+                          ...provided.draggableProps.style,
+                          cursor: "grab",
+                        }}
+                      >
+                        <td>{cliente.apellidoYnombre}</td>
+                        <td>{cliente.dni}</td>
+                        <td>{cliente.fechaNac}</td>
+                        <td>{cliente.direccionComercial}</td>
+                        <td>{cliente.barrioComercial}</td>
+                        <td>{cliente.direccionParticular}</td>
+                        <td>{cliente.barrioParticular}</td>
+                        <td>{cliente.tel}</td>
+                        <td>{cliente.fechaAlta}</td>
+                      </tr>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </tbody>
+            </table>
           )}
         </Droppable>
       </DragDropContext>
