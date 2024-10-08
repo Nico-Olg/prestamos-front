@@ -20,15 +20,28 @@ interface ClientesPorCobradorGridProps {
 }
 
 const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({ clientes }) => {
-  const [filteredClientes, setFilteredClientes] = useState<Cliente[]>(clientes);
+  const [filteredClientes, setFilteredClientes] = useState<Cliente[]>([]); // Inicializar como array vacío
   const [searchName, setSearchName] = useState<string>("");
   const [searchDNI, setSearchDNI] = useState<string>("");
 
   const navigate = useNavigate();
 
+  // Cargar clientes del localStorage al recargar la página
   useEffect(() => {
-    setFilteredClientes(clientes);
+    const savedClientes = localStorage.getItem("clientes");
+    if (savedClientes) {
+      setFilteredClientes(JSON.parse(savedClientes));
+    } else {
+      setFilteredClientes(clientes); // Si no hay nada en localStorage, usar los props de clientes
+    }
   }, [clientes]);
+
+  // Guardar clientes reordenados en localStorage
+  useEffect(() => {
+    if (filteredClientes.length > 0) {
+      localStorage.setItem("clientes", JSON.stringify(filteredClientes));
+    }
+  }, [filteredClientes]);
 
   const filterData = (name: string, dni: string) => {
     const filteredData = clientes.filter(
@@ -40,18 +53,17 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({ cli
   };
 
   const handleSearchName = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value.replace(/[^A-Za-z\s]/g, ""); 
+    const value = event.target.value.replace(/[^A-Za-z\s]/g, "");
     setSearchName(value);
     filterData(value, searchDNI);
   };
 
   const handleSearchDNI = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value.replace(/\D/g, ""); 
+    const value = event.target.value.replace(/\D/g, "");
     setSearchDNI(value);
     filterData(searchName, value);
   };
 
-  // Método para manejar el reordenamiento
   const handleOnDragEnd = (result: any) => {
     if (!result.destination) return;
 
@@ -59,7 +71,7 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({ cli
     const [movedCliente] = reorderedClientes.splice(result.source.index, 1);
     reorderedClientes.splice(result.destination.index, 0, movedCliente);
 
-    setFilteredClientes(reorderedClientes);
+    setFilteredClientes(reorderedClientes); // Actualiza el estado y guarda en localStorage
   };
 
   return (
