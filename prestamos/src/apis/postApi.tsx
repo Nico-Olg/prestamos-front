@@ -244,12 +244,12 @@ export async function login(dni: string, password: string) {
     }
   }
 }
-export async function registrarPago(pagoId: number) {
+export async function registrarPago(id: number, monto: number) {
   try {
     const token = getAuthToken();
     const response = await axios.post(
-      `${API_BASE_URL}/pagos/registrar/${pagoId}`,
-      {}, // Puedes enviar un cuerpo vacío si no necesitas otros parámetros
+      `${API_BASE_URL}/prestamos/pagar-cuota`,
+      {id, monto}, // Puedes enviar un cuerpo vacío si no necesitas otros parámetros
       {
         headers: {
           'Content-Type': 'application/json',

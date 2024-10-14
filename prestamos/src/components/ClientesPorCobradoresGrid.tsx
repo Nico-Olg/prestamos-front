@@ -4,7 +4,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { guardarOrdenClientes } from "../apis/postApi";
 import jsPDF from "jspdf"; // Import jsPDF
 import "jspdf-autotable"; // Import AutoTable for jsPDF
-
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 // Extend jsPDF to include autoTable
 declare module "jspdf" {
   interface jsPDF {
@@ -79,7 +79,7 @@ const ClienteRow: React.FC<{
       ref={ref}
       style={{
         opacity: isDragging ? 0.5 : 1,
-        cursor: "move",
+        cursor: isDragging ? "grabbing" : "grab",
       }}
     >
       <td>{cliente.apellidoYnombre}</td>
@@ -103,6 +103,7 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
   const [orderedClientes, setOrderedClientes] = useState<Cliente[]>(clientes);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const navigate = useNavigate(); // Use navigate to redirect
 
   useEffect(() => {
     // Cargar el orden guardado en sessionStorage si existe
@@ -169,7 +170,7 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
   // Función para generar el PDF
   const handleGeneratePDF = () => {
     const doc = new jsPDF();
-     doc.text(`Clientes de: ${nombreCobrador}`, 10, 10);
+    doc.text(`Clientes de: ${nombreCobrador}`, 10, 10);
     doc.autoTable({
       head: [
         [
@@ -196,7 +197,12 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
         cliente.fechaAlta,
       ]),
     });
-     doc.save(`clientes_${nombreCobrador}.pdf`); // Descargar el archivo PDF
+    doc.save(`clientes_${nombreCobrador}.pdf`); // Descargar el archivo PDF
+  };
+
+  // Función para redirigir a pagosHoyGrid
+  const handleVerCobranza = () => {
+    navigate("/pagosHoyGrid",  { state: { id: cobradorId , nombreyApellido : nombreCobrador}}); // Redirige a pagosHoyGrid
   };
 
   return (
@@ -204,62 +210,56 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
       <DndProvider backend={HTML5Backend}>
         <div>
           <table className="table">
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>DNI</th>
-              <th>Fecha de Nacimiento</th>
-              <th>Dirección Comercial</th>
-              <th>Barrio Comercial</th>
-              <th>Dirección Particular</th>
-              <th>Barrio Particular</th>
-              <th>Teléfono</th>
-              <th>Fecha de Alta</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentClientes.map((cliente, index) => (
-              <ClienteRow
-                key={cliente.id}
-                cliente={cliente}
-                index={index + (currentPage - 1) * itemsPerPage}
-                moveCliente={moveCliente}
-              />
-            ))}
-          </tbody>
-          
-        </table>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>DNI</th>
+                <th>Fecha de Nacimiento</th>
+                <th>Dirección Comercial</th>
+                <th>Barrio Comercial</th>
+                <th>Dirección Particular</th>
+                <th>Barrio Particular</th>
+                <th>Teléfono</th>
+                <th>Fecha de Alta</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentClientes.map((cliente, index) => (
+                <ClienteRow
+                  key={cliente.id}
+                  cliente={cliente}
+                  index={index + (currentPage - 1) * itemsPerPage}
+                  moveCliente={moveCliente}
+                />
+              ))}
+            </tbody>
+          </table>
           <div className="pagination-container">
-        <ul className="pagination">
-          {Array.from({ length: totalPages }).map((_, pageIndex) => (
-            <li
-              key={pageIndex}
-              className={pageIndex + 1 === currentPage ? "active" : ""}
-            >
-              <button onClick={() => handlePageChange(pageIndex + 1)}>
-                {pageIndex + 1}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
+            <ul className="pagination">
+              {Array.from({ length: totalPages }).map((_, pageIndex) => (
+                <li
+                  key={pageIndex}
+                  className={pageIndex + 1 === currentPage ? "active" : ""}
+                >
+                  <button onClick={() => handlePageChange(pageIndex + 1)}>
+                    {pageIndex + 1}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-      
-
-      {/* Botón para generar PDF */}
-      <div className="button-container">
-        <button className="btn btn-primary" onClick={handleGeneratePDF}>
-          Generar PDF
-        </button>
-      </div>
-      
+          {/* Botones para generar PDF y Ver Cobranza del Día */}
+          <div className="button-container">
+            <button className="btn btn-primary" onClick={handleGeneratePDF}>
+              Generar PDF
+            </button>
+            <button className="btn btn-secondary" onClick={handleVerCobranza}>
+              Ver Cobranza del día
+            </button>
+          </div>
         </div>
-        
-        
       </DndProvider>
-      
-       
-     
     </>
   );
 };

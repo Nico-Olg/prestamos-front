@@ -2,6 +2,10 @@ import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import  '../src/styles/Sidebar.css';
 
+// Importa el ClientProvider
+import { ClientProvider } from './provider/ClientContext';
+import { PagosHoyProvider } from './provider/PagosHoyContext';
+
 // Importación de componentes con lazy loading
 const PrestamosPage = lazy(() => import('./pages/PrestamosPage'));
 const CrearPrestamo = lazy(() => import('./pages/CrearPrestamo'));
@@ -17,6 +21,7 @@ const AltaUsuario = lazy(() => import('./pages/AltaUsuario'));
 const AltaCobrador = lazy(() => import('./pages/AltaCobrador'));
 const ProductosPage = lazy(() => import('./pages/ProductosPage'));
 const NuevoProducto = lazy(() => import('./pages/NuevoProducto'));
+const PagosDelDia = lazy(() => import('./pages/PagosDelDiaPage'));
 
 // Componente de ruta protegida
 const ProtectedRoute: React.FC<{ children: JSX.Element }> = ({ children }) => {
@@ -43,83 +48,98 @@ const ProtectedRoute: React.FC<{ children: JSX.Element }> = ({ children }) => {
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <Suspense fallback={<div className="spinner">Loading...</div>}>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          
-         <Route path="/" element={<Navigate to="/login" />} />
+    <ClientProvider> {/* Envuelve la aplicación con ClientProvider */}
+     <PagosHoyProvider>
+      <Router>
+        <Suspense fallback={<div className="spinner">Loading...</div>}>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<Navigate to="/login" />} />
 
-          <Route path="/prestamos" element={
-            <ProtectedRoute>
-              <PrestamosPage />
-            </ProtectedRoute>
-          } />
+            <Route path="/prestamos" element={
+              <ProtectedRoute>
+                <PrestamosPage />
+              </ProtectedRoute>
+            } />
 
-          <Route path="/crear-prestamo" element={
-            <ProtectedRoute>
-              <CrearPrestamo />
-            </ProtectedRoute>
-          } />
+            <Route path="/crear-prestamo" element={
+              <ProtectedRoute>
+                <CrearPrestamo />
+              </ProtectedRoute>
+            } />
 
-          <Route path="/alta-cliente" element={
-            <ProtectedRoute>
-              <AltaCliente />
-            </ProtectedRoute>
-          } />
+            <Route path="/alta-cliente" element={
+              <ProtectedRoute>
+                <AltaCliente />
+              </ProtectedRoute>
+            } />
 
-          <Route path="/clientes" element={
-            <ProtectedRoute>
-              <Clientes />
-            </ProtectedRoute>
-          } />
+            <Route path="/clientes" element={
+              <ProtectedRoute>
+                <Clientes />
+              </ProtectedRoute>
+            } />
 
-          <Route path="/pagos" element={
-            <ProtectedRoute>
-              <Pagos />
-            </ProtectedRoute>
-          } />
-         
-          <Route path="/cobradores/:id/clientes" element={
-            <ProtectedRoute>
-            <ClientesPorCobradores />
-            </ProtectedRoute>
-          } />
-           <Route path="/cobradores" element={
-            <ProtectedRoute>
-            <Cobradores />
-            </ProtectedRoute>
-         } />
-          <Route path="/usuarios" element={
+            <Route path="/pagos" element={
               <ProtectedRoute>
-              <Usuarios />
+                <Pagos />
               </ProtectedRoute>
-          } />
-          <Route path="/alta-usuario" element={
+            } />
+           
+            <Route path="/cobradores/:id/clientes" element={
               <ProtectedRoute>
-              <AltaUsuario />
+                <ClientesPorCobradores />
               </ProtectedRoute>
-          } />
-          <Route path="/alta-cobrador" element={
+            } />
+
+            <Route path="/cobradores" element={
               <ProtectedRoute>
-              <AltaCobrador />
+                <Cobradores />
               </ProtectedRoute>
-          } />
-          <Route path="/productos" element={
+            } />
+
+            <Route path="/usuarios" element={
               <ProtectedRoute>
-              <ProductosPage />
+                <Usuarios />
               </ProtectedRoute>
-          } />
-          <Route path="/nuevo-producto" element={
+            } />
+
+            <Route path="/alta-usuario" element={
               <ProtectedRoute>
-              <NuevoProducto />
+                <AltaUsuario />
               </ProtectedRoute>
-          } />
-          {/* Ruta de fallback */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Suspense>
-    </Router>
+            } />
+
+            <Route path="/alta-cobrador" element={
+              <ProtectedRoute>
+                <AltaCobrador />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/productos" element={
+              <ProtectedRoute>
+                <ProductosPage />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/nuevo-producto" element={
+              <ProtectedRoute>
+                <NuevoProducto />
+              </ProtectedRoute>
+            } />
+            <Route path="/pagosHoyGrid" element={
+              <ProtectedRoute>
+                <PagosDelDia />
+              </ProtectedRoute>
+            } />
+
+            {/* Ruta de fallback */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </Router>
+      </PagosHoyProvider>
+    </ClientProvider>  // Cierra el envoltorio de ClientProvider
   );
 };
 

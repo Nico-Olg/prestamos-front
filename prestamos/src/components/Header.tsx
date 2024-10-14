@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import '../styles/Header.css';
 import logo from '../assets/logo_plan_cor.png'; 
+
+import AltaCliente from '../pages/AltaCliente';
 
 // Definir los tipos de las props
 interface HeaderProps {
@@ -11,9 +13,14 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ title }) => {
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
+  const [showDropdown, setShowDropdown] = useState<boolean>(false); // Estado para manejar el menú desplegable
 
   const handleLogoClick = () => {
     navigate('/clientes');
+  };
+
+  const handlePanelClick = () => {
+    setShowDropdown(!showDropdown); // Alternar entre mostrar u ocultar el menú
   };
 
   useEffect(() => {
@@ -23,6 +30,20 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
     return () => clearInterval(timer); // Limpiar el intervalo cuando el componente se desmonta
   }, []);
 
+  useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.control_panel')) {
+      setShowDropdown(false);
+    }
+  };
+  document.addEventListener('mousedown', handleClickOutside);
+  return () => {
+    document.removeEventListener('mousedown', handleClickOutside);
+  };
+}, []);
+
+
   const formatTime = (date: Date): string => {
     return date.toLocaleTimeString('es-ES', {
       hour: '2-digit',
@@ -31,15 +52,15 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
     });
   };
 
- const formatDay = (date: Date): string => {
-  const options: Intl.DateTimeFormatOptions = {
-    weekday: 'long',  // 'long' es un valor específico que espera TypeScript
-    month: 'long',    // 'long' es un valor específico que espera TypeScript
-    day: 'numeric',   // 'numeric' es un valor específico que espera TypeScript
-    year: 'numeric',  // 'numeric' es un valor específico que espera TypeScript
+  const formatDay = (date: Date): string => {
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: 'long',  // 'long' es un valor específico que espera TypeScript
+      month: 'long',    // 'long' es un valor específico que espera TypeScript
+      day: 'numeric',   // 'numeric' es un valor específico que espera TypeScript
+      year: 'numeric',  // 'numeric' es un valor específico que espera TypeScript
+    };
+    return date.toLocaleDateString('es-ES', options);
   };
-  return date.toLocaleDateString('es-ES', options);
-};
 
   const isDayTime = (date: Date): boolean => {
     const hour = date.getHours();
@@ -52,6 +73,22 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
         <img src={logo} alt="Logo" />
       </div>
       <h1 className="header__title">{title}</h1>
+      <div className='control_panel'>
+        <button className="setting-btn" onClick={handlePanelClick}>
+          <span className="bar bar1"></span>
+          <span className="bar bar2"></span>
+          <span className="bar bar1"></span>
+        </button>
+        {showDropdown && (
+          <div className="dropdown-menu">
+            <ul>
+              <button  onClick={() => navigate('/alta-cliente', { state: { isEditMode: true } })} >Editar Datos de Cliente</button>
+              <li>Opción 2</li>
+              <li>Opción 3</li>
+            </ul>
+          </div>
+        )}
+      </div>
       <div className="header__datetime">
         <div className={`card ${isDayTime(currentTime) ? 'day-card' : 'night-card'}`}>
           <p className="time-text">

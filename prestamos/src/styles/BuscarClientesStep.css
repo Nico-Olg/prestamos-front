@@ -1,0 +1,22 @@
+/* src/styles/CrearPrestamo.css */
+.suggestions-list {
+  position: absolute;
+  background: white;
+  border: 1px solid #ccc;
+  width: 100%;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 10;
+  list-style: none;
+  padding-left: 0;
+  margin-top: 5px;
+}
+
+.suggestions-list li {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.suggestions-list li:hover {
+  background-color: #f0f0f0;
+}

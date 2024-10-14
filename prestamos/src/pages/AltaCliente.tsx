@@ -4,10 +4,10 @@ import Sidebar from '../components/Sidebar';
 import Barrios from '../utils/Barrios_Rubros';
 import '../styles/AltaCliente.css';
 import { altaCliente } from '../apis/postApi';
-import { useNavigate } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify'; // Importa react-toastify
-import 'react-toastify/dist/ReactToastify.css'; // Importa los estilos de toastify
-import { getCobradores } from '../apis/getApi';
+import { getAllClients, getCobradores } from '../apis/getApi';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface ClienteData {
   apellidoYnombre: string;
@@ -22,21 +22,26 @@ interface ClienteData {
   rubro: string;
   tel2?: string;
   socio?: string;
-  cobrador :{
-    id: number; 
-  }
+  cobrador: {
+    id: number;
+  };
 }
-
 interface Cobrador {
   id: number;
   nombreyApellido: string;
 }
 
 const AltaCliente: React.FC = () => {
+  const location = useLocation();
+  const isEditMode = location.state?.isEditMode || false;
   const [barrios, setBarrios] = useState<string[]>([]);
   const [rubros, setRubros] = useState<string[]>([]);
-  const [cobradores, setCobradores] = useState<Cobrador[]>([]); // Estado para los cobradores
-  const navigate = useNavigate(); 
+  const [clientesList, setClientesList] = useState<ClienteData[]>([]); // Estado para la lista de clientes
+  const [cobradores, setCobradores] = useState<Cobrador[]>([]);
+  const [selectedCliente, setSelectedCliente] = useState<ClienteData | null>(null);
+   const [filteredClientes, setFilteredClientes] = useState<ClienteData[]>([]);
+  const [nombreBusqueda, setNombreBusqueda] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const barriosInstance = new Barrios();
@@ -46,15 +51,50 @@ const AltaCliente: React.FC = () => {
     // Llamada para obtener los cobradores desde la API
     const fetchCobradores = async () => {
       try {
-        const cobradoresData = await getCobradores(); // Obtener los cobradores
-        setCobradores(cobradoresData); // Actualizar el estado con los cobradores
+        const cobradoresData = await getCobradores();
+        setCobradores(cobradoresData);
       } catch (error) {
         console.error('Error fetching cobradores:', error);
       }
     };
 
     fetchCobradores();
-  }, []);
+
+    // Si está en modo edición, obtener la lista de clientes
+    if (isEditMode) {
+      const fetchClientes = async () => {
+        try {
+          const clientesData = await getAllClients(); // Llamada al endpoint para obtener clientes
+          setClientesList(clientesData);
+        } catch (error) {
+          console.error('Error fetching clientes:', error);
+        }
+      };
+
+      fetchClientes();
+    }
+  }, [isEditMode]);
+
+   // Filtrar clientes basados en lo que escribe el usuario en el campo "Nombre"
+  const handleNombreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNombreBusqueda(value);
+
+    if (value) {
+      const filtered = clientesList.filter((cliente) =>
+        cliente.apellidoYnombre.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredClientes(filtered);
+    } else {
+      setFilteredClientes([]);
+    }
+  };
+
+    const handleClienteSelect = (cliente: ClienteData) => {
+    setSelectedCliente(cliente);
+    setNombreBusqueda(cliente.apellidoYnombre); // Asignar el nombre seleccionado al campo de búsqueda
+    setFilteredClientes([]); // Ocultar las sugerencias
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -73,46 +113,119 @@ const AltaCliente: React.FC = () => {
       socio: formData.get('socio') as string,
       barrio_comercial: '',
       cobrador: { id: Number(formData.get('cobrador')) },
-     
     };
 
     try {
-      await altaCliente(clienteData);
-      toast.success('Cliente creado con éxito!');
+      if (isEditMode) {
+        toast.success('Datos del cliente actualizados con éxito!');
+      } else {
+        await altaCliente(clienteData);
+        toast.success('Cliente creado con éxito!');
+      }
       setTimeout(() => {
-        navigate('/clientes'); 
-      }, 3000); 
+        navigate('/clientes');
+      }, 3000);
     } catch (error: any) {
-      toast.error(error.message); 
+      toast.error(error.message);
     }
   };
+  
 
-  return (
+return (
     <div className="alta-cliente-page">
-      <Header title="Alta Cliente" />
+      <Header title={isEditMode ? 'Editar Cliente' : 'Alta Cliente'} />
       <div className="content">
         <Sidebar />
         <div className="form-container">
           <form onSubmit={handleSubmit}>
-            <div className="form-group nombre">
-              <label htmlFor="nombre">Apellido y Nombre</label>
-              <input type="text" id="nombre" name="nombre" required />
-            </div>
+            {isEditMode && (
+              <div className="form-group nombre" style={{ position: 'relative' }}>
+  <label htmlFor="nombre">Apellido y Nombre</label>
+  <input
+    type="text"
+    id="nombre"
+    name="nombre"
+    required
+    value={nombreBusqueda}
+    onChange={handleNombreChange}
+  />
+  {filteredClientes.length > 0 && (
+    <ul className="suggestions-list">
+      {filteredClientes.map((cliente) => (
+        <li key={cliente.dni} onClick={() => handleClienteSelect(cliente)}>
+          {cliente.apellidoYnombre} - {cliente.dni}
+        </li>
+      ))}
+    </ul>
+  )}
+</div>
+            )}
+
             <div className="form-group dni">
               <label htmlFor="dni">DNI</label>
-              <input type="number" id="dni" name="dni" required />
+              <input
+                type="number"
+                id="dni"
+                name="dni"
+                required
+                value={selectedCliente?.dni || ''}
+                onChange={(e) =>
+                  setSelectedCliente({
+                    ...selectedCliente!,
+                    dni: Number(e.target.value),
+                  })
+                }
+              />
             </div>
+
             <div className="form-group fecha">
               <label htmlFor="fecha_nac">Fecha de Nacimiento</label>
-              <input type="date" id="fecha_nac" name="fecha_nac" required />
+              <input
+                type="date"
+                id="fecha_nac"
+                name="fecha_nac"
+                required
+                value={selectedCliente?.fechaNac || ''}
+                onChange={(e) =>
+                  setSelectedCliente({
+                    ...selectedCliente!,
+                    fechaNac: e.target.value,
+                  })
+                }
+              />
             </div>
+
             <div className="form-group domcom">
               <label htmlFor="direccion_comercial">Domicilio Comercial</label>
-              <input type="text" id="direccion_comercial" name="direccion_comercial" required />
+              <input
+                type="text"
+                id="direccion_comercial"
+                name="direccion_comercial"
+                required
+                value={selectedCliente?.direccionComercial || ''}
+                onChange={(e) =>
+                  setSelectedCliente({
+                    ...selectedCliente!,
+                    direccionComercial: e.target.value,
+                  })
+                }
+              />
             </div>
+
             <div className="form-group barrio">
               <label htmlFor="barrio_comercial">Barrio Comercial</label>
-              <select id="barrio_comercial" name="barrio_comercial" required>
+              <select
+                id="barrio_comercial"
+                name="barrio_comercial"
+                required
+                value={selectedCliente?.barrioComercial || ''}
+                onChange={(e) =>
+                  setSelectedCliente({
+                    ...selectedCliente!,
+                    barrioComercial: e.target.value,
+                  })
+                }
+              >
                 <option value="">Seleccione Barrio</option>
                 {barrios.map((barrio, index) => (
                   <option key={index} value={barrio}>
@@ -121,13 +234,31 @@ const AltaCliente: React.FC = () => {
                 ))}
               </select>
             </div>
+
             <div className="form-group dompart">
               <label htmlFor="direccion_particular">Domicilio Particular</label>
-              <input type="text" id="direccion_particular" name="direccion_particular" required />
+              <input
+                type="text"
+                id="direccion_particular"
+                name="direccion_particular"
+                required
+                value={selectedCliente?.direccionParticular || ''}
+                onChange={(e) =>
+                  setSelectedCliente({
+                    ...selectedCliente!,
+                    direccionParticular: e.target.value,
+                  })
+                }
+              />
             </div>
-            <div className="form-group barrio">
-              <label htmlFor="barrio_particular">Barrio Particular</label>
-              <select id="barrio_particular" name="barrio_particular" required>
+              <div className="form-group barrio">
+              <label htmlFor="barrio_comercial">Barrio Comercial</label>
+              <select
+                id="barrio_comercial"
+                name="barrio_comercial"
+                required
+                value={selectedCliente?.barrioComercial || ''}
+              >
                 <option value="">Seleccione Barrio</option>
                 {barrios.map((barrio, index) => (
                   <option key={index} value={barrio}>
@@ -171,7 +302,7 @@ const AltaCliente: React.FC = () => {
               </select>
             </div>
             <button type="submit" className="btn">
-              Guardar
+              {isEditMode ? 'Guardar Cambios' : 'Guardar'}
             </button>
           </form>
         </div>

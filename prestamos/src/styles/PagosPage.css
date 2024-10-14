@@ -10,30 +10,40 @@
   position: relative;
 }
 
-.back-button {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background-color: #004dff;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
+
+button.back-button {
+  position: absolute;
+  top: 20px;
+  left: 40vh;
   display: flex;
-  justify-content: center;
+  height: 3em;
+  width: 120px;
   align-items: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  justify-content: center;
+  background-color: #eeeeee4b;
+  border-radius: 5px;
+  letter-spacing: 1px;
+  transition: all 0.2s linear;
   cursor: pointer;
-  transition: all 0.3s ease;
+  border: none;
+  background: #888a8b;
 }
 
-.back-button:hover {
-  background-color: #003bb5; /* Un color ligeramente más oscuro en hover */
+button.back-button > svg {
+  margin-right: 5px;
+  margin-left: 5px;
+  font-size: 20px;
+  transition: all 0.4s ease-in;
 }
 
-.back-button svg {
-  fill: white;
-  width: 24px;
-  height: 24px;
+button.back-button:hover > svg {
+  font-size: 1.2em;
+  transform: translateX(-5px);
 }
+
+button.back-button:hover {
+  box-shadow: 9px 9px 33px #d1d1d1, -9px -9px 33px #ffffff;
+  transform: translateY(-2px);
+}
+
+

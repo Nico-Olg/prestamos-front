@@ -4,25 +4,25 @@ import '../styles/PagosGrid.css';
 
 interface Pago {
   id: number;
+  fechaPago: string | null;
+  nombreProducto: string;
+  descripcion: string | null;
   monto: number;
-  fechaPago: string;
-  atrasado: boolean;
   formaPago: string;
-  producto: string | null;
-  billetes: {};
+  montoAbonado: number | null;
   nroCuota: number;
 }
 
 interface PagosGridProps {
   pagos: Pago[];
-  handlePagoCuota: (pagoId: number, atrasado: boolean) => void;
+  handlePagoCuota: (pagoId: number, monto: number) => void;
 }
 
 const PagosGrid: React.FC<PagosGridProps> = ({ pagos, handlePagoCuota }) => {
   const columns: TableColumn<Pago>[] = [
     {
       name: 'Nro. Cuota',
-      selector: (row) => row.nroCuota,
+      selector: (row) => row.nroCuota.toString(),
       sortable: true,
     },
     {
@@ -32,20 +32,27 @@ const PagosGrid: React.FC<PagosGridProps> = ({ pagos, handlePagoCuota }) => {
     },
     {
       name: 'Fecha de Pago',
-      selector: (row) => row.fechaPago,
+      selector: (row) => row.montoAbonado ? new Date(row.fechaPago || '').toLocaleDateString() : 'No pagado',
       sortable: true,
     },
     {
       name: 'Acción',
-      cell: (row) => (
-        <button
-          className="btn btn-primary"
-          onClick={() => handlePagoCuota(row.id, row.atrasado)}
-        >
-          Pagar
-        </button>
-      ),
+      cell: (row) =>
+        row.montoAbonado ? (
+          <span className="text-success">Cuota Pagada</span>
+        ) : (
+          <button
+            className="btn btn-primary"
+            onClick={() => handlePagoCuota(row.id, row.monto)}
+          >
+            Pagar
+          </button>
+        ),
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
     },
+    
   ];
 
   return (
@@ -54,9 +61,8 @@ const PagosGrid: React.FC<PagosGridProps> = ({ pagos, handlePagoCuota }) => {
         columns={columns}
         data={pagos}
         pagination
-        paginationPerPage={10} // Configura la cantidad de filas por página
         highlightOnHover
-        customStyles={customStyles} // Aplica los estilos personalizados
+        paginationPerPage={10}
         paginationComponentOptions={{
           rowsPerPageText: 'Filas por página:',
           rangeSeparatorText: 'de',
@@ -67,23 +73,3 @@ const PagosGrid: React.FC<PagosGridProps> = ({ pagos, handlePagoCuota }) => {
 };
 
 export default PagosGrid;
-
-const customStyles = {
-  rows: {
-    style: {
-      minHeight: '50px', // Define la altura mínima de las filas
-    },
-  },
-  headCells: {
-    style: {
-      backgroundColor: '#848b91', // Color del encabezado
-      color: '#fff',
-      fontWeight: 'bold',
-    },
-  },
-  cells: {
-    style: {
-      padding: '10px', // Padding para las celdas
-    },
-  },
-};

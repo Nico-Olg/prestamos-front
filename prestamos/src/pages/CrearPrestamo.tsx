@@ -22,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 import { getClientebyDni, crearPrestamo, modificarCuotas } from "../apis/postApi";
 import { getProductos } from "../apis/getApi";
 import dayjs from "dayjs";
+import BuscarClienteStep from "../components/steps/BuscarClienteStep";
 
 interface ProductoData {
   id: number;
@@ -35,14 +36,38 @@ interface FormikStepProps {
   children: React.ReactNode;
 }
 
+// Función para contar los domingos entre dos fechas
+const contarDomingos = (fechaInicio: dayjs.Dayjs, fechaFin: dayjs.Dayjs) => {
+  let domingos = 0;
+  let fechaActual = fechaInicio;
+
+  while (fechaActual.isBefore(fechaFin)) {
+    // Si es domingo (0 = Domingo en dayjs), sumamos un día extra
+    if (fechaActual.day() === 0) {
+      domingos += 1;
+    }
+    fechaActual = fechaActual.add(1, "day");
+  }
+
+  return domingos;
+};
+
 // Actualiza el valor de "fechaFin" cuando se cambia la fecha de inicio o los días
 function FechaFinUpdater() {
   const { values, setFieldValue } = useFormikContext<FormikValues>();
 
   useEffect(() => {
     if (values.fechaInicio && values.dias) {
-      const fechaFin = dayjs(values.fechaInicio).add(values.dias, "day").format("YYYY-MM-DD");
-      setFieldValue("fechaFin", fechaFin);
+      const fechaInicio = dayjs(values.fechaInicio);
+      const fechaFinInicial = fechaInicio.add(values.dias, "day");
+
+      // Contar los domingos entre la fecha de inicio y la fecha de fin inicial
+      const domingos = contarDomingos(fechaInicio, fechaFinInicial);
+
+      // Sumar los domingos adicionales a la fecha final
+      const fechaFinFinal = fechaFinInicial.add(domingos, "day").format("YYYY-MM-DD");
+
+      setFieldValue("fechaFin", fechaFinFinal);
     }
   }, [values.fechaInicio, values.dias, setFieldValue]);
 
@@ -285,7 +310,7 @@ export default function CrearPrestamo() {
                 }}
               >
                 <FormikStep label="Buscar Cliente">
-                  <FormField name="dni" label="DNI del Cliente" />
+                   <BuscarClienteStep />
                 </FormikStep>
                 <FormikStep label="Datos del Cliente">
                   <FormField name="dni" label="DNI del Cliente" />
@@ -345,7 +370,6 @@ export default function CrearPrestamo() {
                   <FormField name="dias" label="Cantidad de Días del Préstamo" type="number" />
                    <FormField name="fechaInicio" label="Fecha Inicio" type="date" />
                   <FormField name="fechaFin" label="Fecha Fin" />
-                  <Field name="pagoEnEfectivo" type="checkbox" component={CheckboxWithLabel} Label={{ label: "Paga en Efectivo" }} />
                 </FormikStep>
                 <FormikStep label="Resumen del Préstamo">
                   <FormField name="dni" label="DNI del Cliente" disabled />
