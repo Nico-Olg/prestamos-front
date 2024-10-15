@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import '../styles/Header.css';
 import logo from '../assets/logo_plan_cor.png'; 
 
-import AltaCliente from '../pages/AltaCliente';
 
 // Definir los tipos de las props
 interface HeaderProps {

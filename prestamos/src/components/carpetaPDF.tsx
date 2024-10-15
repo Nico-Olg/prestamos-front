@@ -10,7 +10,7 @@ export const generarPDF = (cliente: Cliente, prestamo: Prestamo) => {
   const nombreCompleto = cliente.apellidoYnombre ?? "Sin nombre";
   const direccion = cliente.direccionComercial ?? "Sin dirección";
   const barrio = cliente.barrioComercial ?? "Sin barrio";
-  const codigo = prestamo.codigo?.toString() ?? "Sin código";
+  // const codigo = prestamo.codigo?.toString() ?? "Sin código";
   const cuotas = prestamo.pagos.length ?? 0;
   const montoCuota = prestamo.montoCuota ?? 0;
 

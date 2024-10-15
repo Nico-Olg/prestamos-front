@@ -30,11 +30,7 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ prestamos, cliente }) => 
 
   const handleCarpetClicked = (prestamo: Prestamo) => {
     // Generamos el PDF con los datos del cliente y del préstamo específico
-    const clienteConPrestamo = {
-      nombreCompleto: cliente.apellidoYnombre,
-      direccion: cliente.direccionComercial,
-      barrio: cliente.barrioComercial,
-    };
+    
     generarPDF(cliente, prestamo); // Pasamos el préstamo seleccionado
   };
 
@@ -52,7 +48,7 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ prestamos, cliente }) => 
 
   const filterData = (name: string, dni: string) => {
     const filteredData = prestamos.filter(
-      (prestamo) =>
+      () =>
         cliente.apellidoYnombre.toLowerCase().includes(name.toLowerCase()) &&
         (dni === "" || cliente.dni.toString().startsWith(dni))
     );

@@ -15,7 +15,7 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
-import { CheckboxWithLabel, TextField } from "formik-material-ui";
+import {  TextField } from "formik-material-ui";
 import * as Yup from "yup";
 import "../styles/CrearPrestamo.css";
 import { useNavigate } from "react-router-dom";

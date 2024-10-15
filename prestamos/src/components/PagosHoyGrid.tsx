@@ -6,7 +6,6 @@ import { usePagosHoyContext } from "../provider/PagosHoyContext"; // Importar el
 import "../styles/ClientesGrid.css";
 import { PagosHoy } from "../interfaces/PagosHoy"; // Importar la interfaz PagosHoy
 import jsPDF from "jspdf";
-import { ClientProvider } from "../provider/ClientContext";
 
 
 interface CobradorProp {
@@ -15,7 +14,7 @@ interface CobradorProp {
   nombreCobrador: string;
 }
 
-const PagosHoyGrid: React.FC<CobradorProp> = ({ cobradorId, nombreCobrador }) => {
+const PagosHoyGrid: React.FC<CobradorProp> = ({ nombreCobrador }) => {
   const { pagosHoy } = usePagosHoyContext(); // Usar el contexto de pagos del día
   const [selectedPago, setSelectedPago] = useState<PagosHoy | null>(null);
   const [modalIsOpen, setModalIsOpen] = useState(false);

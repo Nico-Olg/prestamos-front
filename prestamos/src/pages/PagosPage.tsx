@@ -6,8 +6,6 @@ import PagosGrid from '../components/PagosGrid';
 import '../styles/PagosPage.css';
 import { getPagosPorPrestamo, registrarPago } from '../apis/postApi';
 import Swal from 'sweetalert2';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { IconButton } from '@mui/material';
 
 interface Pago {
   id: number;

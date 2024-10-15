@@ -13,7 +13,7 @@ const PagosDelDiaPage: React.FC = () => {
       <Header title="Pagos del dia " />
       <div className="content">
         <Sidebar />
-        <PagosHoyGrid />
+        <PagosHoyGrid cobradorId={0} nombreCobrador={''} />
       </div>
     </div>
   );
