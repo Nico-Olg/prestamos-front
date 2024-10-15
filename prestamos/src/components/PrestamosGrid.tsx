@@ -55,21 +55,22 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ prestamos, cliente }) => 
     setFilteredPrestamos(filteredData);
   };
 
-  const ProgressBar: React.FC<{ percentage: number }> = ({ percentage }) => {
-    return (
-      <div className="progress-bar-container">
-        <div className="progress-bar" style={{ width: `${percentage}%` }}>
-          {percentage}%
-        </div>
-      </div>
-    );
-  };
+  // const ProgressBar: React.FC<{ percentage: number }> = ({ percentage }) => {
+  //   return (
+  //     <div className="progress-bar-container">
+  //       <div className="progress-bar" style={{ width: `${percentage}%` }}>
+  //         {percentage}%
+  //       </div>
+  //     </div>
+  //   );
+  // };
 
   const columns: TableColumn<Prestamo>[] = [
     {
       name: "Nombre",
       selector: () => cliente.apellidoYnombre,
       sortable: true,
+      width: "200px",
     },
     {
       name: "DNI",
@@ -80,6 +81,7 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ prestamos, cliente }) => 
       name: "Prestamo Nro",
       selector: (row) => row.id,
       sortable: true,
+      width: "150px",
     },
     {
       name: "Producto",
@@ -91,15 +93,12 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ prestamos, cliente }) => 
       selector: (row) => `$ ${row.montoCuota ? row.montoCuota.toFixed(2) : "0.00"}`,
       sortable: true,
     },
-    {
-      name: "Monto Restante",
-      selector: (row) => `$ ${row.montoRestante ? row.montoRestante.toFixed(2) : "0.00"}`,
-      sortable: true,
-    },
+   
     {
       name: "Monto Prestamo",
       selector: (row) => `$ ${row.total ? row.total.toFixed(2) : "0.00"}`,
       sortable: true,
+      width: "150px",
     },
     {
       name: "Tipo de Plan",
@@ -110,11 +109,13 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ prestamos, cliente }) => 
       name: "Fecha de Inicio",
       selector: (row) => row.fechaInicio.toString(),
       sortable: true,
+      width: "150px",
     },
     {
       name: "Fecha de Finalización",
       selector: (row) => row.fechaFinalizacion.toString(),
       sortable: true,
+      width: "150px",
     },
     {
       name: "Al Día",
@@ -126,14 +127,13 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ prestamos, cliente }) => 
       selector: (row) => row.periodo_pago,
       sortable: true,
     },
-    {
-      name: "Avance",
-      cell: (row) => {
-        const percentage = Math.ceil((row.cuotasPagadas * row.montoCuota * 100) / row.total);
-        return <ProgressBar percentage={percentage} />;
-      },
+     {
+      name: "Monto Restante",
+      selector: (row) => `$ ${row.montoRestante ? row.montoRestante.toFixed(2) : "0.00"}`,
       sortable: true,
+      width: "150px",
     },
+    
     {
       name: "Acciones",
       cell: (row) => (

@@ -19,21 +19,22 @@ interface PagosGridProps {
 }
 
 const PagosGrid: React.FC<PagosGridProps> = ({ pagos, handlePagoCuota }) => {
+  pagos.sort((a, b) => a.nroCuota - b.nroCuota);
   const columns: TableColumn<Pago>[] = [
     {
       name: 'Nro. Cuota',
       selector: (row) => row.nroCuota.toString(),
-      sortable: true,
+      
     },
     {
       name: 'Monto',
       selector: (row) => `$${row.monto.toFixed(2)}`,
-      sortable: true,
+      
     },
     {
       name: 'Fecha de Pago',
       selector: (row) => row.montoAbonado ? new Date(row.fechaPago || '').toLocaleDateString() : 'No pagado',
-      sortable: true,
+    
     },
     {
       name: 'Acción',
