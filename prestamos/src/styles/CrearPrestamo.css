@@ -7,15 +7,37 @@
 .content {
   display: flex;
   flex: 1;
-  overflow-y: auto;
+  overflow-y: auto; /* Permite el scroll vertical */
   position: relative;
+  justify-content: flex-start; /* Alinea todo el contenido en la parte superior */
 }
 
 .form-container {
   flex: 1;
-  display: contents;
-  justify-content: center; /* Centra horizontalmente */
-  align-items: center; /* Centra verticalmente */
+  display: flex; /* Cambiado a flex */
+  flex-direction: column; /* Asegura la disposición en columna */
+  justify-content: flex-start; /* Mantiene el contenido en la parte superior */
+  align-items: center; /* Centra horizontalmente */
+  padding: 20px;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  min-height: 100vh; /* Asegura que ocupe toda la altura de la pantalla */
+}
+
+.MuiCard-root {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* Mantiene el contenido del Card en la parte superior */
+  width: 100%; /* Asegura que el Card ocupe todo el ancho disponible */
+}
+
+.MuiStep-root {
+  width: 100%; /* Asegura que cada paso ocupe todo el espacio disponible */
+}
+
+.MuiStepLabel-root {
+  text-align: center; /* Centra el texto de los pasos */
 }
 
 .btn {
@@ -29,6 +51,28 @@
   cursor: pointer;
   transition: all 0.3s ease;
 }
+
 .btn:hover {
   background-color: #0056b3;
+}
+
+/* Asegura que haya un scroll en pantallas más pequeñas */
+@media (max-width: 1080px) {
+  .crear-prestamo-page {
+    height: auto; /* Permite que la altura se ajuste */
+  }
+
+  .content {
+    overflow-y: scroll; /* Habilita el scroll vertical */
+    max-height: 100vh; /* Limita la altura al 100% de la ventana */
+  }
+
+  .form-container {
+    padding: 10px; /* Ajusta el padding para pantallas más pequeñas */
+    max-width: 100%; /* Asegura que ocupe todo el ancho disponible */
+  }
+
+  .MuiCard-root {
+    margin: 0 10px; /* Ajusta el margen para mantener la vista centrada */
+  }
 }
