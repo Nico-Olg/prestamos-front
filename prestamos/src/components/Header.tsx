@@ -32,7 +32,8 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
   useEffect(() => {
   const handleClickOutside = (event: MouseEvent) => {
     const target = event.target as HTMLElement;
-    if (!target.closest('.control_panel')) {
+    // Solo cierra el menú si está abierto y se hace clic fuera
+    if (showDropdown && !target.closest('.control_panel')) {
       setShowDropdown(false);
     }
   };
@@ -40,7 +41,8 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
   return () => {
     document.removeEventListener('mousedown', handleClickOutside);
   };
-}, []);
+}, [showDropdown]); // Añade showDropdown como dependencia
+
 
 
   const formatTime = (date: Date): string => {

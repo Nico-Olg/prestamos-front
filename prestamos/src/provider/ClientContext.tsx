@@ -1,12 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { getAllClients } from '../apis/getApi';
-import { Cliente } from '../interfaces/Cliente';  // Importa la interfaz
+import { Cliente, Prestamo } from '../interfaces/Cliente';  // Importa las interfaces
 
 // Define el contexto
 interface ClientContextProps {
     clientes: Cliente[];
     setClientes: React.Dispatch<React.SetStateAction<Cliente[]>>;
+    prestamos: Prestamo[];
+    setPrestamos: React.Dispatch<React.SetStateAction<Prestamo[]>>;
     refreshClientes: () => void;
+    refreshPrestamos: (dni: number) => void;
 }
 
 // Tipo para las props del proveedor que incluye children
@@ -16,7 +19,7 @@ interface ClientProviderProps {
 
 const ClientContext = createContext<ClientContextProps | undefined>(undefined);
 
-// Hook para usar el contexto de clientes
+// Hook para usar el contexto de clientes y préstamos
 export const useClientContext = () => {
     const context = useContext(ClientContext);
     if (!context) {
@@ -28,6 +31,7 @@ export const useClientContext = () => {
 // Proveedor del contexto
 export const ClientProvider: React.FC<ClientProviderProps> = ({ children }) => {
     const [clientes, setClientes] = useState<Cliente[]>([]);
+    const [prestamos, setPrestamos] = useState<Prestamo[]>([]);
 
     // Función para refrescar clientes (ej. luego de crear o editar)
     const refreshClientes = async () => {
@@ -39,13 +43,27 @@ export const ClientProvider: React.FC<ClientProviderProps> = ({ children }) => {
         }
     };
 
+    // Función para refrescar los préstamos de un cliente por DNI
+    const refreshPrestamos = async (dni: number) => {
+        try {
+            const cliente = clientes.find((c) => c.dni === dni);
+            if (cliente) {
+                setPrestamos(cliente.prestamo); // Almacena los préstamos del cliente seleccionado
+            } else {
+                setPrestamos([]);
+            }
+        } catch (error) {
+            console.error('Error fetching prestamos:', error);
+        }
+    };
+
     // Obtener clientes en el login o primera carga
     useEffect(() => {
         refreshClientes();
     }, []);
 
     return (
-        <ClientContext.Provider value={{ clientes, setClientes, refreshClientes }}>
+        <ClientContext.Provider value={{ clientes, setClientes, prestamos, setPrestamos, refreshClientes, refreshPrestamos }}>
             {children}
         </ClientContext.Provider>
     );

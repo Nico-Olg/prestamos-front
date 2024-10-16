@@ -6,7 +6,7 @@ import { Cliente } from "../interfaces/Cliente"; // Importa la interfaz desde el
 import "../styles/ClientesGrid.css";
 
 const ClientesGrid: React.FC = () => {
-  const { clientes } = useClientContext(); // Obtener clientes desde el contexto
+  const { clientes, refreshPrestamos } = useClientContext(); // Obtener clientes y función para refrescar préstamos desde el contexto
   const [filteredClientes, setFilteredClientes] = useState<Cliente[]>(clientes);
   const [searchName, setSearchName] = useState<string>("");
   const [searchDNI, setSearchDNI] = useState<string>("");
@@ -17,7 +17,10 @@ const ClientesGrid: React.FC = () => {
   }, [clientes]);
 
   const handleRowClicked = (cliente: Cliente) => {
-    navigate("/prestamos", { state: { dni: cliente.dni } }); // Navegar a PrestamosPage pasando el DNI del cliente
+    console.log("Cliente seleccionado:", cliente);
+    refreshPrestamos(cliente.dni); // Refresca los préstamos del cliente seleccionado
+    console.log("Cliente seleccionado:", cliente);
+    navigate("/prestamos", { state: { cliente } }); // Navegar a PrestamosPage pasando el DNI del cliente
   };
 
   const handleSearchName = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,7 +38,7 @@ const ClientesGrid: React.FC = () => {
   const filterData = (name: string, dni: string) => {
     const filteredData = clientes.filter(
       (cliente) =>
-        cliente.apellidoYnombre.toLowerCase().includes(name.toLowerCase()) &&
+        (cliente.apellidoYnombre && cliente.apellidoYnombre.toLowerCase().includes(name.toLowerCase())) &&
         (dni === "" || cliente.dni.toString().startsWith(dni))
     );
     setFilteredClientes(filteredData);

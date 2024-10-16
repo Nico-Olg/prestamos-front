@@ -13,7 +13,8 @@ export interface Cliente {
     fechaAlta:           Date;
     rubro:               string;
     orden?:              number | null;
-    prestamos:           Prestamo[];
+    prestamo:           Prestamo[];
+    cobrador:            Cobrador;
    
 }
 
@@ -27,6 +28,14 @@ export interface Pago {
     descripcion?:   string | null;
     nroCuota:       number;
     montoAbonado:   number;
+}
+export interface Cobrador {
+    id:   number;
+    nombreyApellido: string;
+    dni:  number;
+    zona: number;
+    tel:  string;
+
 }
 export enum NombreProducto {
     Efectivo = "Efectivo",
