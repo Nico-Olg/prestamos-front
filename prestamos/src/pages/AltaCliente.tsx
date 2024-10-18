@@ -83,30 +83,29 @@ const AltaCliente: React.FC = () => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const clienteData: Cliente = {
-      id: formData.get("id") ? Number(formData.get("id")) : 0,
-      apellidoYnombre: formData.get("nombre") as string,
-      barrioComercial: formData.get("barrio_comercial") as string,
-      
-      dni: Number(formData.get("dni")),
-      barrioParticular: formData.get("barrio_particular") as string,
-      tel: formData.get("tel") as string,
-      direccionComercial: formData.get("direccion_comercial") as string,
-      direccionParticular: formData.get("direccion_particular") as string,
-      fechaNac: new Date(formData.get("fecha_nac") as string),
-      rubro: formData.get("rubro") as string,
-      tel2: formData.get("tel2") ? (formData.get("tel2") as string) : undefined,
-      socio_conyugue: formData.get("socio") as string,
-      fechaAlta: new Date(),  
+  id: formData.get("id") ? Number(formData.get("id")) : 0,
+  apellidoYnombre: formData.get("nombre") as string,
+  barrioComercial: formData.get("barrio_comercial") as string,
+  dni: Number(formData.get("dni")),
+  barrioParticular: formData.get("barrio_particular") as string,
+  tel: formData.get("tel") as string,
+  direccionComercial: formData.get("direccion_comercial") as string,
+  direccionParticular: formData.get("direccion_particular") as string,
+  fechaNac: new Date(formData.get("fecha_nac") as string),
+  rubro: formData.get("rubro") as string,
+  tel2: formData.get("tel2") ? (formData.get("tel2") as string) : undefined,
+  socio_conyugue: formData.get("socio") as string,
+  fechaAlta: new Date(),
+  cobrador: {
+    id: Number(formData.get("id")),
+    nombreyApellido: formData.get("nombrey_apellido") as string,
+    dni: Number(formData.get("dni")),
+    zona: Number(formData.get("zona")),
+    tel: formData.get("tel") as string,
+  },
+  prestamo: []
+};
 
-      cobrador: {
-        id: Number(formData.get("id")),
-        nombreyApellido: formData.get("nombrey_apellido") as string,
-        dni: Number(formData.get("dni")),
-        zona: Number(formData.get("zona")),
-        tel: formData.get("tel") as string,
-      },
-      prestamo: []
-    };
 
     try {
       if (isEditMode) {
@@ -114,7 +113,7 @@ const AltaCliente: React.FC = () => {
       } else {
         await altaCliente({
           ...clienteData,
-          tel2: clienteData.tel2 || undefined
+          tel2: clienteData.tel2 || undefined,
         });
         toast.success("Cliente creado con éxito!");
       }

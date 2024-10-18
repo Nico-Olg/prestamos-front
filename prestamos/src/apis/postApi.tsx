@@ -1,5 +1,7 @@
 import axios from "axios";
 import API_BASE_URL from './config'; // Importa la URL base
+import { Cliente } from "../interfaces/Cliente";
+
 
 // Obtener el token JWT del localStorage
 function getAuthToken() {
@@ -175,25 +177,9 @@ export async function eliminarPrestamo(prestamoId: number) {
   }
 }
 
-interface ClienteData {
-  apellidoYnombre: string;
-  barrio_comercial: string;
-  dni: number;
-  barrioParticular: string;
-  tel: number;
-  direccionComercial: string;
-  direccionParticular: string;
-  fechaNac: string;
-  rubro: string;
-  tel2?: string;
-  socio?: string;
-  cobrador:{
-    id: number; 
-  } 
-}
 
 
-export async function altaCliente(clienteData: ClienteData) {
+export async function altaCliente(clienteData: Cliente) {
   try {
     const token = getAuthToken();
     const response = await axios.post(
@@ -215,6 +201,7 @@ export async function altaCliente(clienteData: ClienteData) {
     }
   }
 }
+
 
 export async function login(dni: string, password: string) {
   try {
@@ -363,7 +350,7 @@ export function modificarCuotas(  monto_cuota: number, prestamoId: number ) {
   }
 }
 
-export async function guardarOrdenClientes(cobradorId: number, clientes: ClienteData[]) {
+export async function guardarOrdenClientes(cobradorId: number, clientes: Cliente[]) {
   try {
     const token = getAuthToken();
     const response = await axios.post(

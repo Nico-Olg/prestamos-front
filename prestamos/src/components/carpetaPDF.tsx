@@ -76,7 +76,7 @@ export const generarPDF = (cliente: Cliente, prestamo: Prestamo) => {
   };
 
   // Generar la tabla de cuotas
-  const finalY = (doc as any).autoTable(tableOptions).finalY || textY + 40;
+  (doc as any).autoTable(tableOptions).finalY || textY + 40;
 
   // Manejar valores indefinidos o nulos en las siguientes líneas
   const saldo = prestamo.montoRestante !== undefined && prestamo.montoRestante !== null
