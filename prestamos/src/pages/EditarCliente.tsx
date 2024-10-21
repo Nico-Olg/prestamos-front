@@ -7,11 +7,10 @@ import { getAllClients, getCobradores } from "../apis/getApi";
 import { toast, ToastContainer } from "react-toastify";
 import { Cliente, Cobrador } from "../interfaces/Cliente";
 import "react-toastify/dist/ReactToastify.css";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { editarCliente } from "../apis/postApi";
 
 const EditarCliente: React.FC = () => {
-  const location = useLocation();
   const [barrios, setBarrios] = useState<string[]>([]);
   const [rubros, setRubros] = useState<string[]>([]);
   const [clientesList, setClientesList] = useState<Cliente[]>([]);
