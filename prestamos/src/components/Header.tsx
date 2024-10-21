@@ -83,7 +83,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
         {showDropdown && (
           <div className="dropdown-menu">
             <ul>
-              <button  onClick={() => navigate('/alta-cliente', { state: { isEditMode: true } })} >Editar Datos de Cliente</button>
+              <button  onClick={() => navigate('/editar-cliente')} >Editar Datos de Cliente</button>
               <li>Opción 2</li>
               <li>Opción 3</li>
             </ul>

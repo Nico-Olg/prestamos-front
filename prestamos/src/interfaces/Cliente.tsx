@@ -2,7 +2,7 @@ export interface Cliente {
     id:                  number;
     apellidoYnombre:     string;
     dni:                 number;
-    fechaNac:            Date;
+    fechaNac:            string;
     direccionComercial:  string;
     barrioComercial:     string;
     direccionParticular: string;
@@ -10,7 +10,7 @@ export interface Cliente {
     tel:                 string;
     tel2?:               string | null;
     socio_conyugue?:     string | null;
-    fechaAlta:           Date;
+    fechaAlta:           string;
     rubro:               string;
     orden?:              number | null;
     prestamo:           Prestamo[];
@@ -54,8 +54,8 @@ export interface Prestamo {
     dias:              number;
     montoCuota:        number;
     total:             number;
-    fechaInicio:       Date;
-    fechaFinalizacion: Date;
+    fechaInicio:       string;
+    fechaFinalizacion: string;
     cuotasPagadas:     number;
     montoRestante?:    number | null;
     activo:            boolean;

@@ -252,10 +252,10 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
           {/* Botones para generar PDF y Ver Cobranza del Día */}
           <div className="button-container">
             <button className="btn btn-primary" onClick={handleGeneratePDF}>
-              Generar PDF
+              Imprimir Clientes
             </button>
             <button className="btn btn-secondary" onClick={handleVerCobranza}>
-              Ver Cobranza del día
+              Cobranza del día
             </button>
           </div>
         </div>

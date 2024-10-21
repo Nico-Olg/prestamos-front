@@ -22,6 +22,7 @@ const AltaCobrador = lazy(() => import('./pages/AltaCobrador'));
 const ProductosPage = lazy(() => import('./pages/ProductosPage'));
 const NuevoProducto = lazy(() => import('./pages/NuevoProducto'));
 const PagosDelDia = lazy(() => import('./pages/PagosDelDiaPage'));
+const EditarCliente = lazy(() => import('./pages/EditarCliente'));
 
 // Componente de ruta protegida
 const ProtectedRoute: React.FC<{ children: JSX.Element }> = ({ children }) => {
@@ -130,6 +131,11 @@ const App: React.FC = () => {
             <Route path="/pagosHoyGrid" element={
               <ProtectedRoute>
                 <PagosDelDia />
+              </ProtectedRoute>
+            } />
+            <Route path="/editar-cliente" element={
+              <ProtectedRoute>
+                <EditarCliente />
               </ProtectedRoute>
             } />
 

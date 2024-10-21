@@ -176,10 +176,26 @@ export async function eliminarPrestamo(prestamoId: number) {
     }
   }
 }
+interface ClienteData {
+  apellidoYnombre: string;
+  barrio_comercial: string;
+  barrioComercial: string;
+  dni: number;
+  barrioParticular: string;
+  tel: string;
+  direccionComercial: string;
+  direccionParticular: string;
+  fechaNac: string;
+  rubro: string;
+  tel2?: string;
+  socio?: string;
+  cobrador :{
+    id: number; 
+  }
+}
 
 
-
-export async function altaCliente(clienteData: Cliente) {
+export async function altaCliente(clienteData: ClienteData) {
   try {
     const token = getAuthToken();
     const response = await axios.post(
@@ -369,6 +385,29 @@ export async function guardarOrdenClientes(cobradorId: number, clientes: Cliente
       throw new Error(`Error al guardar el orden de los clientes: ${error.response?.data}`);
     } else {
       throw new Error('Error desconocido al guardar el orden de los clientes');
+    }
+  }
+}
+
+export async function editarCliente(cliente: Cliente) {
+  try {
+    const token = getAuthToken();
+    const response = await axios.post(
+      `${API_BASE_URL}/clientes/editar-cliente`,
+      cliente,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`, // Agregar el token en el header
+        },
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Error al editar el cliente: ${error.response?.data}`);
+    } else {
+      throw new Error('Error desconocido al editar el cliente');
     }
   }
 }
