@@ -102,7 +102,7 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
 }) => {
   const [orderedClientes, setOrderedClientes] = useState<Cliente[]>(clientes);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(30); // El usuario puede modificarlo
   const navigate = useNavigate(); // Use navigate to redirect
 
   useEffect(() => {
@@ -167,6 +167,11 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
     setCurrentPage(page);
   };
 
+  const handleItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setItemsPerPage(Number(event.target.value));
+    setCurrentPage(1); // Reiniciar a la primera página al cambiar el número de filas por página
+  };
+
   // Función para generar el PDF
   const handleGeneratePDF = () => {
     const doc = new jsPDF();
@@ -209,6 +214,17 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
     <>
       <DndProvider backend={HTML5Backend}>
         <div>
+          {/* Selector para cantidad de filas */}
+          <div className="rows-per-page-selector">
+            <label htmlFor="rows-per-page">Filas por página:</label>
+            <select id="rows-per-page" value={itemsPerPage} onChange={handleItemsPerPageChange}>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={30}>30</option>
+              <option value={50}>50</option>
+            </select>
+          </div>
+
           <table className="table">
             <thead>
               <tr>
@@ -234,6 +250,7 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
               ))}
             </tbody>
           </table>
+
           <div className="pagination-container">
             <ul className="pagination">
               {Array.from({ length: totalPages }).map((_, pageIndex) => (

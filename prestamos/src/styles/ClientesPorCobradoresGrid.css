@@ -2,8 +2,9 @@
 
 /* Contenedor de la tabla */
 .table {
-  /* width: 100%; */
-  height: 30vh;
+  width: 100%; /* Fijamos el ancho al 100% */
+  height: auto; /* El alto de la tabla se ajusta según la cantidad de filas */
+  max-height: 60vh; /* Opcional: Limita la altura máxima de la tabla */
   border-collapse: collapse;
   margin: 20px 0;
   font-size: 14px;
@@ -13,6 +14,7 @@
   border-radius: 8px; /* Bordes redondeados */
   overflow: hidden; /* Oculta bordes sobresalientes */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
+  table-layout: fixed; /* Fijamos el ancho de las celdas */
 }
 
 /* Estilos para la cabecera de la tabla */
@@ -27,13 +29,14 @@
   text-transform: uppercase;
   font-weight: bold;
   line-height: 1.2; /* Ajustamos el line-height para controlar la altura */
+  white-space: nowrap; /* Evitamos que el contenido de las celdas se divida en varias líneas */
 }
 
 /* Estilos para las filas de la tabla */
 .table tbody tr {
   border-bottom: 1px solid #dee2e6;
   transition: background-color 0.2s ease;
-  height: auto; /* Eliminamos cualquier altura fija */
+  height: 50px; /* Altura estándar para las filas */
 }
 
 .table tbody tr:hover {
@@ -41,10 +44,12 @@
 }
 
 .table tbody td {
-  padding: 0px 8px;
+  padding: 5px 8px; /* Ajustamos el padding para las celdas */
   color: #333;
   line-height: 1.2; /* Mantiene las filas más compactas */
-  height: auto; /* Aseguramos que la altura sea automática */
+  white-space: nowrap; /* Evitamos que el contenido se divida en varias líneas */
+  text-overflow: ellipsis; /* Para agregar puntos suspensivos en celdas muy largas */
+  overflow: hidden; /* Ocultamos el texto que sobrepasa el ancho de la celda */
 }
 
 /* Paginación */
@@ -112,8 +117,27 @@
   outline: none;
 }
 
-.button-container{
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 20px;
+.button-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+/* Selector para cantidad de filas por página */
+.rows-per-page-selector {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  margin-right: 20px;
+}
+
+.rows-per-page-selector label {
+  margin-right: 10px;
+}
+
+.rows-per-page-selector select {
+  padding: 5px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  background-color: #fff;
 }

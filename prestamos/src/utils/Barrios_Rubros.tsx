@@ -447,6 +447,10 @@
       "Articulo de Limpieza",
       "Manicura",
       "Almacen",
+      "Polleria",
+      "Taxi",
+      "Particular",
+      "Otros"
 
     ];
    }
