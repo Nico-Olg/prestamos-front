@@ -13,7 +13,9 @@ const PagosDelDiaPage: React.FC = () => {
       <Header title="Pagos del dia " />
       <div className="content">
         <Sidebar />
-        <PagosHoyGrid cobradorId={0} nombreCobrador={''} />
+        <PagosHoyGrid handlePagoCuota={function (_pagoId: number, _monto: number): void {
+          throw new Error('Function not implemented.');
+        } }  />
       </div>
     </div>
   );
