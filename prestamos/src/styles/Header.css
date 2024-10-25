@@ -25,7 +25,6 @@
 .header__title {
   margin: 0;
   font-size: 1.5em; /* Tamaño del título */
- 
 }
 
 .header__datetime {
@@ -56,7 +55,7 @@
 }
 
 .night-card {
-  background: linear-gradient(to right, rgb(20, 30, 48), rgb(36, 59, 85)); /* Mantén el gradiente nocturno original */
+  background: linear-gradient(to right, rgb(20, 30, 48), rgb(36, 59, 85)); /* Gradiente nocturno */
 }
 
 .card:hover {
@@ -95,11 +94,13 @@
 .card:hover > .moon, .card:hover > .sun {
   font-size: 3.5vh;
 }
-.control_panel{
+
+/* Estilos del panel de control */
+.control_panel {
   position: absolute;
   right: 35vh;
-  
 }
+
 /* Estilos Responsivos */
 @media (max-width: 768px) {
   .header {
@@ -149,6 +150,8 @@
     font-size: 4vh;
   }
 }
+
+/* Botón de configuración */
 .setting-btn {
   width: 30px;
   height: 30px;
@@ -163,6 +166,7 @@
   border: none;
   box-shadow: 0px 0px 0px 2px rgb(212, 209, 255);
 }
+
 .bar {
   width: 50%;
   height: 2px;
@@ -173,6 +177,7 @@
   position: relative;
   border-radius: 2px;
 }
+
 .bar::before {
   content: "";
   width: 2px;
@@ -184,15 +189,19 @@
   transition: all 0.3s;
   box-shadow: 0px 0px 5px white;
 }
+
 .bar1::before {
   transform: translateX(-4px);
 }
+
 .bar2::before {
   transform: translateX(4px);
 }
+
 .setting-btn:hover .bar1::before {
   transform: translateX(4px);
 }
+
 .setting-btn:hover .bar2::before {
   transform: translateX(-4px);
 }
@@ -202,12 +211,22 @@
   position: absolute;
   top: 60px; /* Ajusta según la posición del botón */
   right: 0; /* Para que aparezca al lado derecho */
-  background-color: #333;
+  background-color: rgba(50, 50, 50, 0.95); /* Fondo semitransparente */
   border-radius: 10px;
-  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.25); /* Sombra sofisticada */
   padding: 10px;
-  width: 200px;
+  width: 220px;
   z-index: 10;
+  opacity: 0; /* Oculto inicialmente */
+  transform: translateY(-10px); /* Posición inicial para la animación */
+  transition: opacity 0.3s ease, transform 0.3s ease; /* Animación suave */
+  pointer-events: none; /* Desactiva el pointer-events cuando está oculto */
+}
+
+.show-dropdown {
+  opacity: 1; /* Visibilidad al mostrar */
+  transform: translateY(0); /* Vuelve a su posición original */
+  pointer-events: auto; /* Activa los eventos de clic cuando se despliega */
 }
 
 .dropdown-menu ul {
@@ -217,16 +236,68 @@
 }
 
 .dropdown-menu ul li {
-  padding: 10px;
+  padding: 12px 15px;
   color: white;
   cursor: pointer;
   font-family: Arial, sans-serif;
-  transition: background-color 0.3s ease;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.2s ease, transform 0.2s ease; /* Animación al pasar el mouse */
+  border-radius: 6px; /* Bordes redondeados */
 }
 
 .dropdown-menu ul li:hover {
-  background-color: #555; /* Cambia el color de fondo cuando se pasa el cursor */
-  border-radius: 5px;
+  background-color: #444; /* Cambia el color de fondo cuando se pasa el cursor */
+  transform: scale(1.05); /* Pequeño aumento de tamaño */
+  color: #f0f0f0; /* Cambia el color del texto */
 }
 
+.dropdown-menu ul li button {
+  background: none;
+  border: none;
+  color: inherit;
+  width: 100%;
+  text-align: left;
+  padding: 12px 15px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+}
 
+.dropdown-menu ul li button:hover {
+  background-color: #444;
+  transform: scale(1.05);
+}
+
+/* Animación para el despliegue del menú */
+@keyframes slideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+/* Añade las animaciones */
+.dropdown-menu.show-dropdown {
+  animation: slideDown 0.3s ease forwards;
+}
+
+.dropdown-menu.hide-dropdown {
+  animation: slideUp 0.3s ease forwards;
+  pointer-events: none;
+}

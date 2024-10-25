@@ -4,27 +4,9 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { guardarOrdenClientes } from "../apis/postApi";
 import jsPDF from "jspdf"; // Import jsPDF
 import "jspdf-autotable"; // Import AutoTable for jsPDF
-import { useNavigate } from "react-router-dom"; // Import useNavigate
-// Extend jsPDF to include autoTable
-declare module "jspdf" {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-  }
-}
+import { useNavigate } from "react-router-dom";
+import { Cliente } from "../interfaces/Cliente"; // Importa la interfaz Cliente
 import "../styles/ClientesPorCobradoresGrid.css";
-
-interface Cliente {
-  id: number;
-  apellidoYnombre: string;
-  dni: number;
-  fechaNac: string;
-  direccionComercial: string;
-  barrioComercial: string;
-  direccionParticular: string;
-  barrioParticular: string;
-  tel: string;
-  fechaAlta: string;
-}
 
 interface ClientesPorCobradorGridProps {
   clientes: Cliente[];
@@ -34,6 +16,7 @@ interface ClientesPorCobradorGridProps {
 
 const ItemType = "CLIENTE";
 
+// Componente para cada fila de cliente
 const ClienteRow: React.FC<{
   cliente: Cliente;
   index: number;
@@ -102,11 +85,10 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
 }) => {
   const [orderedClientes, setOrderedClientes] = useState<Cliente[]>(clientes);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(30); // El usuario puede modificarlo
-  const navigate = useNavigate(); // Use navigate to redirect
+  const [itemsPerPage, setItemsPerPage] = useState(30);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Cargar el orden guardado en sessionStorage si existe
     const savedClientes = sessionStorage.getItem(`ordenClientes_${cobradorId}`);
     if (savedClientes) {
       setOrderedClientes(JSON.parse(savedClientes));
@@ -115,7 +97,6 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
     }
   }, [clientes, cobradorId]);
 
-  // Guardar el orden en la sesión
   const saveToSession = (clientes: Cliente[]) => {
     sessionStorage.setItem(
       `ordenClientes_${cobradorId}`,
@@ -129,12 +110,33 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
       const [draggedCliente] = updatedClientes.splice(dragIndex, 1);
       updatedClientes.splice(hoverIndex, 0, draggedCliente);
       setOrderedClientes(updatedClientes);
-      saveToSession(updatedClientes); // Guardar en sesión
+      saveToSession(updatedClientes);
     },
     [orderedClientes, cobradorId]
   );
 
-  // Manejar el guardado al cerrar la ventana o sesión
+  // Filtrar datos antes de enviarlos al backend
+  const prepareClientesForSave = (clientes: Cliente[]) => {
+    return clientes.map((cliente) => ({
+      id: cliente.id,
+      apellidoYnombre: cliente.apellidoYnombre,
+      dni: cliente.dni,
+      fechaNac: cliente.fechaNac,
+      direccionComercial: cliente.direccionComercial,
+      barrioComercial: cliente.barrioComercial,
+      direccionParticular: cliente.direccionParticular,
+      barrioParticular: cliente.barrioParticular,
+      tel: cliente.tel,
+      tel2: cliente.tel2,
+      socio_conyugue: cliente.socio_conyugue,
+      fechaAlta: cliente.fechaAlta,
+      rubro: cliente.rubro,
+      orden: cliente.orden,
+      cobrador: { id: cobradorId, nombreyApellido: nombreCobrador, zona: 0, dni: 0, tel:""}, // Solo el id y nombre del cobrador
+      prestamo: [], // Campos vacíos
+    }));
+  };
+
   useEffect(() => {
     const handleBeforeUnload = async () => {
       const savedClientes = sessionStorage.getItem(
@@ -142,8 +144,10 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
       );
       if (savedClientes) {
         try {
-          // Guardar en la base de datos antes de cerrar
-          await guardarOrdenClientes(cobradorId, JSON.parse(savedClientes));
+          await guardarOrdenClientes(
+            cobradorId,
+            prepareClientesForSave(JSON.parse(savedClientes))
+          );
         } catch (error) {
           console.error("Error al guardar el orden de clientes", error);
         }
@@ -155,7 +159,7 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
       window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [cobradorId]);
 
-  // Obtener los clientes de la página actual
+  // Obtén los clientes de la página actual
   const currentClientes = orderedClientes.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -169,10 +173,9 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
 
   const handleItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setItemsPerPage(Number(event.target.value));
-    setCurrentPage(1); // Reiniciar a la primera página al cambiar el número de filas por página
+    setCurrentPage(1);
   };
 
-  // Función para generar el PDF
   const handleGeneratePDF = () => {
     const doc = new jsPDF();
     doc.text(`Clientes de: ${nombreCobrador}`, 10, 10);
@@ -202,19 +205,17 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
         cliente.fechaAlta,
       ]),
     });
-    doc.save(`clientes_${nombreCobrador}.pdf`); // Descargar el archivo PDF
+    doc.save(`clientes_${nombreCobrador}.pdf`);
   };
 
-  // Función para redirigir a pagosHoyGrid
   const handleVerCobranza = () => {
-    navigate("/pagosHoyGrid",  { state: { id: cobradorId , nombreyApellido : nombreCobrador}}); // Redirige a pagosHoyGrid
+    navigate("/pagosHoyGrid",  { state: { id: cobradorId , nombreyApellido : nombreCobrador}});
   };
 
   return (
     <>
       <DndProvider backend={HTML5Backend}>
         <div>
-          {/* Selector para cantidad de filas */}
           <div className="rows-per-page-selector">
             <label htmlFor="rows-per-page">Filas por página:</label>
             <select id="rows-per-page" value={itemsPerPage} onChange={handleItemsPerPageChange}>
@@ -266,7 +267,6 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
             </ul>
           </div>
 
-          {/* Botones para generar PDF y Ver Cobranza del Día */}
           <div className="button-container">
             <button className="btn btn-primary" onClick={handleGeneratePDF}>
               Imprimir Clientes

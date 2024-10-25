@@ -7,7 +7,8 @@ export interface PagosHoy {
     cliente:     Cliente;
     prestamo:    Prestamo;
     producto:    string;
-    nroCuota:    number;
+    cuotaNro:    number;
+
 }
 
 export interface Cliente {

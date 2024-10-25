@@ -409,6 +409,29 @@ export async function editarCliente(cliente: Cliente) {
     } else {
       throw new Error('Error desconocido al editar el cliente');
     }
+  } 
+}
+export async function cobranzaDelDia(cobrador_id: number, fecha: string) {
+  try {
+    const token = getAuthToken();
+    const response = await axios.post(
+      `${API_BASE_URL}/pagos/pagos-hoy`,
+      { cobrador_id, fecha },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, // Agregar el token en el header
+        },
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Error al obtener la cobranza del día: ${error.response?.status} ${error.response?.statusText}`);
+    } else {
+      throw new Error('Error desconocido al obtener la cobranza del día');
+    }
   }
 }
 
