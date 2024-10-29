@@ -54,11 +54,20 @@ export const generarPDF = (cliente: Cliente, prestamo: Prestamo) => {
   doc.text(`Barrio: ${barrio}`, 105, textY + 20);
   doc.text(`Producto: ${producto}`, 20, textY + 30);
 
+function formatDate(dateString: string) {
+    // Verifica si el string tiene el formato esperado "yyyy-mm-dd"
+    if (!dateString || !/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        return "Fecha no válida";
+    }
+
+    const [year, month, day] = dateString.split("-"); // Divide el string en año, mes y día
+    return `${day}/${month}/${year}`; // Retorna en formato dd/mm/yyyy
+}
   // Generar la tabla de cuotas con fechas de vencimiento basadas en los pagos
   const addCuotas = () => {
     return prestamo.pagos.map((pago, i) => [
       (i + 1).toString(), // Número de cuota
-      new Date(pago.fechaPago).toLocaleDateString(), // Fecha de pago convertida a Date
+      formatDate(pago.fechaPago.toString()), // Fecha de pago convertida a Date
       `$${pago.monto.toFixed(2)}`,  // Monto del pago
       "",  // Espacio para la firma
     ]);
@@ -79,14 +88,14 @@ export const generarPDF = (cliente: Cliente, prestamo: Prestamo) => {
   (doc as any).autoTable(tableOptions).finalY || textY + 40;
 
   // Manejar valores indefinidos o nulos en las siguientes líneas
-  const saldo = prestamo.montoRestante !== undefined && prestamo.montoRestante !== null
-    ? `$${prestamo.montoRestante.toFixed(2)}`
-    : "No disponible";
-  const totalCredito = prestamo.total !== undefined && prestamo.total !== null
-    ? `$${prestamo.total.toFixed(2)}`
-    : "No disponible";
-  const tipoPlan = prestamo.tipoPlan ?? "No disponible";
-  const inicio = prestamo.fechaInicio ?? "No disponible";
+  // const saldo = prestamo.montoRestante !== undefined && prestamo.montoRestante !== null
+  //   ? `$${prestamo.montoRestante.toFixed(2)}`
+  //   : "No disponible";
+  // const totalCredito = prestamo.total !== undefined && prestamo.total !== null
+  //   ? `$${prestamo.total.toFixed(2)}`
+  //   : "No disponible";
+  // const tipoPlan = prestamo.tipoPlan ?? "No disponible";
+  // const inicio = prestamo.fechaInicio ?? "No disponible";
 
   // Calcular la posición del pie de página
   const pageHeight = doc.internal.pageSize.height;
@@ -94,12 +103,12 @@ export const generarPDF = (cliente: Cliente, prestamo: Prestamo) => {
 
   // Agregar la información adicional al pie de la última página
   doc.setPage(doc.getNumberOfPages()); // Ir a la última página
-  doc.text(`Saldo: ${saldo}`, 20, footerY);
+  doc.text(`Saldo:__________________`, 20, footerY);
   doc.text("Efectivo: __________________", 20, footerY + 10);
-  doc.text(`Total crédito: ${totalCredito}`, 20, footerY + 20);
+  doc.text(`Total crédito: __________________`, 20, footerY + 20);
 
-  doc.text(`Plan: ${tipoPlan}`, 120, footerY);
-  doc.text(`Inicio: ${inicio}`, 120, footerY + 10);
+  doc.text(`Plan: __________________`, 120, footerY);
+  doc.text(`Inicio:__________________`, 120, footerY + 10);
   doc.text("Firma: ____________________", 120, footerY + 20);
 
   // Cargar la imagen del logo y convertirla a base64
