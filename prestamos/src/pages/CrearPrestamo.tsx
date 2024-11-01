@@ -23,6 +23,7 @@ import { getClientebyDni, crearPrestamo, modificarCuotas } from "../apis/postApi
 import { getProductos } from "../apis/getApi";
 import dayjs from "dayjs";
 import BuscarClienteStep from "../components/steps/BuscarClienteStep";
+import { useClientContext } from "../provider/ClientContext";
 
 interface ProductoData {
   id: number;
@@ -172,12 +173,20 @@ const FormikStepper = ({ children, productos, ...props }: FormikConfig<FormikVal
   const currentChild = childrenArray[step];
 
   const isLastStep = () => step === childrenArray.length - 1;
+   const { refreshClientes } = useClientContext();
 
   const handleSubmit = async (values: FormikValues, helpers: any) => {
     if (isLastStep()) {
-      navigate("/clientes"); // Redirige a la página principal si es el último paso
-      return;
+    try {
+      // Llama a `refreshClientes` para actualizar la lista de clientes al finalizar
+      await refreshClientes();
+      console.log("Clientes actualizados con éxito");
+      navigate("/clientes"); // Redirige a la página de clientes
+    } catch (error) {
+      console.error("Error al refrescar los clientes:", error);
     }
+    return;
+  }
 
     if (step === 0) {
       try {
@@ -243,6 +252,7 @@ const FormikStepper = ({ children, productos, ...props }: FormikConfig<FormikVal
             <Grid item>
               <Button className="btn" disabled={isSubmitting} type="submit" startIcon={isSubmitting ? <CircularProgress size="1rem" /> : null}>
                 {isSubmitting ? "Creando" : isLastStep() ? "Finalizar" : "Siguiente"}
+                
               </Button>
             </Grid>
           </Grid>
@@ -253,6 +263,7 @@ const FormikStepper = ({ children, productos, ...props }: FormikConfig<FormikVal
 };
 
 export default function CrearPrestamo() {
+  
   const initialValues = {
     dni: "",
     nombre: "",
@@ -304,7 +315,7 @@ export default function CrearPrestamo() {
                 initialValues={initialValues}
                 productos={productos} // Pasar los productos como prop
                 onSubmit={async (values, { setSubmitting }) => {
-                  await new Promise((resolve) => setTimeout(resolve, 3000));
+                 await new Promise((resolve) => setTimeout(resolve, 3000));
                   console.log("Préstamo creado con éxito", values);
                   setSubmitting(false);
                 }}
@@ -381,6 +392,7 @@ export default function CrearPrestamo() {
                 <FormikStep label="Confirmación">
                   <Box paddingBottom={2}>
                     <p>Préstamo creado con éxito.</p>
+                   
                   </Box>
                 </FormikStep>
               </FormikStepper>
@@ -391,3 +403,5 @@ export default function CrearPrestamo() {
     </div>
   );
 }
+
+

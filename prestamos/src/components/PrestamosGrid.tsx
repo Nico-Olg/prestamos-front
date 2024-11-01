@@ -10,7 +10,7 @@ interface PrestamosGridProps {
 }
 
 const PrestamosGrid: React.FC<PrestamosGridProps> = ({ cliente }) => {
-  const prestamos = cliente.prestamo || []; // Asegúrate de que prestamos no sea undefined
+  const prestamos = cliente.prestamo || []; 
   
   const [filteredPrestamos, setFilteredPrestamos] = useState<Prestamo[]>(prestamos); // Inicializa con prestamos
 
@@ -32,7 +32,15 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ cliente }) => {
     generarPDF(cliente, prestamo); // Pasamos el préstamo seleccionado
   };
 
- 
+ function formatDate(dateString: string) {
+    // Verifica si el string tiene el formato esperado "yyyy-mm-dd"
+    if (!dateString || !/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        return "Fecha no válida";
+    }
+
+    const [year, month, day] = dateString.split("-"); // Divide el string en año, mes y día
+    return `${day}/${month}/${year}`; // Retorna en formato dd/mm/yyyy
+}
 
   const columns: TableColumn<Prestamo>[] = [
     {
@@ -42,12 +50,12 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ cliente }) => {
     },
     {
       name: "Monto",
-      selector: (row) => row.total.toString(),
+      selector: (row) => `$ ${row.total.toString()}`,
       sortable: true,
     },
     {
       name: "Fecha de Inicio",
-      selector: (row) => new Date(row.fechaInicio).toLocaleDateString(),
+      selector: (row) => formatDate(row.fechaInicio),
       sortable: true,
     },
     {

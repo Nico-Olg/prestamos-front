@@ -64,15 +64,18 @@ function formatDate(dateString: string) {
     return `${day}/${month}/${year}`; // Retorna en formato dd/mm/yyyy
 }
   // Generar la tabla de cuotas con fechas de vencimiento basadas en los pagos
-  const addCuotas = () => {
-    return prestamo.pagos.map((pago, i) => [
-      (i + 1).toString(), // Número de cuota
-      formatDate(pago.fechaPago.toString()), // Fecha de pago convertida a Date
-      `$${pago.monto.toFixed(2)}`,  // Monto del pago
-      "",  // Espacio para la firma
-    ]);
-  };
 
+const addCuotas = () => {
+  // Ordenar los pagos por número de cuota (asumiendo que el número de cuota está en pago.nroCuota)
+  const pagosOrdenados = [...prestamo.pagos].sort((a, b) => a.nroCuota - b.nroCuota);
+
+  return pagosOrdenados.map((pago, i) => [
+    (i + 1).toString(),               // Número de cuota
+    formatDate(pago.fechaVencimiento.toString()), // Fecha de pago formateada
+    `$${pago.monto.toFixed(2)}`,       // Monto del pago
+    "",                                // Espacio para la firma
+  ]);
+};
   const tableOptions = {
     head: [["Cuota Nro", "Fecha Venc", "Monto", "Firma"]],
     body: addCuotas(),

@@ -21,6 +21,7 @@ export interface Cliente {
 export interface Pago {
     id:             number;
     fechaPago:      Date;
+    fechaVencimiento: Date;
     nombreProducto: string;
     monto:          number;
     formaPago:      string;
