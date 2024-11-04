@@ -6,6 +6,7 @@ import { cobranzaDelDia, registrarPago } from "../apis/postApi"; // Importa el e
 import "../styles/ClientesGrid.css";
 import { PagosHoy } from "../interfaces/PagosHoy"; // Importa la interfaz PagosHoy
 import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 const PagosHoyGrid: React.FC<{ handlePagoCuota: (pagoId: number, monto: number) => void }> = ({  }) => {
   const location = useLocation();
@@ -79,14 +80,13 @@ const PagosHoyGrid: React.FC<{ handlePagoCuota: (pagoId: number, monto: number) 
   const columns: TableColumn<PagosHoy>[] = [
     { name: "Nombre Cliente", selector: (row) => row.cliente.apellidoYnombre, sortable: true, minWidth: "250px" },
     { name: "DNI", selector: (row) => row.cliente.dni?.toString() || "Sin DNI", sortable: true },
-    { name: "Dirección", selector: (row) => row.cliente.direccionComercial, sortable: true, minWidth: "300px" },
-    { name: "Barrio", selector: (row) => row.cliente.barrioComercial || "Sin Barrio", sortable: true, minWidth: "300px" },
+    { name: "Dirección Comercial", selector: (row) => row.cliente.direccionComercial, sortable: true, minWidth: "300px" },
+    { name: "Barrio Comercial", selector: (row) => row.cliente.barrioComercial || "Sin Barrio", sortable: true, minWidth: "300px" },
     { name: "Préstamo Nro", selector: (row) => row.prestamo.id ? row.prestamo.id.toString() : "Sin Id", sortable: true },
     { name: "Cuota Nro", selector: (row) => row.cuotaNro },
-    { name: "Producto", selector: (row) => row.producto, sortable: true },
+    { name: "Producto", selector: (row) => row.producto || " ", sortable: true },
     { name: "Monto Cuota", selector: (row) => `$${row.monto.toFixed(2)}`, sortable: true },
-    { name: "Forma de Pago", selector: (row) => row.formaPago, sortable: true },
-    { name: "Pago en Efectivo", selector: (row) => row.formaPago ? "Sí" : "No", sortable: true },
+ 
   ];
 
   return (
