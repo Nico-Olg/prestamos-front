@@ -17,27 +17,40 @@ const PagosHoyGrid: React.FC<{ handlePagoCuota: (pagoId: number, monto: number) 
   // Obtén el id del cobrador desde el estado pasado en navigate
   const cobradorId = location.state?.id;
   const nombreCobrador = location.state?.nombreyApellido || "Cobrador";
+  const clientes = location.state?.clientes || [];
 
   // Obtiene la fecha de hoy en formato 'YYYY-MM-DD'
   const today = new Date().toISOString().split('T')[0];
 
-  useEffect(() => {
-    // Llama al endpoint cobranzaDelDia al cargar el componente
-    if (cobradorId) {
-      const fetchPagosHoy = async () => {
-        try {
-          const data = await cobranzaDelDia(cobradorId, today);
-          setPagosHoy(data);
-        } catch (error) {
-          console.error("Error al obtener la cobranza del día:", error);
-        }
-      };
+ useEffect(() => {
+  if (cobradorId) {
+    const fetchPagosHoy = async () => {
+      try {
+        const data = await cobranzaDelDia(cobradorId, today);
 
-      fetchPagosHoy();
-    } else {
-      console.error("ID de cobrador no disponible");
-    }
-  }, [cobradorId, today]);
+        // Ordena los pagos utilizando el atributo `orden` de cada cliente y luego por `cuotaNro`
+        const orderedData = data.sort((a: PagosHoy, b: PagosHoy) => {
+          const orderA = a.cliente.orden ?? Number.MAX_SAFE_INTEGER;
+          const orderB = b.cliente.orden ?? Number.MAX_SAFE_INTEGER;
+
+          if (orderA !== orderB) {
+            return orderA - orderB;
+          }
+          return a.cuotaNro - b.cuotaNro; // Ordena por `cuotaNro` si el `orden` del cliente es el mismo
+        });
+
+        setPagosHoy(orderedData);
+      } catch (error) {
+        console.error("Error al obtener la cobranza del día:", error);
+      }
+    };
+
+    fetchPagosHoy();
+  } else {
+    console.error("ID de cobrador no disponible");
+  }
+}, [cobradorId, today]);
+
 
   const handleRowClicked = (pago: PagosHoy) => {
     setSelectedPago(pago);
@@ -45,6 +58,7 @@ const PagosHoyGrid: React.FC<{ handlePagoCuota: (pagoId: number, monto: number) 
   };
 
   const handleGeneratePDF = () => {
+    pagosHoy.sort((a, b) => (a.cliente.orden ?? 0) - (b.cliente.orden ?? 0));
     const doc = new jsPDF();
     doc.text(`Pagos del día: ${new Date().toLocaleDateString()} del Cobrador: ${nombreCobrador}`, 10, 10);
     doc.autoTable({

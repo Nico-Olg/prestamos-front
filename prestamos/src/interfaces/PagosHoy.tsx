@@ -8,6 +8,7 @@ export interface PagosHoy {
     prestamo:    Prestamo;
     producto:    string;
     cuotaNro:    number;
+    
 
 }
 
@@ -22,6 +23,7 @@ export interface Cliente {
     barrioParticular:    string;
     tel:                 string;
     fechaAlta:           null;
+    orden?:      number | null;
 }
 
 export interface Prestamo {
