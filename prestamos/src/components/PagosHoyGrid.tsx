@@ -17,7 +17,7 @@ const PagosHoyGrid: React.FC<{ handlePagoCuota: (pagoId: number, monto: number) 
   // Obtén el id del cobrador desde el estado pasado en navigate
   const cobradorId = location.state?.id;
   const nombreCobrador = location.state?.nombreyApellido || "Cobrador";
-  const clientes = location.state?.clientes || [];
+  // const clientes = location.state?.clientes || [];
 
   // Obtiene la fecha de hoy en formato 'YYYY-MM-DD'
   const today = new Date().toISOString().split('T')[0];
