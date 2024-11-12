@@ -34,7 +34,7 @@ export const generarPDF = (cliente: Cliente, prestamo: Prestamo) => {
     }
   }
 
-  const producto = prestamo.producto ?? "Sin producto";
+  const producto = prestamo.nombreProducto ?? "Sin producto";
 
   const textY = marginTop + 5;
 
