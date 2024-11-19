@@ -1,78 +1,114 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import DataTable, { TableColumn, ConditionalStyles } from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
-import { Cliente, Prestamo } from "../interfaces/Cliente";  // Importa las interfaces
+import { Cliente, Prestamo } from "../interfaces/Cliente"; // Importa las interfaces
 import { generarPDF } from "./carpetaPDF";
+import { borrarCreditos } from "../apis/postApi"; // Importa el método borrarCreditos
 import "../styles/PrestamosGrid.css";
+import { IconButton } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete"; // Importa el ícono de tacho de basura
+import Swal from "sweetalert2";
+import { useClientContext } from "../provider/ClientContext";
 
 interface PrestamosGridProps {
-  cliente: Cliente;  // Datos del cliente que también provienen de PrestamosPage
+  cliente: Cliente; // Datos del cliente que también provienen de PrestamosPage
 }
 
 const PrestamosGrid: React.FC<PrestamosGridProps> = ({ cliente }) => {
-  const prestamos = cliente.prestamo || []; 
-  
-  const [filteredPrestamos, setFilteredPrestamos] = useState<Prestamo[]>(prestamos); // Inicializa con prestamos
-
+  const { refreshClientes, clientes } = useClientContext(); // Incluye `clientes` para obtener actualizaciones
   const navigate = useNavigate();
 
-  // useEffect para actualizar los préstamos solo si el cliente cambia
-  useEffect(() => {
-    if (prestamos.length > 0) {
-      setFilteredPrestamos(prestamos);
-    }
-  }, [prestamos]);
+  // Obtener los préstamos del cliente desde el contexto
+  const clienteActualizado = clientes.find((c) => c.dni === cliente.dni);
+  const prestamos = clienteActualizado?.prestamo || [];
 
   const handleRowClicked = (prestamo: Prestamo) => {
     navigate(`/pagos`, { state: { prestamoId: prestamo.id } });
   };
 
   const handleCarpetClicked = (prestamo: Prestamo) => {
-    // Generamos el PDF con los datos del cliente y del préstamo específico
-    generarPDF(cliente, prestamo); // Pasamos el préstamo seleccionado
+    generarPDF(cliente, prestamo); // Genera el PDF con los datos del cliente y el préstamo seleccionado
   };
 
-  function formatDate(dateString: string) {
-    // Verifica si el string tiene el formato esperado "yyyy-mm-dd"
+  const handleDeleteClicked = async (prestamoId: number) => {
+    try {
+      const result = await Swal.fire({
+        icon: "warning",
+        title: "Eliminar Crédito",
+        text: "¿Estás seguro de que deseas eliminar este crédito?",
+        showCancelButton: true,
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar",
+        showCloseButton: true,
+        allowOutsideClick: false,
+      });
+
+      if (result.isConfirmed) {
+        // Si el usuario confirma, elimina el crédito
+        await borrarCreditos(prestamoId);
+        await refreshClientes(); // Actualiza los datos del cliente en el contexto
+        Swal.fire({
+          icon: "success",
+          title: "Crédito eliminado",
+          text: "El crédito se eliminó correctamente.",
+        });
+      } else {
+        // Si cancela o cierra el diálogo
+        Swal.fire({
+          icon: "info",
+          title: "Acción cancelada",
+          text: "El crédito no se eliminó.",
+        });
+      }
+    } catch (error) {
+      console.error("Error al borrar el crédito:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Hubo un problema al eliminar el crédito.",
+      });
+    }
+  };
+
+  const formatDate = (dateString: string) => {
     if (!dateString || !/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
       return "Fecha no válida";
     }
-
-    const [year, month, day] = dateString.split("-"); // Divide el string en año, mes y día
-    return `${day}/${month}/${year}`; // Retorna en formato dd/mm/yyyy
-  }
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`;
+  };
 
   const columns: TableColumn<Prestamo>[] = [
     {
       name: "ID",
-      selector: (row) => row.id.toString(),
+      selector: (row) => (row.id ? row.id.toString() : "N/A"), // Validar `row.id`
       sortable: true,
     },
     {
       name: "Plan",
-      selector: (row) => row.tipoPlan,
+      selector: (row) => row.tipoPlan || "N/A", // Validar `row.tipoPlan`
       sortable: true,
     },
     {
       name: "Monto",
-      selector: (row) => `$ ${row.total.toString()}`,
+      selector: (row) => (row.total ? `$ ${row.total.toString()}` : "N/A"), // Validar `row.total`
       sortable: true,
     },
     {
       name: "Fecha de Inicio",
-      selector: (row) => formatDate(row.fechaInicio),
+      selector: (row) => formatDate(row.fechaInicio || ""), // Validar `row.fechaInicio`
       sortable: true,
       width: "150px",
     },
     {
       name: "Fecha de Finalizacion",
-      selector: (row) => formatDate(row.fechaFinalizacion),
+      selector: (row) => formatDate(row.fechaFinalizacion || ""), // Validar `row.fechaFinalizacion`
       sortable: true,
       width: "180px",
     },
     {
       name: "Cantidad de Cuotas",
-      selector: (row) => row.pagos.length.toString(),
+      selector: (row) => (row.pagos ? row.pagos.length.toString() : "0"), // Validar `row.pagos`
       sortable: true,
       width: "180px",
     },
@@ -87,8 +123,29 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ cliente }) => {
           )}
         </div>
       ),
-      ignoreRowClick: true,  // Para evitar que el clic dentro del botón dispare la acción de clic en fila
-      allowOverflow: true,   // Asegura que las acciones no causen desbordamiento de la celda
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+    },
+    {
+      name: "Eliminar Créditos",
+      cell: (row) => (
+        <div>
+          {row.activo ? (
+            <IconButton
+              aria-label="delete"
+              color="error"
+              onClick={() => handleDeleteClicked(row.id)}
+            >
+              <DeleteIcon />
+            </IconButton>
+          ) : (
+            <span>Finalizado</span>
+          )}
+        </div>
+      ),
+      ignoreRowClick: true,
+      allowOverflow: true,
       button: true,
     },
   ];
@@ -97,10 +154,10 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ cliente }) => {
     {
       when: (row) => !row.activo,
       style: {
-        backgroundColor: 'lightgreen',
-        color: 'black',
-        '&:hover': {
-          cursor: 'not-allowed',
+        backgroundColor: "lightgreen",
+        color: "black",
+        "&:hover": {
+          cursor: "not-allowed",
         },
       },
     },
@@ -110,7 +167,7 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ cliente }) => {
     <div className="prestamos-grid">
       <DataTable
         columns={columns}
-        data={filteredPrestamos}
+        data={prestamos}
         pagination
         highlightOnHover
         pointerOnHover

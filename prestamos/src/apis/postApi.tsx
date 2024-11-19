@@ -435,5 +435,29 @@ export async function cobranzaDelDia(cobrador_id: number, fecha: string) {
   }
 }
 
+export async function borrarCreditos(prestamo_id: number) {
+  try {
+    const token = getAuthToken();
+    const response = await axios.delete(
+      `${API_BASE_URL}/prestamos/borrar-prestamo`,
+      {
+        data: { prestamo_id },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, // Agregar el token en el header
+        },
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Error al borrar los créditos: ${error.response?.status} ${error.response?.statusText}`);
+    } else {
+      throw new Error('Error desconocido al borrar los créditos');
+    }
+  }
+}
+
 
 

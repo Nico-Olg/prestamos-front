@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { getAllClients } from '../apis/getApi';
-import { Cliente, Prestamo } from '../interfaces/Cliente';  // Importa las interfaces
+import { getPrestamosPorCliente } from '../apis/postApi'; // Importamos el nuevo método
+import { Cliente, Prestamo } from '../interfaces/Cliente'; // Importa las interfaces
 
 // Define el contexto
 interface ClientContextProps {
@@ -10,6 +11,7 @@ interface ClientContextProps {
     setPrestamos: React.Dispatch<React.SetStateAction<Prestamo[]>>;
     refreshClientes: () => void;
     refreshPrestamos: (dni: number) => void;
+    refreshPrestamosDelete: (dni: number) => Promise<void>; // Nuevo método
 }
 
 // Tipo para las props del proveedor que incluye children
@@ -43,7 +45,7 @@ export const ClientProvider: React.FC<ClientProviderProps> = ({ children }) => {
         }
     };
 
-    // Función para refrescar los préstamos de un cliente por DNI
+    // Función para refrescar los préstamos de un cliente por DNI (desde el estado actual)
     const refreshPrestamos = async (dni: number) => {
         try {
             const cliente = clientes.find((c) => c.dni === dni);
@@ -57,13 +59,38 @@ export const ClientProvider: React.FC<ClientProviderProps> = ({ children }) => {
         }
     };
 
+    // **Nuevo método** para refrescar préstamos desde la API después de una eliminación
+    const refreshPrestamosDelete = async (dni: number) => {
+        try {
+            const nuevosPrestamos = await getPrestamosPorCliente(dni); // Obtiene los datos actualizados
+            setClientes((prevClientes) =>
+                prevClientes.map((cliente) =>
+                    cliente.dni === dni ? { ...cliente, prestamo: nuevosPrestamos } : cliente
+                )
+            );
+            setPrestamos(nuevosPrestamos); // Actualiza el estado local de préstamos
+        } catch (error) {
+            console.error('Error refreshing prestamos after delete:', error);
+        }
+    };
+
     // Obtener clientes en el login o primera carga
     useEffect(() => {
         refreshClientes();
     }, []);
 
     return (
-        <ClientContext.Provider value={{ clientes, setClientes, prestamos, setPrestamos, refreshClientes, refreshPrestamos }}>
+        <ClientContext.Provider
+            value={{
+                clientes,
+                setClientes,
+                prestamos,
+                setPrestamos,
+                refreshClientes,
+                refreshPrestamos,
+                refreshPrestamosDelete, // Exportamos el nuevo método
+            }}
+        >
             {children}
         </ClientContext.Provider>
     );
