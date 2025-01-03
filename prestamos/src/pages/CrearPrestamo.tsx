@@ -109,10 +109,11 @@ const FormFieldWithModifyButton = ({ name, label, disabledInitially }: { name: s
   const handleSaveClick = async () => {
     try {
       // Llamada al endpoint para modificar la cuota
-      const updatedPrestamo = await modificarCuotas( values.montoCuota,values.id);
+      const updatedPrestamo = await modificarCuotas( values.montoCuota,values.id);      
       // Actualizar los valores del préstamo con la respuesta del backend
       setFieldValue("montoAPagar", updatedPrestamo.data.total);
       setFieldValue("montoCuota", updatedPrestamo.data.montoCuota);
+      
     } catch (error) {
       console.error("Error al modificar la cuota:", error);
     } finally {

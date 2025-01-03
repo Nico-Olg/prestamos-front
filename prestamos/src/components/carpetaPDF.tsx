@@ -13,6 +13,9 @@ const getBase64Image = (img: HTMLImageElement) => {
   return canvas.toDataURL("image/png");
 };
 
+
+
+
 // Función para generar el PDF
 export const generarPDF = (cliente: Cliente, prestamo: Prestamo) => {
   const doc = new jsPDF();
@@ -26,13 +29,11 @@ export const generarPDF = (cliente: Cliente, prestamo: Prestamo) => {
   const montoCuota = prestamo.montoCuota ?? 0;
 
   // Verificamos si `fechaInicio` es una instancia de `Date`, de lo contrario la convertimos
-  let fechaFinalizacion = "Sin fecha";
-  if (prestamo.fechaFinalizacion) {
-    const fechaFinalizacionDate = new Date(prestamo.fechaFinalizacion); // Convertimos a Date
-    if (!isNaN(fechaFinalizacionDate.getTime())) {
-      fechaFinalizacion = fechaFinalizacionDate.toLocaleDateString();
-    }
-  }
+  const fechaFinalizacion = prestamo.fechaFinalizacion
+  ? formatDate(prestamo.fechaFinalizacion)
+  : "Sin fecha";
+
+  
 
   const producto = prestamo.nombreProducto ?? "Sin producto";
 
