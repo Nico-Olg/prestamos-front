@@ -23,7 +23,7 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ cliente }) => {
   const prestamos = clienteActualizado?.prestamo || [];
 
   const handleRowClicked = (prestamo: Prestamo) => {
-    navigate(`/pagos`, { state: { prestamoId: prestamo.id } });
+    navigate(`/pagos`, { state: { prestamoId: prestamo.id, cliente: cliente } });
   };
 
   const handleCarpetClicked = (prestamo: Prestamo) => {

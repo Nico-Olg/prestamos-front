@@ -5,6 +5,7 @@ import Sidebar from '../components/Sidebar';
 import PagosGrid from '../components/PagosGrid';
 import '../styles/PagosPage.css';
 import { getPagosPorPrestamo, registrarPago } from '../apis/postApi';
+import { Cliente } from '../interfaces/Cliente';
 import Swal from 'sweetalert2';
 
 interface Pago {
@@ -24,6 +25,7 @@ const PagosPage: React.FC = () => {
   const prestamoId = location.state?.prestamoId;
   const navigate = useNavigate();
   const [pagos, setPagos] = useState<Pago[]>([]);
+  const cliente: Cliente = location.state?.cliente as Cliente;
 
   useEffect(() => {
     if (prestamoId) {
@@ -126,7 +128,7 @@ const PagosPage: React.FC = () => {
 
   return (
     <div className="pagos-page">
-      <Header title="Gestión de Pagos" />
+      <Header title={`${cliente?.apellidoYnombre }`}  />
       <div className="content">
         <Sidebar />
         <PagosGrid pagos={pagos} handlePagoCuota={handlePagoCuota} />

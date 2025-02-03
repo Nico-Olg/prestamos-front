@@ -18,7 +18,7 @@ const PrestamosPage: React.FC = () => {
 
   return (
     <div className="prestamos-page">
-      <Header title="Préstamos por Cliente" />
+      <Header title={`${cliente.apellidoYnombre}`} />
       <div className="content">
         <Sidebar />
         {cliente ? (
