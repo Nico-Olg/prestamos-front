@@ -2,38 +2,47 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../apis/postApi';
 import { useClientContext } from '../provider/ClientContext';
-import { usePagosHoyContext } from '../provider/PagosHoyContext';  // Importa el contexto de pagos
+import { usePagosHoyContext } from '../provider/PagosHoyContext';  
+import loadingGIF from '../assets/loading.gif';
 import '../styles/Login.css';
 
 const Login: React.FC = () => {
   const [dni, setDni] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
   const { refreshClientes } = useClientContext();
-  const { refreshPagosHoy } = usePagosHoyContext();  // Hook para refrescar los pagos del día
+  const { refreshPagosHoy } = usePagosHoyContext();  
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
+
     try {
-      const token = await login(dni, password);  // Llamada a la API de login
+      const token = await login(dni, password);
       localStorage.setItem('token', token);
 
-      // Refrescar clientes y pagos del día después del login exitoso
       await refreshClientes();
       await refreshPagosHoy();
 
-      // Redirige al usuario a la página de clientes
       navigate('/clientes');
     } catch (error) {
       console.error('Error en la autenticación', error);
       setError('Credenciales incorrectas. Inténtalo de nuevo.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="login-page">
+      {isLoading && (
+        <div className="loading-overlay">
+          <img src={loadingGIF} alt="Cargando..." className="loading-gif" />
+        </div>
+      )}
       <div className="form-container">
         <p className="title">Bienvenido</p>
         <form className="form" onSubmit={handleLogin}>
@@ -44,6 +53,7 @@ const Login: React.FC = () => {
             value={dni}
             onChange={(e) => setDni(e.target.value)}
             required
+            disabled={isLoading}
           />
           <input
             type="password"
@@ -52,10 +62,12 @@ const Login: React.FC = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={isLoading}
           />
           {error && <p className="error-message">{error}</p>}
-          <button type="submit" className="form-btn">
-            Log in
+          
+          <button type="submit" className="form-btn" disabled={isLoading}>
+            {isLoading ? 'Cargando...' : 'Log in'}
           </button>
         </form>
         <p className="sign-up-label">
