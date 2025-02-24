@@ -89,6 +89,15 @@ const PagosPage: React.FC = () => {
 
     // Realizar la solicitud al backend para registrar el pago
     const updatedPrestamo = await registrarPago(pagoId, montoFinal);
+    const formatearFechaLocal = (fechaISO: string) => {
+  const fecha = new Date(fechaISO);
+  // Puedes personalizar la configuración, por ejemplo:
+  return fecha.toLocaleDateString('es-AR', {
+    year: 'numeric',
+    day: '2-digit',
+    month: '2-digit',   
+  });
+};
 
     // Actualizar el estado de los pagos con la información actualizada del backend
     setPagos((prevPagos) =>
@@ -101,7 +110,7 @@ const PagosPage: React.FC = () => {
             ...pago,
             montoAbonado: montoAbonado,
             monto: updatedPago?.monto || pago.monto,
-            fechaPago: montoAbonado >= pago.monto ? new Date().toISOString() : pago.fechaPago,
+            fechaPago: montoAbonado >= pago.monto ? formatearFechaLocal(new Date().toISOString()) : pago.fechaPago            
           };
         }
         return pago;

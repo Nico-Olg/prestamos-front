@@ -18,7 +18,23 @@ interface PagosGridProps {
   handlePagoCuota: (pagoId: number, monto: number) => void;
 }
 
+// Función para formatear la fecha interpretando la cadena como fecha local
+const formatearFechaLocal = (fechaISO: string): string => {
+  const partes = fechaISO.split('-');
+  if (partes.length !== 3) return fechaISO;
+  const year = Number(partes[0]);
+  const month = Number(partes[1]) - 1;
+  const day = Number(partes[2]);
+  const fecha = new Date(year, month, day);
+  return fecha.toLocaleDateString('es-AR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+};
+
 const PagosGrid: React.FC<PagosGridProps> = ({ pagos, handlePagoCuota }) => {
+  // Ordenamos los pagos según el número de cuota
   pagos.sort((a, b) => a.nroCuota - b.nroCuota);
 
   const columns: TableColumn<Pago>[] = [
@@ -32,17 +48,20 @@ const PagosGrid: React.FC<PagosGridProps> = ({ pagos, handlePagoCuota }) => {
     },
     {
       name: 'Monto Abonado',
-      selector: (row) => (row.montoAbonado ? `$${row.montoAbonado.toFixed(2)}` : 'No pagado'),
+      selector: (row) =>
+        row.montoAbonado ? `$${row.montoAbonado.toFixed(2)}` : 'No pagado',
     },
     {
       name: 'Diferencia',
       selector: (row) =>
-        row.montoAbonado ? `$${(row.monto - row.montoAbonado).toFixed(2)}` : 'No pagado',
+        row.montoAbonado
+          ? `$${(row.monto - row.montoAbonado).toFixed(2)}`
+          : 'No pagado',
     },
     {
       name: 'Fecha de Pago',
       selector: (row) =>
-        row.montoAbonado ? new Date(row.fechaPago || '').toLocaleDateString() : 'No pagado',
+        row.fechaPago ? formatearFechaLocal(row.fechaPago) : 'No pagado',
     },
     {
       name: 'Acción',
@@ -93,9 +112,10 @@ const PagosGrid: React.FC<PagosGridProps> = ({ pagos, handlePagoCuota }) => {
         }}
         conditionalRowStyles={[
           {
-            when: (row: Pago) => row.montoAbonado !== null && row.monto > row.montoAbonado,
+            when: (row: Pago) =>
+              row.montoAbonado !== null && row.monto > row.montoAbonado,
             style: {
-              backgroundColor: '#ffeb99', // Color para filas con diferencia
+              backgroundColor: '#ffeb99',
             },
           },
         ]}
