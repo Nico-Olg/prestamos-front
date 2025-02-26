@@ -26,7 +26,9 @@ const Login: React.FC = () => {
 
       await refreshClientes();
       await refreshPagosHoy();
-
+      
+      const rol = localStorage.getItem('rol');
+      
       navigate('/clientes');
     } catch (error) {
       console.error('Error en la autenticación', error);

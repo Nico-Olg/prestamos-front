@@ -27,25 +27,49 @@ const EditarCliente = lazy(() => import('./pages/EditarCliente'));
 // Componente de ruta protegida
 const ProtectedRoute: React.FC<{ children: JSX.Element }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    
+    const role = localStorage.getItem('rol'); // Obtener rol del usuario
+
     if (token) {
-      setIsAuthenticated(true); // Si existe el token, considera al usuario autenticado
-    }else{
+      setIsAuthenticated(true);
+      setUserRole(role);
+    } else {
       setIsAuthenticated(false);
+      setUserRole(null);
     }
-    setLoading(false); // Ya no está cargando
+    setLoading(false);
   }, []);
 
   if (loading) {
-    return <div>Cargando...</div>; // O cualquier componente de loading
+    return <div>Cargando...</div>; // Indicador de carga
   }
 
   return isAuthenticated ? children : <Navigate to="/login" />;
 };
+
+const RoleBasedRoute: React.FC<{ children: JSX.Element; allowedRoles: string[] }> = ({ children, allowedRoles }) => {
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const role = localStorage.getItem('rol'); // Obtener rol del usuario
+    setUserRole(role);
+    setLoading(false);
+  }, []);
+
+  if (loading) {
+    return <div>Cargando...</div>; // Indicador de carga
+  }
+
+  return userRole && allowedRoles.includes(userRole) ? children : <Navigate to="/login" />;
+};
+
+
+
 
 const App: React.FC = () => {
   return (
@@ -53,94 +77,30 @@ const App: React.FC = () => {
      <PagosHoyProvider>
       <Router>
         <Suspense fallback={<div className="spinner">Loading...</div>}>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={<Navigate to="/login" />} />
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/" element={<Navigate to="/login" />} />
 
-            <Route path="/prestamos" element={
-              <ProtectedRoute>
-                <PrestamosPage />
-              </ProtectedRoute>
-            } />
+              {/* Rutas accesibles solo para ADMIN */}
+              <Route path="/prestamos" element={<RoleBasedRoute allowedRoles={["ADMIN"]}><PrestamosPage /></RoleBasedRoute>} />
+              <Route path="/crear-prestamo" element={<RoleBasedRoute allowedRoles={["ADMIN"]}><CrearPrestamo /></RoleBasedRoute>} />
+              <Route path="/alta-cliente" element={<RoleBasedRoute allowedRoles={["ADMIN"]}><AltaCliente /></RoleBasedRoute>} />
+              <Route path="/clientes" element={<RoleBasedRoute allowedRoles={["ADMIN"]}><Clientes /></RoleBasedRoute>} />
+              <Route path="/pagos" element={<RoleBasedRoute allowedRoles={["ADMIN"]}><Pagos /></RoleBasedRoute>} />
+              <Route path="/usuarios" element={<RoleBasedRoute allowedRoles={["ADMIN"]}><Usuarios /></RoleBasedRoute>} />
+              <Route path="/alta-usuario" element={<RoleBasedRoute allowedRoles={["ADMIN"]}><AltaUsuario /></RoleBasedRoute>} />
+              <Route path="/alta-cobrador" element={<RoleBasedRoute allowedRoles={["ADMIN"]}><AltaCobrador /></RoleBasedRoute>} />
+              <Route path="/productos" element={<RoleBasedRoute allowedRoles={["ADMIN"]}><ProductosPage /></RoleBasedRoute>} />
+              <Route path="/nuevo-producto" element={<RoleBasedRoute allowedRoles={["ADMIN"]}><NuevoProducto /></RoleBasedRoute>} />
+              <Route path="/editar-cliente" element={<RoleBasedRoute allowedRoles={["ADMIN"]}><EditarCliente /></RoleBasedRoute>} />
 
-            <Route path="/crear-prestamo" element={
-              <ProtectedRoute>
-                <CrearPrestamo />
-              </ProtectedRoute>
-            } />
+              {/* Rutas accesibles para ADMIN y COBRADOR */}
+              <Route path="/cobradores/:id/clientes" element={<RoleBasedRoute allowedRoles={["ADMIN", "COBRADOR"]}><ClientesPorCobradores /></RoleBasedRoute>} />
+              <Route path="/pagosHoyGrid" element={<RoleBasedRoute allowedRoles={["ADMIN", "COBRADOR"]}><PagosDelDia /></RoleBasedRoute>} />
+              <Route path="/cobradores" element={<RoleBasedRoute allowedRoles={["ADMIN", "COBRADOR"]}><Cobradores /></RoleBasedRoute>} />
 
-            <Route path="/alta-cliente" element={
-              <ProtectedRoute>
-                <AltaCliente />
-              </ProtectedRoute>
-            } />
-
-            <Route path="/clientes" element={
-              <ProtectedRoute>
-                <Clientes />
-              </ProtectedRoute>
-            } />
-
-            <Route path="/pagos" element={
-              <ProtectedRoute>
-                <Pagos />
-              </ProtectedRoute>
-            } />
-           
-            <Route path="/cobradores/:id/clientes" element={
-              <ProtectedRoute>
-                <ClientesPorCobradores />
-              </ProtectedRoute>
-            } />
-
-            <Route path="/cobradores" element={
-              <ProtectedRoute>
-                <Cobradores />
-              </ProtectedRoute>
-            } />
-
-            <Route path="/usuarios" element={
-              <ProtectedRoute>
-                <Usuarios />
-              </ProtectedRoute>
-            } />
-
-            <Route path="/alta-usuario" element={
-              <ProtectedRoute>
-                <AltaUsuario />
-              </ProtectedRoute>
-            } />
-
-            <Route path="/alta-cobrador" element={
-              <ProtectedRoute>
-                <AltaCobrador />
-              </ProtectedRoute>
-            } />
-
-            <Route path="/productos" element={
-              <ProtectedRoute>
-                <ProductosPage />
-              </ProtectedRoute>
-            } />
-
-            <Route path="/nuevo-producto" element={
-              <ProtectedRoute>
-                <NuevoProducto />
-              </ProtectedRoute>
-            } />
-            <Route path="/pagosHoyGrid" element={
-              <ProtectedRoute>
-                <PagosDelDia />
-              </ProtectedRoute>
-            } />
-            <Route path="/editar-cliente" element={
-              <ProtectedRoute>
-                <EditarCliente />
-              </ProtectedRoute>
-            } />
-
-            {/* Ruta de fallback */}
-            <Route path="*" element={<NotFound />} />
+              {/* Ruta de fallback */}
+              <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
       </Router>

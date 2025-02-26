@@ -7,6 +7,10 @@ import { Cliente } from "../interfaces/Cliente";
 function getAuthToken() {
   return localStorage.getItem('token');
 }
+function getUserRole() {
+  return localStorage.getItem('rol'); // Obtiene el rol almacenado en el login
+}
+
 
 export async function getPrestamosPorCliente(dni: number) {
   try {
@@ -233,9 +237,13 @@ export async function login(dni: string, password: string) {
     );
 
     const { token } = response.data;
+    const {rol} = response.data;
 
     if (token) {
       localStorage.setItem('token', token); // Almacena el token en localStorage
+    }
+    if (rol) {
+      localStorage.setItem('rol', rol); // Almacena el rol en localStorage
     }
 
     return token;
@@ -248,15 +256,20 @@ export async function login(dni: string, password: string) {
   }
 }
 export async function registrarPago(id: number, monto: number) {
+  const rol = getUserRole();
+  if (rol !== 'COBRADOR') {
+    throw new Error("Acceso denegado: No tienes permisos para registrar pagos.");
+  }
+
   try {
     const token = getAuthToken();
     const response = await axios.post(
-      `${API_BASE_URL}/prestamos/pagar-cuota`,
-      {id, monto}, // Puedes enviar un cuerpo vacío si no necesitas otros parámetros
+      `${API_BASE_URL}/pagar-cuota`,
+      { id, monto },
       {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` // Agregar el token en el header
+          'Authorization': `Bearer ${token}`,
         },
         withCredentials: true,
       }
@@ -270,6 +283,7 @@ export async function registrarPago(id: number, monto: number) {
     }
   }
 }
+
 export async function nuevoUsuario(usuarioData: { nombre: string, dni: number, rol: string, password: string }) {
   try {
     const token = getAuthToken();
