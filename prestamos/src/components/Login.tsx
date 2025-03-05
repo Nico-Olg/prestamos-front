@@ -28,8 +28,14 @@ const Login: React.FC = () => {
       await refreshPagosHoy();
       
       const rol = localStorage.getItem('rol');
-      
-      navigate('/clientes');
+      const id = localStorage.getItem('id');
+      const cobrador = localStorage.getItem('nombreyApellido');
+      if (rol === 'ADMIN') {
+        navigate('/clientes');
+      }
+      else if (rol === 'COBRADOR') {
+        navigate(`/cobradores/${id}/clientes`,{ state: { id: id , nombreyApellido : cobrador} });
+      }
     } catch (error) {
       console.error('Error en la autenticación', error);
       setError('Credenciales incorrectas. Inténtalo de nuevo.');

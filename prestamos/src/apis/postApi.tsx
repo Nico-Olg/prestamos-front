@@ -1,7 +1,7 @@
 import axios from "axios";
 import API_BASE_URL from './config'; // Importa la URL base
 import { Cliente } from "../interfaces/Cliente";
-
+import { Usuario } from "../interfaces/User";
 
 // Obtener el token JWT del localStorage
 function getAuthToken() {
@@ -236,14 +236,18 @@ export async function login(dni: string, password: string) {
       }
     );
 
-    const { token } = response.data;
-    const {rol} = response.data;
+    const { token, usuario } = response.data;
+    
+    
 
     if (token) {
       localStorage.setItem('token', token); // Almacena el token en localStorage
     }
-    if (rol) {
-      localStorage.setItem('rol', rol); // Almacena el rol en localStorage
+    if (usuario) {
+      localStorage.setItem('rol', usuario.rol); // Almacena el rol en localStorage
+      localStorage.setItem('id', usuario.id.toString()); // Almacena el id en localStorage
+      localStorage.setItem('nombre', usuario.nombre); 
+
     }
 
     return token;
