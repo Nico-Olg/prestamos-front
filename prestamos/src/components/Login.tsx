@@ -29,7 +29,7 @@ const Login: React.FC = () => {
       
       const rol = localStorage.getItem('rol');
       const id = localStorage.getItem('id');
-      const cobrador = localStorage.getItem('nombreyApellido');
+      const cobrador = localStorage.getItem('nombre');
       if (rol === 'ADMIN') {
         navigate('/clientes');
       }

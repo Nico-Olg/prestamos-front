@@ -260,15 +260,11 @@ export async function login(dni: string, password: string) {
   }
 }
 export async function registrarPago(id: number, monto: number) {
-  const rol = getUserRole();
-  if (rol !== 'COBRADOR') {
-    throw new Error("Acceso denegado: No tienes permisos para registrar pagos.");
-  }
-
+ 
   try {
     const token = getAuthToken();
     const response = await axios.post(
-      `${API_BASE_URL}/pagar-cuota`,
+      `${API_BASE_URL}/pagos/pagar-cuota`,
       { id, monto },
       {
         headers: {
