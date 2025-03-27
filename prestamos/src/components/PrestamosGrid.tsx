@@ -22,9 +22,10 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ cliente }) => {
   const clienteActualizado = clientes.find((c) => c.dni === cliente.dni);
   const prestamos = clienteActualizado?.prestamo || [];
 
-  const handleRowClicked = (prestamo: Prestamo) => {
-    navigate(`/pagos`, { state: { prestamoId: prestamo.id, cliente: cliente } });
-  };
+ const handleRowClicked = (prestamo: Prestamo) => {
+  navigate(`/pagos`, { state: { cliente, pagos: prestamo.pagos } });
+};
+
 
   const handleCarpetClicked = (prestamo: Prestamo) => {
     generarPDF(cliente, prestamo); // Genera el PDF con los datos del cliente y el préstamo seleccionado

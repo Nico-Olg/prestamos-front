@@ -1,0 +1,31 @@
+/* 🔹 HEADER PRINCIPAL */
+.header, .header-mobile {
+  background-color: #282c34; /* 🔥 Color original */
+  padding: 20px;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  width: 100%;
+  position: relative;
+}
+
+/* Logo */
+.header__logo {
+  position: absolute;
+  left: 20px;
+  max-width: 120px;
+  cursor: pointer;
+}
+
+.header__logo img {
+  width: 100%;
+  height: auto;
+}
+
+/* Título */
+.header__title {
+  margin: 0;
+  font-size: 1.5em;
+}

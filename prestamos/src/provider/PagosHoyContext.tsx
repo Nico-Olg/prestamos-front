@@ -16,6 +16,8 @@ interface PagosHoyProviderProps {
 
 const PagosHoyContext = createContext<PagosHoyContextProps | undefined>(undefined);
 
+
+
 // Hook para usar el contexto de pagos de hoy
 export const usePagosHoyContext = () => {
     const context = useContext(PagosHoyContext);

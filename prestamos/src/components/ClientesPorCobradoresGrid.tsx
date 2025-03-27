@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { guardarOrdenClientes } from "../apis/postApi";
+import { cobranzaDelDia, guardarOrdenClientes } from "../apis/postApi";
 import jsPDF from "jspdf"; // Import jsPDF
 import "jspdf-autotable"; // Import AutoTable for jsPDF
 import { useNavigate } from "react-router-dom";
 import { Cliente } from "../interfaces/Cliente"; // Importa la interfaz Cliente
 import "../styles/ClientesPorCobradoresGrid.css";
+import { PagosMapper } from "../interfaces/Pagos";
 
 interface ClientesPorCobradorGridProps {
   clientes: Cliente[];
@@ -207,10 +208,27 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
     });
     doc.save(`clientes_${nombreCobrador}.pdf`);
   };
+const handleVerCobranza = async () => {
+  try {
+    const today = new Date().toISOString().split("T")[0];    
+    const response = await cobranzaDelDia(cobradorId, today);
+    const data = PagosMapper.fromJSON(response);
+    
+    if (!data || !data.pagos || !data.cobrador) {
+      console.error("Error: Datos incompletos en la respuesta del backend.");
+      return;
+    }  
+    
+    const { pagos, cobrador } = data;
+    
+    navigate(`/pagos`, { state: { pagos, cobrador } }); // Enviamos cobrador y pagos a PagosPage
+  } catch (error) {
+    console.error("Error obteniendo la cobranza del día:", error);
+  }
+};
 
-  const handleVerCobranza = () => {
-    navigate("/pagosHoyGrid",  { state: { id: cobradorId , nombreyApellido : nombreCobrador}});
-  };
+
+
 
   return (
     <>

@@ -264,7 +264,7 @@ export async function registrarPago(id: number, monto: number) {
   try {
     const token = getAuthToken();
     const response = await axios.post(
-      `${API_BASE_URL}/pagos/pagar-cuota`,
+      `${API_BASE_URL}/prestamos/pagar-cuota`,
       { id, monto },
       {
         headers: {
@@ -448,6 +448,7 @@ export async function cobranzaDelDia(cobrador_id: number, fecha: string) {
     }
   }
 }
+
 
 export async function borrarCreditos(prestamo_id: number) {
   try {

@@ -1,0 +1,51 @@
+/* 🔹 TARJETA DE HORA Y FECHA */
+.header__datetime {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.card {
+  width: 26vh;
+  height: 12vh;
+  border-radius: 15px;
+  box-shadow: 0px 10px 50px rgba(0, 0, 0, 0.7);
+  display: flex;
+  color: white;
+  justify-content: center;
+  position: relative;
+  right: 2em;
+  flex-direction: column;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+/* 🔹 Estilos para día y noche */
+.day-card {
+  background: linear-gradient(to right, #2d9ac5, #B0E0E6);
+}
+
+.night-card {
+  background: linear-gradient(to right, rgb(20, 30, 48), rgb(36, 59, 85));
+}
+
+/* 🔹 Hover */
+.card:hover {
+  box-shadow: rgb(0, 0, 0) 5px 10px 50px, rgb(0, 0, 0) -5px 0px 250px;
+}
+
+/* 🔹 Texto dentro de la tarjeta */
+.time-text {
+  font-size: 2.5vh;
+  margin-top: 0px;
+  margin-left: 15px;
+  font-weight: 600;
+}
+
+.day-text {
+  font-size: 2vh;
+  margin-left: 15px;
+  font-weight: 500;
+}

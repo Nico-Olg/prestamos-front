@@ -109,21 +109,28 @@ export async function getClientesPorCobrador(cobradorId: number) {
     }
   }
 }
-export async function getPagosDeHoy() {
+export const getPagosDeHoy = async (data: { cobrador_id: number; fecha: string }) => {
   try {
-    const token = localStorage.getItem('token');
-    const response = await axios.get(`${API_BASE_URL}/pagos/pagos-hoy`, {
+    const response = await fetch("URL_DEL_BACKEND/pagos-hoy", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${token}`
+        "Content-Type": "application/json",
       },
-      withCredentials: true,
+      body: JSON.stringify(data),
     });
-    return response.data;
+
+    if (!response.ok) {
+      throw new Error("Error al obtener los pagos del día");
+    }
+
+    return await response.json(); // Retorna { pagos: [], cobrador: {} }
   } catch (error) {
-    console.error("Error fetching pagos de hoy: ", error);
-    throw error;
+    console.error("Error en getPagosDeHoy:", error);
+    return null;
   }
-}
+};
+
+
 export async function getUsuarios() {
   try {
     const token = getAuthToken();
