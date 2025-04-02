@@ -1,7 +1,8 @@
 import React from "react";
 import DataTable, { TableColumn, ConditionalStyles } from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
-import { Cliente, Prestamo } from "../interfaces/Cliente"; // Importa las interfaces
+import { Cliente } from "../interfaces/Cliente"; // Importa las interfaces
+import { Prestamo } from "../interfaces/Prestamo"; // Importa las interfaces
 import { generarPDF } from "./carpetaPDF";
 import { borrarCreditos } from "../apis/postApi"; // Importa el método borrarCreditos
 import "../styles/PrestamosGrid.css";
@@ -9,23 +10,26 @@ import { IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete"; // Importa el ícono de tacho de basura
 import Swal from "sweetalert2";
 import { useClientContext } from "../provider/ClientContext";
+import { getPagosPorPrestamo } from "../apis/postApi"; 
 
 interface PrestamosGridProps {
   cliente: Cliente; // Datos del cliente que también provienen de PrestamosPage
+  prestamos?: Prestamo[]; // Opcional, ya que los préstamos se obtienen del contexto
 }
 
-const PrestamosGrid: React.FC<PrestamosGridProps> = ({ cliente }) => {
-  const { refreshClientes, clientes } = useClientContext(); // Incluye `clientes` para obtener actualizaciones
+const PrestamosGrid: React.FC<PrestamosGridProps> = ({ cliente, prestamos }) => {
+  const { refreshClientes } = useClientContext(); // Incluye `clientes` para obtener actualizaciones
   const navigate = useNavigate();
 
-  // Obtener los préstamos del cliente desde el contexto
-  const clienteActualizado = clientes.find((c) => c.dni === cliente.dni);
-  const prestamos = clienteActualizado?.prestamo || [];
 
- const handleRowClicked = (prestamo: Prestamo) => {
-  navigate(`/pagos`, { state: { cliente, pagos: prestamo.pagos } });
-};
-
+  const handleRowClicked = async (prestamo: Prestamo) => {
+    try {
+      const pagos = await getPagosPorPrestamo(prestamo.idPrestamo);       
+      navigate(`/pagos`, { state: { cliente, prestamo, pagos } });
+    } catch (error) {
+      console.error("Error al cargar los pagos del préstamo:", error);
+    }
+  };
 
   const handleCarpetClicked = (prestamo: Prestamo) => {
     generarPDF(cliente, prestamo); // Genera el PDF con los datos del cliente y el préstamo seleccionado
@@ -82,7 +86,7 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ cliente }) => {
   const columns: TableColumn<Prestamo>[] = [
     {
       name: "ID",
-      selector: (row) => (row.id ? row.id.toString() : "N/A"), // Validar `row.id`
+      selector: (row) => (row.idPrestamo  ? row.idPrestamo.toString() : "N/A"), // Validar `row.id`
       sortable: true,
     },
     {
@@ -92,24 +96,24 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ cliente }) => {
     },
     {
       name: "Monto",
-      selector: (row) => (row.total ? `$ ${row.total.toString()}` : "N/A"), // Validar `row.total`
+      selector: (row) => (row.montoPrestamo ? `$ ${row.montoPrestamo.toString()}` : "N/A"), // Validar `row.total`
       sortable: true,
     },
     {
       name: "Fecha de Inicio",
-      selector: (row) => formatDate(row.fechaInicio || ""), // Validar `row.fechaInicio`
+      selector: (row) => formatDate(typeof row.fechaInicio === "string" ? row.fechaInicio : row.fechaInicio?.toISOString().split("T")[0] || ""), // Validar `row.fechaInicio`
       sortable: true,
       width: "150px",
     },
     {
       name: "Fecha de Finalizacion",
-      selector: (row) => formatDate(row.fechaFinalizacion || ""), // Validar `row.fechaFinalizacion`
+      selector: (row) => formatDate(typeof row.fechaFinalizacion === "string" ? row.fechaFinalizacion : row.fechaFinalizacion?.toISOString().split("T")[0] || ""), // Validar `row.fechaFinalizacion`
       sortable: true,
       width: "180px",
     },
     {
       name: "Cantidad de Cuotas",
-      selector: (row) => (row.pagos ? row.pagos.length.toString() : "0"), // Validar `row.pagos`
+      selector: (row) => (row.cantidadPagos ? row.cantidadPagos.toString() : "0"), // Validar `row.pagos`
       sortable: true,
       width: "180px",
     },
@@ -136,7 +140,7 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ cliente }) => {
             <IconButton
               aria-label="delete"
               color="error"
-              onClick={() => handleDeleteClicked(row.id)}
+              onClick={() => handleDeleteClicked(row.idPrestamo)}
             >
               <DeleteIcon />
             </IconButton>
@@ -168,7 +172,7 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ cliente }) => {
     <div className="prestamos-grid">
       <DataTable
         columns={columns}
-        data={prestamos}
+        data={prestamos || []}
         pagination
         highlightOnHover
         pointerOnHover

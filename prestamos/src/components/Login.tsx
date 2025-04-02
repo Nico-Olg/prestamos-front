@@ -29,7 +29,7 @@ const Login: React.FC = () => {
       // await refreshPagosHoy();      
       const rol = localStorage.getItem('rol');
       const id = localStorage.getItem('id');
-      const cobrador = localStorage.getItem('nombre');
+      
       if (rol === 'ADMIN') {
         await refreshClientes();
         navigate('/clientes');

@@ -7,15 +7,18 @@ export interface Cobrador {
 }
 
 export interface Pago {
-    id: number;
-    fechaPago: string | null; // Usamos string porque viene como "YYYY-MM-DD" en JSON
-    monto: number;
-    formaPago: string;
-    descripcion: string | null;
-    nombreCliente: string;
-    prestamoId: number;
-    nombreProducto: string;  
-    nroCuota: number;
+    id:               number;
+    fechaVencimiento: Date;
+    fechaPago:        Date | null;
+    nombreProducto:   string;
+    descripcion:      null;
+    monto:            number;
+    formaPago:        string;
+    montoAbonado:     number | null;
+    nroCuota:         number;
+    diferencia:       number | null;
+    billetes:         string | "";
+    nombreCliente:    string;
 }
 
 // ✅ Clase para mapear datos desde JSON
@@ -37,8 +40,8 @@ export class PagosMapper {
                 descripcion: p.descripcion ?? null,
                 nombreCliente: p.nombreCliente,
                 prestamoId: p.prestamoId,
-                producto: p.producto,
-                cuotaNro: p.cuotaNro,
+                nombreProducto: p.nombreProducto,
+                nroCuota: p.nroCuota,
             })),
         };
     }

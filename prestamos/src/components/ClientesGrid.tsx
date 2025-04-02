@@ -6,7 +6,7 @@ import { Cliente } from "../interfaces/Cliente"; // Importa la interfaz desde el
 import "../styles/ClientesGrid.css";
 
 const ClientesGrid: React.FC = () => {
-  const { clientes, refreshPrestamos } = useClientContext(); // Obtener clientes y función para refrescar préstamos desde el contexto
+  const { clientes, fetchPrestamos } = useClientContext(); // Obtener clientes y función para refrescar préstamos desde el contexto
   const [filteredClientes, setFilteredClientes] = useState<Cliente[]>(clientes);
   const [searchName, setSearchName] = useState<string>("");
   const [searchDNI, setSearchDNI] = useState<string>("");
@@ -16,11 +16,11 @@ const ClientesGrid: React.FC = () => {
     setFilteredClientes(clientes); // Actualiza la lista filtrada cuando los clientes cambian
   }, [clientes]);
 
-  const handleRowClicked = (cliente: Cliente) => {
+  const handleRowClicked = async (cliente: Cliente) => {
     console.log("Cliente seleccionado:", cliente);
-    refreshPrestamos(cliente.dni); // Refresca los préstamos del cliente seleccionado
+    const prestamos = await fetchPrestamos(cliente.dni); // Refresca los préstamos del cliente seleccionado
     console.log("Cliente seleccionado:", cliente);
-    navigate("/prestamos", { state: { cliente } }); // Navegar a PrestamosPage pasando el DNI del cliente
+    navigate("/prestamos", { state: { cliente, prestamos } }); // Navegar a PrestamosPage pasando el DNI del cliente
   };
 
   const handleSearchName = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,7 +77,7 @@ const ClientesGrid: React.FC = () => {
     },
     {
       name: "Barrio Particular",
-      selector: (row) => row.barrioParticular,
+      selector: (row) => row.barrioParticular || "No especificado",
       sortable: true,
     },
     {

@@ -5,9 +5,9 @@ import API_BASE_URL from './config'; // Importa la URL base
 function getAuthToken() {
   return localStorage.getItem('token');
 }
-function getUserRole() {
-  return localStorage.getItem('rol'); // Obtiene el rol almacenado en el login
-}
+// function getUserRole() {
+//   return localStorage.getItem('rol'); // Obtiene el rol almacenado en el login
+// }
 
 
 export async function getAllClients() {

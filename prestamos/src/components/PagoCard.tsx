@@ -1,25 +1,19 @@
 import React from "react";
-import "../styles/PagoCard.css"; // 🔹 Estilos específicos para las tarjetas
+import "../styles/PagoCard.css";
+import { Pago } from "../interfaces/Pagos"; // Asegúrate de que la ruta sea correcta
 
-interface Pago {
-  id: number;
-  nombreCliente: string;
-  cuotaNro: number;
-  producto: string;
-  monto: number;
-  montoAbonado?: number | null;
-  fechaPago?: string | null;
+// Extender el tipo Pago para incluir las props adicionales usadas en el componente
+type PagoConExtras = Pago & {
   handlePagoCuota: (pagoId: number, monto: number) => void;
-}
+  montoAbonado?: number | null;
+};
 
-const PagoCard: React.FC<{ pago: Pago }> = ({ pago }) => {
+const PagoCard: React.FC<{ pago: PagoConExtras }> = ({ pago }) => {
   const diferencia = pago.monto - (pago.montoAbonado || 0);
   const isPagado = (pago.montoAbonado && diferencia <= 0) || pago.fechaPago !== null;
 
-
   return (
-    <div className="pago-card"
-      style={{ backgroundColor: isPagado ? "#C7C8CA" : "white" }}>
+    <div className="pago-card" style={{ backgroundColor: isPagado ? "#C7C8CA" : "white" }}>
       <p><strong>📌 Cliente:</strong> {pago.nombreCliente}</p>
       <p><strong>💳 Producto:</strong> {pago.producto}</p>
       <p><strong>💳 Cuota nro:</strong> {pago.cuotaNro}</p>

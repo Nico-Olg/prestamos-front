@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation} from "react-router-dom";
 import Header from "../components/Header.tsx";
 import Sidebar from "../components/Sidebar.tsx";
 import PagosGrid from "../components/PagosGrid.tsx";
@@ -13,7 +13,6 @@ interface PagosPageProps {
 
 const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   const location = useLocation();
-  const navigate = useNavigate();
   const { cliente, cobrador, pagos: pagosIniciales } = location.state || {}; 
 
   // Estado para manejar los pagos correctamente

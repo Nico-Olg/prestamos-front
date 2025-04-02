@@ -5,7 +5,7 @@ import "../styles/PagosGrid.css";
 import { Pago } from "../interfaces/Pagos";
 
 interface PagoExtendido extends Pago {
-  montoAbonado?: number | null;
+  // montoAbonado?: number | null;
 }
 
 interface PagosGridProps {
@@ -44,7 +44,7 @@ const PagosGrid: React.FC<PagosGridProps> = ({ pagos, handlePagoCuota, mostrarCl
   }
 
   let columns: TableColumn<PagoExtendido>[] = [
-    { name: "Nro. Cuota", selector: (row) => row.nroCuota?.toString() || "Sin dato" },
+    { name: "Nro. Cuota", selector: (row) => row.nroCuota || "Sin dato" },
     { name: "Producto", selector: (row) => row.nombreProducto || "Sin producto", sortable: true },
     { name: "Monto Cuota", selector: (row) => `$${row.monto.toFixed(2)}` },
     { name: "Monto Abonado", selector: (row) => row.montoAbonado ? `$${row.montoAbonado.toFixed(2)}` : "No pagado" },

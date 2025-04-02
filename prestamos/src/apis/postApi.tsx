@@ -1,15 +1,13 @@
 import axios from "axios";
 import API_BASE_URL from './config'; // Importa la URL base
 import { Cliente } from "../interfaces/Cliente";
-import { Usuario } from "../interfaces/User";
+
 
 // Obtener el token JWT del localStorage
 function getAuthToken() {
   return localStorage.getItem('token');
 }
-function getUserRole() {
-  return localStorage.getItem('rol'); // Obtiene el rol almacenado en el login
-}
+
 
 
 export async function getPrestamosPorCliente(dni: number) {
@@ -40,7 +38,7 @@ export async function getPagosPorPrestamo(prestamoId: number) {
   try {
     const token = getAuthToken();
     const response = await axios.post(
-      `${API_BASE_URL}/pagos/obtener-pagos`,
+      `${API_BASE_URL}/pagos/por/prestamo`,
       { param: { id: prestamoId } },
       {
         headers: {

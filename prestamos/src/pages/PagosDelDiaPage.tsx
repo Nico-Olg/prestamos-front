@@ -5,35 +5,15 @@ import '../styles/PagosPage.css';
 import PagosGrid from '../components/PagosGrid.tsx';
 import { cobranzaDelDia, registrarPago } from "../apis/postApi";
 import Swal from "sweetalert2";
+import { Pago } from "../interfaces/Pagos";
 
-interface Pago {
-  id: number;
-  fechaPago: string | null;
-  nombreProducto: string;
-  descripcion: string | null;
-  monto: number;
-  formaPago: string;
-  montoAbonado: number | null;
-  nroCuota: number;
-}
+type PagoExtendido = Pago & {
+  montoAbonado?: number | null;
+  handlePagoCuota: (pagoId: number, monto: number) => void;
+};
 
 const PagosDelDiaPage: React.FC = () => {
-  const [pagosHoy, setPagosHoy] = useState<Pago[]>([]);
-
-  useEffect(() => {
-    const fetchPagosHoy = async () => {
-      try {
-        const cobradorId = 1; // 🚀 Obtener este ID correctamente
-        const today = new Date().toISOString().split('T')[0];
-        const data: Pago[] = await cobranzaDelDia(cobradorId, today);
-        setPagosHoy(data);
-      } catch (error) {
-        console.error("Error al obtener la cobranza del día:", error);
-      }
-    };
-
-    fetchPagosHoy();
-  }, []);
+  const [pagosHoy, setPagosHoy] = useState<PagoExtendido[]>([]);
 
   /** 🟢 Función para manejar el pago de una cuota **/
   const handlePagoCuota = async (pagoId: number, monto: number) => {
@@ -105,6 +85,28 @@ const PagosDelDiaPage: React.FC = () => {
       });
     }
   };
+
+  useEffect(() => {
+    const fetchPagosHoy = async () => {
+      try {
+        const cobradorId = 1;
+        const today = new Date().toISOString().split('T')[0];
+        const data: Pago[] = await cobranzaDelDia(cobradorId, today);
+
+        const pagosMapeados: PagoExtendido[] = data.map((p) => ({
+          ...p,
+          montoAbonado: p.monto ?? 0,
+          handlePagoCuota,
+        }));
+
+        setPagosHoy(pagosMapeados);
+      } catch (error) {
+        console.error("Error al obtener la cobranza del día:", error);
+      }
+    };
+
+    fetchPagosHoy();
+  }, []);
 
   return (
     <div className="pagos-page">
