@@ -31,8 +31,9 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ cliente, prestamos }) => 
     }
   };
 
-  const handleCarpetClicked = (prestamo: Prestamo) => {
-    generarPDF(cliente, prestamo); // Genera el PDF con los datos del cliente y el préstamo seleccionado
+  const handleCarpetClicked = async (prestamo: Prestamo) => {
+    const pagos = await getPagosPorPrestamo(prestamo.idPrestamo);
+    generarPDF(cliente, prestamo, pagos); // Genera el PDF con los datos del cliente y el préstamo seleccionado
   };
 
   const handleDeleteClicked = async (prestamoId: number) => {
