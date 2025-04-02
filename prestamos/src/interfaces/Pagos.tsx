@@ -14,8 +14,8 @@ export interface Pago {
     descripcion: string | null;
     nombreCliente: string;
     prestamoId: number;
-    producto: string;
-    cuotaNro: number;
+    nombreProducto: string;  
+    nroCuota: number;
 }
 
 // ✅ Clase para mapear datos desde JSON

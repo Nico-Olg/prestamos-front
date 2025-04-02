@@ -10,12 +10,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 10vw;
-  height: 10vw;
-  max-width: 50px;
-  max-height: 50px;
-  min-width: 35px;
-  min-height: 35px;
+  width: 14vw;
+  height: 14vw;
+  max-width: 70px;
+  max-height: 70px;
+  min-width: 45px;
+  min-height: 45px;
   position: absolute;
   top: 2vh;
   left: 2vw;
@@ -25,10 +25,10 @@
 /* Icono de hamburguesa */
 .menu-btn .bar {
   display: block;
-  width: 25px;
-  height: 3px;
+  width: 30px;
+  height: 4px;
   background-color: white;
-  margin: 5px auto;
+  margin: 6px auto;
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
 

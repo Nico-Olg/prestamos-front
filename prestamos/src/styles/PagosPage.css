@@ -8,7 +8,8 @@
   display: flex;
   flex: 1;
   position: relative;
-  flex-direction: column; /* En móviles, los elementos se apilan verticalmente */
+  /* flex-direction: column;  */
+  /* En móviles, los elementos se apilan verticalmente */
 }
 
 /* Botón de regreso */

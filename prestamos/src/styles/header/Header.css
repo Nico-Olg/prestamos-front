@@ -1,6 +1,16 @@
 /* 🔹 HEADER PRINCIPAL */
 .header, .header-mobile {
-  background-color: #282c34; /* 🔥 Color original */
+  /* 🔥 Color original #282c34; */
+  /* 🔥 Color alternativo #1e1e1e; */
+  /* 🔥 Color alternativo #20232a; */
+  /* 🔥 Color alternativo #181818; */
+  /* 🔥 Color alternativo #121212; */
+  /* 🔥 Color alternativo #0d0d0d; */
+  /* 🔥 Color alternativo #0a0a0a; */
+  /* 🔥 Color alternativo #050505; */
+ background-color: #282c34; /* 🔥 Color original */
+ 
+
   padding: 20px;
   color: white;
   display: flex;
@@ -26,6 +36,24 @@
 
 /* Título */
 .header__title {
+  width: 85%;
+  text-align: center;  
   margin: 0;
   font-size: 1.5em;
 }
+
+.header-mobile { 
+
+  background-color: #282c34; /* 🔥 Color original */
+  padding:10px;
+  color: white;
+  justify-content: center;
+  align-items: center;
+  height: 80px;
+  width: 100%;
+  position: relative;
+}
+
+
+
+

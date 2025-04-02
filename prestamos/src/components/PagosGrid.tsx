@@ -44,8 +44,8 @@ const PagosGrid: React.FC<PagosGridProps> = ({ pagos, handlePagoCuota, mostrarCl
   }
 
   let columns: TableColumn<PagoExtendido>[] = [
-    { name: "Nro. Cuota", selector: (row) => row.cuotaNro?.toString() || "Sin dato" },
-    { name: "Producto", selector: (row) => row.producto || "Sin producto", sortable: true },
+    { name: "Nro. Cuota", selector: (row) => row.nroCuota?.toString() || "Sin dato" },
+    { name: "Producto", selector: (row) => row.nombreProducto || "Sin producto", sortable: true },
     { name: "Monto Cuota", selector: (row) => `$${row.monto.toFixed(2)}` },
     { name: "Monto Abonado", selector: (row) => row.montoAbonado ? `$${row.montoAbonado.toFixed(2)}` : "No pagado" },
     { name: "Diferencia", selector: (row) => row.montoAbonado ? `$${(row.monto - row.montoAbonado).toFixed(2)}` : "No pagado" },

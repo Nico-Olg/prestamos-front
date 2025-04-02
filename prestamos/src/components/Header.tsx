@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/header/Header.css';
 import '../styles/header/hamburgerMenu.css';
 import '../styles/header/dateTimeCard.css';
+import '../styles/header/controlPanel.css';
 
 import logo from '../assets/logo_plan_cor.png';
 

@@ -42,7 +42,8 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
         cancelButtonText: "No, cambiar monto",
         showCloseButton: true,
         allowOutsideClick: false,
-      });
+        width: '85%',
+              });
 
       if (result.dismiss === Swal.DismissReason.close) return;
 
@@ -64,6 +65,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
             }
             return null;
           },
+          width: '85%',
         });
 
         if (isDismissed) return;
@@ -85,6 +87,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
         icon: "success",
         title: "Pago realizado",
         text: `El pago de $${montoFinal} se realizó con éxito.`,
+        width: '85%',
       });
     } catch (error) {
       console.error("Error realizando el pago: ", error);
@@ -92,6 +95,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
         icon: "error",
         title: "Error",
         text: "Hubo un problema al realizar el pago.",
+        width: '85%',
       });
     }
   };
