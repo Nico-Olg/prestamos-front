@@ -327,11 +327,15 @@ const EditarCliente: React.FC = () => {
                 ))}
               </select>
             </div>
-
-            <button type="submit" className="btn">
+          </form>
+          <div>
+            <p className="info-text"></p>
+          </div>
+          <div className="btn-container">
+            <button type="submit" className="action-btn">
               Guardar Cambios
             </button>
-          </form>
+          </div>
         </div>
       </div>
       <ToastContainer />

@@ -1,14 +1,15 @@
 .sidebar {
   width: 220px;
   padding: 30px 15px;
-  margin-top: 3%;
+  margin-top: 2%;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   height: 70vh;
-  background-color: #ffffff;
+  background-color: #f7f5f5;
   border-right: 1px solid #e5e5e5;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
 }
 
 .sidebar .btn,

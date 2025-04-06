@@ -49,11 +49,15 @@ const ClientesGrid: React.FC = () => {
       name: "Nombre",
       selector: (row) => row.apellidoYnombre,
       sortable: true,
+        grow: 1.5, 
+    wrap: true, 
     },
     {
-      name: "DNI",
-      selector: (row) => row.dni.toString(),
-      sortable: true,
+          name: "DNI",
+    selector: (row) => row.dni.toString(),
+    sortable: true,
+    width: "120px", 
+     
     },
     {
       name: "Fecha de Nacimiento",
@@ -74,21 +78,25 @@ const ClientesGrid: React.FC = () => {
       name: "Dirección Particular",
       selector: (row) => row.direccionParticular,
       sortable: true,
+      grow: 1.5,
     },
     {
       name: "Barrio Particular",
       selector: (row) => row.barrioParticular || "No especificado",
       sortable: true,
+      
     },
     {
       name: "Teléfono",
       selector: (row) => row.tel,
       sortable: true,
+      width: "8%",
     },
     {
       name: "Fecha de Alta",
       selector: (row) => row.fechaAlta.toString(),
       sortable: true,
+      width: "8%",      
     },
   ];
 

@@ -1,6 +1,7 @@
 import axios from "axios";
 import API_BASE_URL from './config'; // Importa la URL base
 import { Cliente } from "../interfaces/Cliente";
+import { RefinanciacionRequest } from "../interfaces/RefinianciacionRequest"; // Asegúrate de que la ruta sea correcta
 
 
 // Obtener el token JWT del localStorage
@@ -469,6 +470,27 @@ export async function borrarCreditos(prestamo_id: number) {
     } else {
       throw new Error('Error desconocido al borrar los créditos');
     }
+  }
+}
+export async function refinanciarPrestamos(data: RefinanciacionRequest) {
+  try {
+     const token = getAuthToken();
+    const response = await axios.post(
+      `${API_BASE_URL}/prestamos/refinanciar`,
+      data,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, 
+        },
+        withCredentials: true,
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error("Error al refinanciar los préstamos:", error);
+    throw error;
   }
 }
 
