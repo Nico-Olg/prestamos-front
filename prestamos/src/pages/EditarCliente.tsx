@@ -5,7 +5,8 @@ import Barrios from "../utils/Barrios_Rubros";
 import "../styles/AltaCliente.css";
 import { getAllClients, getCobradores } from "../apis/getApi";
 import { toast, ToastContainer } from "react-toastify";
-import { Cliente, Cobrador } from "../interfaces/Cliente";
+import { Cliente } from "../interfaces/Cliente";
+import { Cobrador } from "../interfaces/Pagos";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import { editarCliente } from "../apis/postApi";
@@ -83,13 +84,13 @@ const EditarCliente: React.FC = () => {
       tel: formData.get("tel") as string,
       direccionComercial: formData.get("direccion_comercial") as string,
       direccionParticular: formData.get("direccion_particular") as string,
-      fechaNac: formData.get("fecha_nac") as string,
+      fechaNac: new Date(formData.get("fecha_nac") as string),
       rubro: formData.get("rubro") as string,
-      tel2: formData.get("tel2") ? (formData.get("tel2") as string) : undefined,
+      tel2: formData.get("tel2") ? (formData.get("tel2") as string) : "",
       socio_conyugue: formData.get("socio") as string,
       fechaAlta: selectedCliente!.fechaAlta, // Mantener la fechaAlta existente
-      cobrador: selectedCliente!.cobrador, // Mantener el cobrador existente
-      prestamo: selectedCliente!.prestamo, // Mantener los prestamos existentes
+      cobrador_id: selectedCliente!.cobrador_id,
+      orden: selectedCliente!.orden,
     };
 
     try {
@@ -159,11 +160,17 @@ const EditarCliente: React.FC = () => {
                 id="fecha_nac"
                 name="fecha_nac"
                 required
-                value={selectedCliente?.fechaNac || ""}
+                value={
+                  selectedCliente?.fechaNac
+                    ? typeof selectedCliente.fechaNac === "string"
+                      ? selectedCliente.fechaNac
+                      : selectedCliente.fechaNac.toISOString().split("T")[0]
+                    : ""
+                }
                 onChange={(e) =>
                   setSelectedCliente({
                     ...selectedCliente!,
-                    fechaNac: e.target.value,
+                    fechaNac: new Date(e.target.value),
                   })
                 }
               />
@@ -304,17 +311,11 @@ const EditarCliente: React.FC = () => {
                 id="cobrador"
                 name="cobrador"
                 required
-                value={selectedCliente?.cobrador?.id || ""}
+                value={selectedCliente?.cobrador_id || ""}
                 onChange={(e) =>
                   setSelectedCliente({
                     ...selectedCliente!,
-                    cobrador: {
-                      id: Number(e.target.value),
-                      nombreyApellido: e.target.value,
-                      dni: Number(e.target.value),
-                      zona: Number(e.target.value),
-                      tel: e.target.value,
-                    },
+                    cobrador_id: Number(e.target.value),
                   })
                 }
               >

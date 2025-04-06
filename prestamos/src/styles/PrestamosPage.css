@@ -5,13 +5,14 @@
 }
 
 .content {
-  display:flex;
+  display: flex;
   flex: 1; /* El contenido ocupa todo el espacio restante */
-  overflow-y: auto; /* Si hay contenido desbordante, permite el scroll dentro del contenido */
+  overflow-y: auto;
   position: relative;
 }
 
-.btn {
+/* Botón funcional fuera del sidebar */
+.action-btn {
   background: #004dff;
   color: white;
   border: none;

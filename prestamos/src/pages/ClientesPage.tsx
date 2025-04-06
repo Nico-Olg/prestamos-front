@@ -11,7 +11,7 @@ const ClientesPage: React.FC = () => {
       <Header title="Todos los Clientes" />
       <div className="content">
         <Sidebar />
-        <ClientesGrid />
+        <ClientesGrid />        
       </div>
     </div>
   );

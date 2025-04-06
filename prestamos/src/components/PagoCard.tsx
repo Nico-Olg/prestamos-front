@@ -15,12 +15,12 @@ const PagoCard: React.FC<{ pago: PagoConExtras }> = ({ pago }) => {
   return (
     <div className="pago-card" style={{ backgroundColor: isPagado ? "#C7C8CA" : "white" }}>
       <p><strong>📌 Cliente:</strong> {pago.nombreCliente}</p>
-      <p><strong>💳 Producto:</strong> {pago.producto}</p>
-      <p><strong>💳 Cuota nro:</strong> {pago.cuotaNro}</p>
+      <p><strong>💳 Producto:</strong> {pago.nombreProducto}</p>
+      <p><strong>💳 Cuota nro:</strong> {pago.nroCuota}</p>
       <p><strong>💰 Monto Cuota:</strong> ${pago.monto.toFixed(2)}</p>
       <p><strong>💵 Monto Abonado:</strong> ${pago.montoAbonado || 0}</p>
       <p><strong>⚠ Diferencia:</strong> ${diferencia}</p>
-      <p><strong>📅 Fecha de Pago:</strong> {pago.fechaPago || "No pagado"}</p>
+      <p><strong>📅 Fecha de Pago:</strong> {pago.fechaPago ? (pago.fechaPago instanceof Date ? pago.fechaPago.toLocaleDateString() : pago.fechaPago) : "No pagado"}</p>
 
       {isPagado ? (
         <span className="pagado">✅ Cuota Pagada</span>

@@ -123,7 +123,7 @@ const CobradoresGrid: React.FC = () => {
           onRowClicked={handleRowClicked}
         />
         <div className="button-container">
-          <button className="btn" onClick={() => navigate("/alta-cobrador")}>
+          <button className="action-btn secondary" onClick={() => navigate("/alta-cobrador")}>
             Añadir Cobrador
           </button>
         </div>

@@ -30,22 +30,6 @@ const isMobileDevice = () => {
 };
 
 // Componente de ruta protegida
-const ProtectedRoute: React.FC<{ children: JSX.Element }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsAuthenticated(!!token);
-    setLoading(false);
-  }, []);
-
-  if (loading) {
-    return <div>Cargando...</div>;
-  }
-
-  return isAuthenticated ? children : <Navigate to="/login" />;
-};
 
 const RoleBasedRoute: React.FC<{ children: JSX.Element; allowedRoles: string[] }> = ({ children, allowedRoles }) => {
   const [userRole, setUserRole] = useState<string | null>(null);

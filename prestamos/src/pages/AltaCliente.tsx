@@ -170,7 +170,7 @@ const AltaCliente: React.FC = () => {
                 ))}
               </select>
             </div>
-            <button type="submit" className="btn">
+            <button type="submit" className="action-btn">
               Guardar
             </button>
           </form>

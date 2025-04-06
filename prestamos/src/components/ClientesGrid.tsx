@@ -124,7 +124,7 @@ const ClientesGrid: React.FC = () => {
           onRowClicked={handleRowClicked}
         />
         <div className="button-container">
-          <button className="btn" onClick={() => navigate("/alta-cliente")}>
+          <button className="action-btn" onClick={() => navigate("/alta-cliente")}>
             Añadir Cliente
           </button>
         </div>

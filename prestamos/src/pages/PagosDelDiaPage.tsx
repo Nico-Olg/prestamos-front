@@ -64,7 +64,7 @@ const PagosDelDiaPage: React.FC = () => {
             ? {
                 ...p,
                 montoAbonado: (p.montoAbonado || 0) + montoFinal,
-                fechaPago: new Date().toISOString(),
+                fechaPago: new Date(),
               }
             : p
         )
