@@ -115,9 +115,7 @@ export default function RefinanciarPrestamo() {
             <CardContent>
               <FormikStepper initialValues={initialValues} onSubmit={() => {}}>
                 <FormikStep label="Buscar Cliente">
-                  <BuscarClienteRefinanciacionStep
-                    onClienteSeleccionado={() => {}}
-                  />
+                  <BuscarClienteRefinanciacionStep />
                 </FormikStep>
 
                 <FormikStep label="Seleccionar Préstamos">

@@ -2,14 +2,13 @@ import React, { useState } from "react";
 import { TextField, Autocomplete, Box } from "@mui/material";
 import { Cliente } from "../../../interfaces/Cliente";
 import { getAllClients } from "../../../apis/getApi";
+import { useFormikContext } from "formik"; // Importamos el contexto de Formik
 
-interface BuscarClienteRefinanciacionStepProps {
-  onClienteSeleccionado: (cliente: Cliente) => void;
-}
-
-const BuscarClienteRefinanciacionStep: React.FC<BuscarClienteRefinanciacionStepProps> = ({ onClienteSeleccionado }) => {
+const BuscarClienteRefinanciacionStep: React.FC = () => {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [_inputValue, setInputValue] = useState<string>("");
+
+  const { setFieldValue } = useFormikContext<any>(); // Usamos Formik para setear el cliente
 
   const buscarClientes = async (value: string) => {
     try {
@@ -34,7 +33,7 @@ const BuscarClienteRefinanciacionStep: React.FC<BuscarClienteRefinanciacionStepP
           if (value.length >= 2) buscarClientes(value);
         }}
         onChange={(_event, value) => {
-          if (value) onClienteSeleccionado(value);
+          if (value) setFieldValue("cliente", value); // Seteamos el cliente en Formik
         }}
         renderInput={(params) => (
           <TextField
