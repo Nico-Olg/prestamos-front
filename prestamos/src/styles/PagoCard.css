@@ -24,3 +24,73 @@
 .btn-pagar:hover {
   background-color: #003bb5;
 }
+
+.total-cobrado {
+  font-size: 18px;
+  font-weight: bold;
+  color: #004dff;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.btn-finalizar {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 20px;
+  margin: 20px auto;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  display: block;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-finalizar:hover {
+  background-color: #218838;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h2 {
+  margin-bottom: 20px;
+}
+
+.modal-content p {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.modal-content button {
+  margin-top: 20px;
+  padding: 10px 15px;
+  background-color: #004dff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.modal-content button:hover {
+  background-color: #003bb5;
+}

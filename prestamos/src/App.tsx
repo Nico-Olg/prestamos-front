@@ -21,7 +21,6 @@ const AltaUsuario = lazy(() => import("./pages/AltaUsuario"));
 const AltaCobrador = lazy(() => import("./pages/AltaCobrador"));
 const ProductosPage = lazy(() => import("./pages/ProductosPage"));
 const NuevoProducto = lazy(() => import("./pages/NuevoProducto"));
-const PagosDelDia = lazy(() => import("./pages/PagosDelDiaPage"));
 const EditarCliente = lazy(() => import("./pages/EditarCliente"));
 const RefinanciarPrestamo = lazy(() => import("./pages/refinanciacion/RefinanciarPrestamo"));
 
@@ -84,8 +83,7 @@ const App: React.FC = () => {
               <Route path="/refinanciar" element={<RoleBasedRoute allowedRoles={["ADMIN"]}><RefinanciarPrestamo  /></RoleBasedRoute>} />
 
               {/* Rutas accesibles para ADMIN y COBRADOR */}
-              <Route path="/cobradores/:id/clientes" element={<RoleBasedRoute allowedRoles={["ADMIN", "COBRADOR"]}><ClientesPorCobradores /></RoleBasedRoute>} />
-              <Route path="/pagosHoyGrid" element={<RoleBasedRoute allowedRoles={["ADMIN", "COBRADOR"]}><PagosDelDia  /></RoleBasedRoute>} />
+              <Route path="/cobradores/:id/clientes" element={<RoleBasedRoute allowedRoles={["ADMIN", "COBRADOR"]}><ClientesPorCobradores /></RoleBasedRoute>} />              
               <Route path="/cobradores" element={<RoleBasedRoute allowedRoles={["ADMIN", "COBRADOR"]}><Cobradores /></RoleBasedRoute>} />
               <Route path="/pagos" element={<RoleBasedRoute allowedRoles={["ADMIN","COBRADOR"]}><Pagos isMobile={isMobile}/></RoleBasedRoute>} />
 
