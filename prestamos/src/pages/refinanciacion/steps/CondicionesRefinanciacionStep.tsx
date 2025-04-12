@@ -80,9 +80,9 @@ const CondicionesRefinanciacionStep = () => {
         </Grid>
         <Grid item xs={12} sm={6}>
           <Field
-            name="interes"
+            name="montoCuota"
             component={TextField}
-            label="Interés (%)"
+            label="Monto de Cutoa"
             type="number"
             fullWidth
           />
