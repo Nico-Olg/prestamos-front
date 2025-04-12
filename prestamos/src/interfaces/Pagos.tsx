@@ -42,6 +42,7 @@ export class PagosMapper {
                 prestamoId: p.prestamoId,
                 nombreProducto: p.nombreProducto,
                 nroCuota: p.nroCuota,
+                montoAbonado: p.montoAbonado ?? null,
             })),
         };
     }

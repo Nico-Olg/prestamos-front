@@ -1,3 +1,4 @@
+// src/pages/EditarCliente.tsx
 import React, { useEffect, useState } from "react";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
@@ -26,32 +27,28 @@ const EditarCliente: React.FC = () => {
     setBarrios(barriosInstance.getBarrios());
     setRubros(barriosInstance.getRubros());
 
-    // Obtener cobradores desde la API
     const fetchCobradores = async () => {
       try {
-        const cobradoresData = await getCobradores();
-        setCobradores(cobradoresData);
+        const data = await getCobradores();
+        setCobradores(data);
       } catch (error) {
         console.error("Error fetching cobradores:", error);
       }
     };
 
-    fetchCobradores();
-
-    // Obtener lista de clientes para edición
     const fetchClientes = async () => {
       try {
-        const clientesData = await getAllClients(); // Llamada al endpoint para obtener clientes
-        setClientesList(clientesData);
+        const data = await getAllClients();
+        setClientesList(data);
       } catch (error) {
         console.error("Error fetching clientes:", error);
       }
     };
 
+    fetchCobradores();
     fetchClientes();
   }, []);
 
-  // Filtrar clientes basados en lo que escribe el usuario en el campo "Nombre"
   const handleNombreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setNombreBusqueda(value);
@@ -68,38 +65,18 @@ const EditarCliente: React.FC = () => {
 
   const handleClienteSelect = (cliente: Cliente) => {
     setSelectedCliente(cliente);
-    setNombreBusqueda(cliente.apellidoYnombre); // Asignar el nombre seleccionado al campo de búsqueda
-    setFilteredClientes([]); // Ocultar las sugerencias
+    setNombreBusqueda(cliente.apellidoYnombre);
+    setFilteredClientes([]);
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const clienteData: Cliente = {
-      id: selectedCliente!.id,
-      apellidoYnombre: formData.get("nombre") as string,
-      barrioComercial: formData.get("barrio_comercial") as string,
-      dni: Number(formData.get("dni")),
-      barrioParticular: formData.get("barrio_particular") as string,
-      tel: formData.get("tel") as string,
-      direccionComercial: formData.get("direccion_comercial") as string,
-      direccionParticular: formData.get("direccion_particular") as string,
-      fechaNac: new Date(formData.get("fecha_nac") as string),
-      rubro: formData.get("rubro") as string,
-      tel2: formData.get("tel2") ? (formData.get("tel2") as string) : "",
-      socio_conyugue: formData.get("socio") as string,
-      fechaAlta: selectedCliente!.fechaAlta, // Mantener la fechaAlta existente
-      cobrador_id: selectedCliente!.cobrador_id,
-      orden: selectedCliente!.orden,
-    };
+    if (!selectedCliente) return;
 
     try {
-      // Aquí se llamaría a la API para editar el cliente (simulado con toast)
-      await editarCliente(clienteData);
+      await editarCliente(selectedCliente);
       toast.success("Datos del cliente actualizados con éxito!");
-      setTimeout(() => {
-        navigate("/clientes");
-      }, 3000);
+      setTimeout(() => navigate("/clientes"), 3000);
     } catch (error: any) {
       toast.error(error.message);
     }
@@ -162,9 +139,9 @@ const EditarCliente: React.FC = () => {
                 required
                 value={
                   selectedCliente?.fechaNac
-                    ? typeof selectedCliente.fechaNac === "string"
-                      ? selectedCliente.fechaNac
-                      : selectedCliente.fechaNac.toISOString().split("T")[0]
+                    ? new Date(selectedCliente.fechaNac)
+                        .toISOString()
+                        .split("T")[0]
                     : ""
                 }
                 onChange={(e) =>
@@ -216,6 +193,7 @@ const EditarCliente: React.FC = () => {
               </select>
             </div>
 
+            {/* DOMICILIO PARTICULAR - columna 1 */}
             <div className="form-group dompart">
               <label htmlFor="direccion_particular">Domicilio Particular</label>
               <input
@@ -231,6 +209,29 @@ const EditarCliente: React.FC = () => {
                   })
                 }
               />
+            </div>
+
+            {/* BARRIO PARTICULAR - columna 2 */}
+            <div className="form-group barrio-particular">
+              <label htmlFor="barrio_particular">Barrio Particular</label>
+              <select
+                id="barrio_particular"
+                name="barrio_particular"
+                value={selectedCliente?.barrioParticular || ""}
+                onChange={(e) =>
+                  setSelectedCliente({
+                    ...selectedCliente!,
+                    barrioParticular: e.target.value,
+                  })
+                }
+              >
+                <option value="">Seleccione Barrio</option>
+                {barrios.map((barrio, index) => (
+                  <option key={index} value={barrio}>
+                    {barrio}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="form-group rubro">
@@ -259,7 +260,7 @@ const EditarCliente: React.FC = () => {
             <div className="form-group celular">
               <label htmlFor="tel">Teléfono</label>
               <input
-                type="number"
+                type="text"
                 id="tel"
                 name="tel"
                 required
@@ -276,7 +277,7 @@ const EditarCliente: React.FC = () => {
             <div className="form-group celular2">
               <label htmlFor="tel2">Teléfono 2</label>
               <input
-                type="number"
+                type="text"
                 id="tel2"
                 name="tel2"
                 value={selectedCliente?.tel2 || ""}
@@ -327,15 +328,13 @@ const EditarCliente: React.FC = () => {
                 ))}
               </select>
             </div>
+
+            <div className="btn">
+              <button type="submit" className="action-btn">
+                Guardar Cambios
+              </button>
+            </div>
           </form>
-          <div>
-            <p className="info-text"></p>
-          </div>
-          <div className="btn-container">
-            <button type="submit" className="action-btn">
-              Guardar Cambios
-            </button>
-          </div>
         </div>
       </div>
       <ToastContainer />
