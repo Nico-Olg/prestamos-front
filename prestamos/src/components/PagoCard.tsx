@@ -38,7 +38,7 @@ const PagoCard: React.FC<PagoCardProps> = ({
       <div className="pago-card" style={{ backgroundColor: isPagado ? "#C7C8CA" : "white" }}>
         <p><strong>📌 Cliente:</strong> {pago.nombreCliente}</p>
         <p><strong>💳 Producto:</strong> {pago.nombreProducto}</p>
-        <p><strong>💳 Cuota nro:</strong> {pago.nroCuota}</p>
+        <p><strong>💳 Cuota nro:</strong> {pago.nroCuota + " / "+ pago.cantCuotas}</p>
         <p><strong>💰 Monto Cuota:</strong> ${pago.monto.toFixed(2)}</p>
         <p><strong>💵 Monto Abonado:</strong> ${pago.montoAbonado || 0}</p>
         <p><strong>⚠ Diferencia:</strong> ${diferencia}</p>

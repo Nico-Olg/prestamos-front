@@ -19,6 +19,7 @@ export interface Pago {
     diferencia:       number | null;
     billetes:         string | "";
     nombreCliente:    string;
+    cantCuotas:      number;
 }
 
 // ✅ Clase para mapear datos desde JSON
@@ -43,6 +44,7 @@ export class PagosMapper {
                 nombreProducto: p.nombreProducto,
                 nroCuota: p.nroCuota,
                 montoAbonado: p.montoAbonado ?? null,
+                cantCuotas: p.cantCuotas,
             })),
         };
     }
