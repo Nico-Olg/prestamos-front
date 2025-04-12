@@ -48,7 +48,7 @@ const UsuariosGrid: React.FC<UsuariosGridProps> = ({ usuarios }) => {
        
       />
        <div className="button-container">
-          <button className="btn" onClick={() => navigate("/alta-usuario")}>
+          <button className="action-btn" onClick={() => navigate("/alta-usuario")}>
             Nuevo Usuario
           </button>
         </div>

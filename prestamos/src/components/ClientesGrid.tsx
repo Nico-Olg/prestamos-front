@@ -6,7 +6,7 @@ import { Cliente } from "../interfaces/Cliente"; // Importa la interfaz desde el
 import "../styles/ClientesGrid.css";
 
 const ClientesGrid: React.FC = () => {
-  const { clientes, refreshPrestamos } = useClientContext(); // Obtener clientes y función para refrescar préstamos desde el contexto
+  const { clientes, fetchPrestamos } = useClientContext(); // Obtener clientes y función para refrescar préstamos desde el contexto
   const [filteredClientes, setFilteredClientes] = useState<Cliente[]>(clientes);
   const [searchName, setSearchName] = useState<string>("");
   const [searchDNI, setSearchDNI] = useState<string>("");
@@ -16,11 +16,11 @@ const ClientesGrid: React.FC = () => {
     setFilteredClientes(clientes); // Actualiza la lista filtrada cuando los clientes cambian
   }, [clientes]);
 
-  const handleRowClicked = (cliente: Cliente) => {
+  const handleRowClicked = async (cliente: Cliente) => {
     console.log("Cliente seleccionado:", cliente);
-    refreshPrestamos(cliente.dni); // Refresca los préstamos del cliente seleccionado
+    const prestamos = await fetchPrestamos(cliente.dni); // Refresca los préstamos del cliente seleccionado
     console.log("Cliente seleccionado:", cliente);
-    navigate("/prestamos", { state: { cliente } }); // Navegar a PrestamosPage pasando el DNI del cliente
+    navigate("/prestamos", { state: { cliente, prestamos } }); // Navegar a PrestamosPage pasando el DNI del cliente
   };
 
   const handleSearchName = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,11 +49,15 @@ const ClientesGrid: React.FC = () => {
       name: "Nombre",
       selector: (row) => row.apellidoYnombre,
       sortable: true,
+        grow: 1.5, 
+    wrap: true, 
     },
     {
-      name: "DNI",
-      selector: (row) => row.dni.toString(),
-      sortable: true,
+          name: "DNI",
+    selector: (row) => row.dni.toString(),
+    sortable: true,
+    width: "120px", 
+     
     },
     {
       name: "Fecha de Nacimiento",
@@ -74,21 +78,25 @@ const ClientesGrid: React.FC = () => {
       name: "Dirección Particular",
       selector: (row) => row.direccionParticular,
       sortable: true,
+      grow: 1.5,
     },
     {
       name: "Barrio Particular",
-      selector: (row) => row.barrioParticular,
+      selector: (row) => row.barrioParticular || "No especificado",
       sortable: true,
+      
     },
     {
       name: "Teléfono",
       selector: (row) => row.tel,
       sortable: true,
+      width: "8%",
     },
     {
       name: "Fecha de Alta",
       selector: (row) => row.fechaAlta.toString(),
       sortable: true,
+      width: "8%",      
     },
   ];
 
@@ -124,7 +132,7 @@ const ClientesGrid: React.FC = () => {
           onRowClicked={handleRowClicked}
         />
         <div className="button-container">
-          <button className="btn" onClick={() => navigate("/alta-cliente")}>
+          <button className="action-btn" onClick={() => navigate("/alta-cliente")}>
             Añadir Cliente
           </button>
         </div>

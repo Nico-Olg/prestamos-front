@@ -8,6 +8,8 @@ export interface PagosHoy {
     prestamo:    Prestamo;
     producto:    string;
     cuotaNro:    number;
+    montoAbonado?: number;
+    diferencia?: number;
     
 
 }

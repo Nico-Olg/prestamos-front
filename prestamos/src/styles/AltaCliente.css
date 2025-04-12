@@ -87,7 +87,9 @@ body {
 .form-group.dompart {
   grid-column: 1 / 2;
 }
-
+.form-group.barrio-particular {
+  grid-column: 2 / 3;
+}
 .form-group.socio {
   grid-column: 1 / 2;
 }

@@ -5,6 +5,10 @@ import API_BASE_URL from './config'; // Importa la URL base
 function getAuthToken() {
   return localStorage.getItem('token');
 }
+// function getUserRole() {
+//   return localStorage.getItem('rol'); // Obtiene el rol almacenado en el login
+// }
+
 
 export async function getAllClients() {
   try {
@@ -85,27 +89,48 @@ export async function getCobradores() {
 }
 
 export async function getClientesPorCobrador(cobradorId: number) {
-  const token = getAuthToken();
-  const response = await axios.get(`${API_BASE_URL}/cobradores/${cobradorId}/clientes`, {
-    headers: { 'Authorization': `Bearer ${token}` },
-  });
-  return response.data;
-}
-export async function getPagosDeHoy() {
   try {
-    const token = localStorage.getItem('token');
-    const response = await axios.get(`${API_BASE_URL}/pagos/pagos-hoy`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      },
-      withCredentials: true,
-    });
+    const token = getAuthToken();
+    const response = await axios.get(
+      `${API_BASE_URL}/cobradores/${cobradorId}/clientes`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        withCredentials: true,
+      }
+    );
     return response.data;
   } catch (error) {
-    console.error("Error fetching pagos de hoy: ", error);
-    throw error;
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Error al obtener los clientes: ${error.response?.status} ${error.response?.statusText}`);
+    } else {
+      throw new Error('Error desconocido al obtener los clientes');
+    }
   }
 }
+export const getPagosDeHoy = async (data: { cobrador_id: number; fecha: string }) => {
+  try {
+    const response = await fetch("URL_DEL_BACKEND/pagos-hoy", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error("Error al obtener los pagos del día");
+    }
+
+    return await response.json(); // Retorna { pagos: [], cobrador: {} }
+  } catch (error) {
+    console.error("Error en getPagosDeHoy:", error);
+    return null;
+  }
+};
+
+
 export async function getUsuarios() {
   try {
     const token = getAuthToken();

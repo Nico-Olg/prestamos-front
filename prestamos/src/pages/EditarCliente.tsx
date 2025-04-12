@@ -1,3 +1,4 @@
+// src/pages/EditarCliente.tsx
 import React, { useEffect, useState } from "react";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
@@ -5,7 +6,8 @@ import Barrios from "../utils/Barrios_Rubros";
 import "../styles/AltaCliente.css";
 import { getAllClients, getCobradores } from "../apis/getApi";
 import { toast, ToastContainer } from "react-toastify";
-import { Cliente, Cobrador } from "../interfaces/Cliente";
+import { Cliente } from "../interfaces/Cliente";
+import { Cobrador } from "../interfaces/Pagos";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import { editarCliente } from "../apis/postApi";
@@ -25,32 +27,28 @@ const EditarCliente: React.FC = () => {
     setBarrios(barriosInstance.getBarrios());
     setRubros(barriosInstance.getRubros());
 
-    // Obtener cobradores desde la API
     const fetchCobradores = async () => {
       try {
-        const cobradoresData = await getCobradores();
-        setCobradores(cobradoresData);
+        const data = await getCobradores();
+        setCobradores(data);
       } catch (error) {
         console.error("Error fetching cobradores:", error);
       }
     };
 
-    fetchCobradores();
-
-    // Obtener lista de clientes para edición
     const fetchClientes = async () => {
       try {
-        const clientesData = await getAllClients(); // Llamada al endpoint para obtener clientes
-        setClientesList(clientesData);
+        const data = await getAllClients();
+        setClientesList(data);
       } catch (error) {
         console.error("Error fetching clientes:", error);
       }
     };
 
+    fetchCobradores();
     fetchClientes();
   }, []);
 
-  // Filtrar clientes basados en lo que escribe el usuario en el campo "Nombre"
   const handleNombreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setNombreBusqueda(value);
@@ -67,38 +65,18 @@ const EditarCliente: React.FC = () => {
 
   const handleClienteSelect = (cliente: Cliente) => {
     setSelectedCliente(cliente);
-    setNombreBusqueda(cliente.apellidoYnombre); // Asignar el nombre seleccionado al campo de búsqueda
-    setFilteredClientes([]); // Ocultar las sugerencias
+    setNombreBusqueda(cliente.apellidoYnombre);
+    setFilteredClientes([]);
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const clienteData: Cliente = {
-      id: selectedCliente!.id,
-      apellidoYnombre: formData.get("nombre") as string,
-      barrioComercial: formData.get("barrio_comercial") as string,
-      dni: Number(formData.get("dni")),
-      barrioParticular: formData.get("barrio_particular") as string,
-      tel: formData.get("tel") as string,
-      direccionComercial: formData.get("direccion_comercial") as string,
-      direccionParticular: formData.get("direccion_particular") as string,
-      fechaNac: formData.get("fecha_nac") as string,
-      rubro: formData.get("rubro") as string,
-      tel2: formData.get("tel2") ? (formData.get("tel2") as string) : undefined,
-      socio_conyugue: formData.get("socio") as string,
-      fechaAlta: selectedCliente!.fechaAlta, // Mantener la fechaAlta existente
-      cobrador: selectedCliente!.cobrador, // Mantener el cobrador existente
-      prestamo: selectedCliente!.prestamo, // Mantener los prestamos existentes
-    };
+    if (!selectedCliente) return;
 
     try {
-      // Aquí se llamaría a la API para editar el cliente (simulado con toast)
-      await editarCliente(clienteData);
+      await editarCliente(selectedCliente);
       toast.success("Datos del cliente actualizados con éxito!");
-      setTimeout(() => {
-        navigate("/clientes");
-      }, 3000);
+      setTimeout(() => navigate("/clientes"), 3000);
     } catch (error: any) {
       toast.error(error.message);
     }
@@ -159,11 +137,17 @@ const EditarCliente: React.FC = () => {
                 id="fecha_nac"
                 name="fecha_nac"
                 required
-                value={selectedCliente?.fechaNac || ""}
+                value={
+                  selectedCliente?.fechaNac
+                    ? new Date(selectedCliente.fechaNac)
+                        .toISOString()
+                        .split("T")[0]
+                    : ""
+                }
                 onChange={(e) =>
                   setSelectedCliente({
                     ...selectedCliente!,
-                    fechaNac: e.target.value,
+                    fechaNac: new Date(e.target.value),
                   })
                 }
               />
@@ -209,6 +193,7 @@ const EditarCliente: React.FC = () => {
               </select>
             </div>
 
+            {/* DOMICILIO PARTICULAR - columna 1 */}
             <div className="form-group dompart">
               <label htmlFor="direccion_particular">Domicilio Particular</label>
               <input
@@ -224,6 +209,29 @@ const EditarCliente: React.FC = () => {
                   })
                 }
               />
+            </div>
+
+            {/* BARRIO PARTICULAR - columna 2 */}
+            <div className="form-group barrio-particular">
+              <label htmlFor="barrio_particular">Barrio Particular</label>
+              <select
+                id="barrio_particular"
+                name="barrio_particular"
+                value={selectedCliente?.barrioParticular || ""}
+                onChange={(e) =>
+                  setSelectedCliente({
+                    ...selectedCliente!,
+                    barrioParticular: e.target.value,
+                  })
+                }
+              >
+                <option value="">Seleccione Barrio</option>
+                {barrios.map((barrio, index) => (
+                  <option key={index} value={barrio}>
+                    {barrio}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="form-group rubro">
@@ -252,7 +260,7 @@ const EditarCliente: React.FC = () => {
             <div className="form-group celular">
               <label htmlFor="tel">Teléfono</label>
               <input
-                type="number"
+                type="text"
                 id="tel"
                 name="tel"
                 required
@@ -269,7 +277,7 @@ const EditarCliente: React.FC = () => {
             <div className="form-group celular2">
               <label htmlFor="tel2">Teléfono 2</label>
               <input
-                type="number"
+                type="text"
                 id="tel2"
                 name="tel2"
                 value={selectedCliente?.tel2 || ""}
@@ -304,17 +312,11 @@ const EditarCliente: React.FC = () => {
                 id="cobrador"
                 name="cobrador"
                 required
-                value={selectedCliente?.cobrador?.id || ""}
+                value={selectedCliente?.cobrador_id || ""}
                 onChange={(e) =>
                   setSelectedCliente({
                     ...selectedCliente!,
-                    cobrador: {
-                      id: Number(e.target.value),
-                      nombreyApellido: e.target.value,
-                      dni: Number(e.target.value),
-                      zona: Number(e.target.value),
-                      tel: e.target.value,
-                    },
+                    cobrador_id: Number(e.target.value),
                   })
                 }
               >
@@ -327,9 +329,11 @@ const EditarCliente: React.FC = () => {
               </select>
             </div>
 
-            <button type="submit" className="btn">
-              Guardar Cambios
-            </button>
+            <div className="btn">
+              <button type="submit" className="action-btn">
+                Guardar Cambios
+              </button>
+            </div>
           </form>
         </div>
       </div>

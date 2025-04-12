@@ -89,7 +89,7 @@ const ProductosGrid: React.FC = () => {
             />
             <div className="button-container">
               <button
-                className="btn"
+                className="action-btn secondary"
                 onClick={() => navigate("/nuevo-producto")}
               >
                 Nuevo Producto

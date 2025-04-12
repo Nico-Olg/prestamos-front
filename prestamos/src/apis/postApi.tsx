@@ -1,12 +1,15 @@
 import axios from "axios";
 import API_BASE_URL from './config'; // Importa la URL base
 import { Cliente } from "../interfaces/Cliente";
+import { RefinanciacionRequest } from "../interfaces/RefinianciacionRequest"; // Asegúrate de que la ruta sea correcta
 
 
 // Obtener el token JWT del localStorage
 function getAuthToken() {
   return localStorage.getItem('token');
 }
+
+
 
 export async function getPrestamosPorCliente(dni: number) {
   try {
@@ -36,7 +39,7 @@ export async function getPagosPorPrestamo(prestamoId: number) {
   try {
     const token = getAuthToken();
     const response = await axios.post(
-      `${API_BASE_URL}/pagos/obtener-pagos`,
+      `${API_BASE_URL}/pagos/por/prestamo`,
       { param: { id: prestamoId } },
       {
         headers: {
@@ -232,10 +235,18 @@ export async function login(dni: string, password: string) {
       }
     );
 
-    const { token } = response.data;
+    const { token, usuario } = response.data;
+    
+    
 
     if (token) {
       localStorage.setItem('token', token); // Almacena el token en localStorage
+    }
+    if (usuario) {
+      localStorage.setItem('rol', usuario.rol); // Almacena el rol en localStorage
+      localStorage.setItem('id', usuario.id.toString()); // Almacena el id en localStorage
+      localStorage.setItem('nombre', usuario.nombre); 
+
     }
 
     return token;
@@ -248,15 +259,16 @@ export async function login(dni: string, password: string) {
   }
 }
 export async function registrarPago(id: number, monto: number) {
+ 
   try {
     const token = getAuthToken();
     const response = await axios.post(
       `${API_BASE_URL}/prestamos/pagar-cuota`,
-      {id, monto}, // Puedes enviar un cuerpo vacío si no necesitas otros parámetros
+      { id, monto },
       {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` // Agregar el token en el header
+          'Authorization': `Bearer ${token}`,
         },
         withCredentials: true,
       }
@@ -270,6 +282,7 @@ export async function registrarPago(id: number, monto: number) {
     }
   }
 }
+
 export async function nuevoUsuario(usuarioData: { nombre: string, dni: number, rol: string, password: string }) {
   try {
     const token = getAuthToken();
@@ -435,6 +448,7 @@ export async function cobranzaDelDia(cobrador_id: number, fecha: string) {
   }
 }
 
+
 export async function borrarCreditos(prestamo_id: number) {
   try {
     const token = getAuthToken();
@@ -456,6 +470,27 @@ export async function borrarCreditos(prestamo_id: number) {
     } else {
       throw new Error('Error desconocido al borrar los créditos');
     }
+  }
+}
+export async function refinanciarPrestamos(data: RefinanciacionRequest) {
+  try {
+     const token = getAuthToken();
+    const response = await axios.post(
+      `${API_BASE_URL}/prestamos/refinanciar`,
+      data,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, 
+        },
+        withCredentials: true,
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error("Error al refinanciar los préstamos:", error);
+    throw error;
   }
 }
 

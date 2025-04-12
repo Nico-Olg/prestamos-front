@@ -1,12 +1,16 @@
 .pagos-grid {
   padding: 20px;
-  width: 100vh;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
   margin: 0 auto;
 }
 
+/* Asegura que la tabla no se desborde en móviles */
 .pagos-grid .rdt_Table {
   border: 1px solid #ddd;
   border-radius: 5px;
+  min-width: 800px; /* Ajuste de ancho para evitar desbordamientos */
 }
 
 .pagos-grid .rdt_TableHeader {
@@ -24,6 +28,7 @@
 
 .pagos-grid .rdt_TableCell {
   padding: 10px;
+  white-space: nowrap;
 }
 
 .pagos-grid .btn {
@@ -31,7 +36,7 @@
   color: white;
   border: none;
   border-radius: 5px;
-  padding: 0 0; 
+  padding: 5px 10px;
   font-family: 'Lato', sans-serif;
   font-weight: 500;
   cursor: pointer;
@@ -47,7 +52,40 @@
   color: #4caf50;
   font-weight: bold;
 }
+
 .pagos-grid .diferencia-row {
-  background-color: #ffeb99; /* Color de fondo llamativo para destacar la fila */
+  background-color: #ffeb99;
 }
 
+.total-cobrado {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 10px 0 20px;
+  transition: background-color 0.5s ease, transform 0.3s ease;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+  background-color: #f5f5f5;
+}
+
+.total-cobrado.animado {
+  background-color: #d4edda;
+  transform: scale(1.05);
+}
+
+
+/* 🟢 Hacer la tabla responsiva */
+@media (max-width: 768px) {
+  .pagos-grid {
+    padding: 10px;
+  }
+
+  .pagos-grid .rdt_Table {
+    min-width: 100%;
+    width: 100%;
+  }
+
+  .pagos-grid .rdt_TableCell {
+    font-size: 14px;
+  }
+}

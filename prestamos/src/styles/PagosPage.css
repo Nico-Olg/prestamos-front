@@ -8,9 +8,11 @@
   display: flex;
   flex: 1;
   position: relative;
+  /* flex-direction: column;  */
+  /* En móviles, los elementos se apilan verticalmente */
 }
 
-
+/* Botón de regreso */
 button.back-button {
   position: absolute;
   top: 20px;
@@ -20,13 +22,12 @@ button.back-button {
   width: 120px;
   align-items: center;
   justify-content: center;
-  background-color: #eeeeee4b;
+  background-color: #888a8b;
   border-radius: 5px;
   letter-spacing: 1px;
   transition: all 0.2s linear;
   cursor: pointer;
   border: none;
-  background: #888a8b;
 }
 
 button.back-button > svg {
@@ -36,14 +37,20 @@ button.back-button > svg {
   transition: all 0.4s ease-in;
 }
 
-button.back-button:hover > svg {
-  font-size: 1.2em;
-  transform: translateX(-5px);
-}
-
 button.back-button:hover {
-  box-shadow: 9px 9px 33px #d1d1d1, -9px -9px 33px #ffffff;
+  box-shadow: 5px 5px 15px #d1d1d1, -5px -5px 15px #ffffff;
   transform: translateY(-2px);
 }
 
+/* Estilos responsivos */
+@media (max-width: 768px) {
+  .content {
+    padding: 10px;
+  }
 
+  button.back-button {
+    left: 20px;
+    width: 100px;
+    height: 2.5em;
+  }
+}

@@ -1,72 +1,57 @@
 .sidebar {
-  width: 200px;
-  padding: 20px;
-  margin-top: 3%;
+  width: 220px;
+  padding: 30px 15px;
+  margin-top: 2%;
   display: flex;
   flex-direction: column;
-  justify-content: space-between; /* Asegura que el botón "Cerrar Sesión" se quede al final */
-  height: 60vh; /* Asegura que el sidebar ocupe toda la altura */
+  justify-content: space-between;
+  height: 70vh;
+  background-color: #f7f5f5;
+  border-right: 1px solid #e5e5e5;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
 }
 
-.btn {
-  width: 130px;
-  height: 40px;
-  color: #fff;
-  border-radius: 5px;
-  padding: 10px 25px;
+.sidebar .btn,
+.sidebar .btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: transparent;
+  color: #333;
+  border: none;
+  padding: 12px 15px;
+  margin-bottom: 10px;
+  font-size: 15px;
   font-family: 'Lato', sans-serif;
   font-weight: 500;
-  background: rgb(0, 77, 255);
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  display: inline-block;
-  box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, .5),
-              7px 7px 20px 0px rgba(0, 0, 0, .1),
-              4px 4px 5px 0px rgba(0, 0, 0, .1);
-  outline: none;
-  font-size: 15px;
-  margin-bottom: 30%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.btn:hover {
-  box-shadow: 4px 4px 6px 0 rgba(255, 255, 255, .5),
-              -4px -4px 6px 0 rgba(116, 125, 136, .5),
-              inset -4px -4px 6px 0 rgba(255, 255, 255, .2),
-              inset 4px 4px 6px 0 rgba(0, 0, 0, .4);
+.sidebar .btn:hover {
+  background-color: #f0f4ff;
+  color: #0044cc;
 }
 
-.btn-logout {
-  width: 130px;
-  height: 40px;
-  color: #fff;
-  border-radius: 5px;
-  padding: 10px 25px;
-  font-family: 'Lato', sans-serif;
-  font-weight: 500;
-  background: rgb(255, 77, 77); /* Color rojo para el botón de Cerrar Sesión */
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  display: inline-block;
-  box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, .5),
-              7px 7px 20px 0px rgba(0, 0, 0, .1),
-              4px 4px 5px 0px rgba(0, 0, 0, .1);
-  outline: none;
-  font-size: 15px;
-  margin-top: auto; /* Asegura que el botón quede al final del sidebar */
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.sidebar .btn-logout {
+  color: #c62828;
+  margin-top: auto;
 }
 
-.btn-logout:hover {
-  background-color: #d9534f; /* Un rojo más oscuro en hover */
-  box-shadow: 4px 4px 6px 0 rgba(255, 255, 255, .5),
-              -4px -4px 6px 0 rgba(116, 125, 136, .5),
-              inset -4px -4px 6px 0 rgba(255, 255, 255, .2),
-              inset 4px 4px 6px 0 rgba(0, 0, 0, .4);
+.sidebar .btn-logout:hover {
+  background-color: #ffe5e5;
+  color: #b71c1c;
+}
+
+.sidebar .icon {
+  font-size: 18px;
+}
+
+/* Responsive: oculta en mobile si querés */
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
 }

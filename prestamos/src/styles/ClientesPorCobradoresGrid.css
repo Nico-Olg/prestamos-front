@@ -15,6 +15,7 @@
   overflow: hidden; /* Oculta bordes sobresalientes */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
   table-layout: fixed; /* Fijamos el ancho de las celdas */
+  padding-bottom: 80px; /* Espacio inferior extra */
 }
 
 /* Estilos para la cabecera de la tabla */
@@ -119,8 +120,11 @@
 
 .button-container {
   display: flex;
+  gap: 10px;
   justify-content: flex-end;
   margin-top: 20px;
+margin-bottom: 20px; 
+ padding-bottom: 80px; /* 👉 Espacio inferior extra */
 }
 
 /* Selector para cantidad de filas por página */

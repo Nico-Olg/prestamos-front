@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
-import '../styles/PrestamosPage.css';
 import { getUsuarios } from '../apis/getApi';
 import UsuariosGrid from '../components/UsuariosGrid';
+import '../styles/PrestamosPage.css';
 
 const UsuariosPage: React.FC = () => {
   const [usuarios, setUsuarios] = useState([]);

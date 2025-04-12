@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { guardarOrdenClientes } from "../apis/postApi";
-import jsPDF from "jspdf"; // Import jsPDF
-import "jspdf-autotable"; // Import AutoTable for jsPDF
+import { cobranzaDelDia, guardarOrdenClientes } from "../apis/postApi";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 import { useNavigate } from "react-router-dom";
-import { Cliente } from "../interfaces/Cliente"; // Importa la interfaz Cliente
+import { Cliente } from "../interfaces/Cliente";
 import "../styles/ClientesPorCobradoresGrid.css";
+import { PagosMapper } from "../interfaces/Pagos";
+import Swal from "sweetalert2"; // <--- Importación de SweetAlert2
 
 interface ClientesPorCobradorGridProps {
   clientes: Cliente[];
@@ -16,7 +18,6 @@ interface ClientesPorCobradorGridProps {
 
 const ItemType = "CLIENTE";
 
-// Componente para cada fila de cliente
 const ClienteRow: React.FC<{
   cliente: Cliente;
   index: number;
@@ -30,7 +31,6 @@ const ClienteRow: React.FC<{
       if (!ref.current) return;
       const dragIndex = item.index;
       const hoverIndex = index;
-
       if (dragIndex === hoverIndex) return;
 
       const hoverBoundingRect = ref.current?.getBoundingClientRect();
@@ -67,13 +67,13 @@ const ClienteRow: React.FC<{
     >
       <td>{cliente.apellidoYnombre}</td>
       <td>{cliente.dni}</td>
-      <td>{cliente.fechaNac}</td>
+      <td>{cliente.fechaNac ? new Date(cliente.fechaNac).toLocaleDateString() : ""}</td>
       <td>{cliente.direccionComercial}</td>
       <td>{cliente.barrioComercial}</td>
       <td>{cliente.direccionParticular}</td>
       <td>{cliente.barrioParticular}</td>
       <td>{cliente.tel}</td>
-      <td>{cliente.fechaAlta}</td>
+      <td>{cliente.fechaAlta ? new Date(cliente.fechaAlta).toLocaleDateString() : ""}</td>
     </tr>
   );
 };
@@ -115,9 +115,8 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
     [orderedClientes, cobradorId]
   );
 
-  // Filtrar datos antes de enviarlos al backend
   const prepareClientesForSave = (clientes: Cliente[]) => {
-    return clientes.map((cliente) => ({
+    return clientes.map((cliente, index) => ({
       id: cliente.id,
       apellidoYnombre: cliente.apellidoYnombre,
       dni: cliente.dni,
@@ -131,49 +130,44 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
       socio_conyugue: cliente.socio_conyugue,
       fechaAlta: cliente.fechaAlta,
       rubro: cliente.rubro,
-      orden: cliente.orden,
-      cobrador: { id: cobradorId, nombreyApellido: nombreCobrador, zona: 0, dni: 0, tel:""}, // Solo el id y nombre del cobrador
-      prestamo: [], // Campos vacíos
+      orden: index + 1,
+      cobrador_id: cobradorId,
+      cobrador: {
+        id: cobradorId,
+        nombreyApellido: nombreCobrador,
+        zona: 0,
+        dni: 0,
+        tel: ""
+      },
+      prestamo: [],
     }));
   };
 
-  useEffect(() => {
-    const handleBeforeUnload = async () => {
-      const savedClientes = sessionStorage.getItem(
-        `ordenClientes_${cobradorId}`
+  const handleGuardarOrden = async () => {
+    try {
+      const clientesConOrden = orderedClientes.map((cliente, index) => ({
+        ...cliente,
+        orden: index + 1,
+      }));
+      await guardarOrdenClientes(
+        cobradorId,
+        prepareClientesForSave(clientesConOrden)
       );
-      if (savedClientes) {
-        try {
-          await guardarOrdenClientes(
-            cobradorId,
-            prepareClientesForSave(JSON.parse(savedClientes))
-          );
-        } catch (error) {
-          console.error("Error al guardar el orden de clientes", error);
-        }
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () =>
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [cobradorId]);
-
-  // Obtén los clientes de la página actual
-  const currentClientes = orderedClientes.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const totalPages = Math.ceil(orderedClientes.length / itemsPerPage);
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  const handleItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setItemsPerPage(Number(event.target.value));
-    setCurrentPage(1);
+      Swal.fire({
+        icon: 'success',
+        title: 'Orden guardado',
+        text: 'El nuevo orden de clientes fue guardado correctamente.',
+        confirmButtonText: 'Aceptar'
+      });
+    } catch (error) {
+      console.error("Error al guardar el orden", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Hubo un problema al guardar el orden de clientes. Intente nuevamente.',
+        confirmButtonText: 'Cerrar'
+      });
+    }
   };
 
   const handleGeneratePDF = () => {
@@ -208,8 +202,38 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
     doc.save(`clientes_${nombreCobrador}.pdf`);
   };
 
-  const handleVerCobranza = () => {
-    navigate("/pagosHoyGrid",  { state: { id: cobradorId , nombreyApellido : nombreCobrador}});
+  const handleVerCobranza = async () => {
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      const response = await cobranzaDelDia(cobradorId, today);
+      const data = PagosMapper.fromJSON(response);
+
+      if (!data || !data.pagos || !data.cobrador) {
+        console.error("Error: Datos incompletos en la respuesta del backend.");
+        return;
+      }
+
+      const { pagos, cobrador } = data;
+      navigate(`/pagos`, { state: { pagos, cobrador } });
+    } catch (error) {
+      console.error("Error obteniendo la cobranza del día:", error);
+    }
+  };
+
+  const currentClientes = orderedClientes.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const totalPages = Math.ceil(orderedClientes.length / itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setItemsPerPage(Number(event.target.value));
+    setCurrentPage(1);
   };
 
   return (
@@ -268,10 +292,13 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
           </div>
 
           <div className="button-container">
-            <button className="btn btn-primary" onClick={handleGeneratePDF}>
+            <button className="action-btn" onClick={handleGuardarOrden}>
+              Guardar orden
+            </button>
+            <button className="action-btn" onClick={handleGeneratePDF}>
               Imprimir Clientes
             </button>
-            <button className="btn btn-secondary" onClick={handleVerCobranza}>
+            <button className="action-btn" onClick={handleVerCobranza}>
               Cobranza del día
             </button>
           </div>

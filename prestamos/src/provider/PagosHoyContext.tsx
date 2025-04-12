@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getPagosDeHoy } from '../apis/getApi';  // Asegúrate de tener esta API disponible
 import { PagosHoy } from '../interfaces/PagosHoy';  // Importa la interfaz
 
 // Define el contexto
@@ -15,6 +14,8 @@ interface PagosHoyProviderProps {
 }
 
 const PagosHoyContext = createContext<PagosHoyContextProps | undefined>(undefined);
+
+
 
 // Hook para usar el contexto de pagos de hoy
 export const usePagosHoyContext = () => {
@@ -32,8 +33,8 @@ export const PagosHoyProvider: React.FC<PagosHoyProviderProps> = ({ children }) 
     // Función para refrescar los pagos de hoy
     const refreshPagosHoy = async () => {
         try {
-            const fetchedPagosHoy = await getPagosDeHoy();
-            setPagosHoy(fetchedPagosHoy);
+            // const fetchedPagosHoy = await getPagosDeHoy();
+            // setPagosHoy(fetchedPagosHoy);
         } catch (error) {
             console.error('Error fetching pagos de hoy:', error);
         }

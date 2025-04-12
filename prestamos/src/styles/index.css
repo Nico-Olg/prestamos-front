@@ -29,3 +29,42 @@ code {
   font-size: 1.5em;
   color: #007bff;
 }
+
+
+.action-btn {
+  padding: 10px 20px;
+  background-color: #0052cc; /* Azul vibrante, no tan eléctrico */
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: 'Lato', sans-serif;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.3px;
+}
+
+.action-btn:hover {
+  background-color: #003fa3; /* Hover un poco más oscuro */
+  transform: translateY(-1px); /* efecto sutil al pasar el mouse */
+}
+
+.action-btn:active {
+  transform: scale(0.98);
+  box-shadow: none;
+}
+
+.action-btn:disabled {
+  background-color: #cccccc;
+  color: #666666;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}

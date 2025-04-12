@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../apis/postApi';
 import { useClientContext } from '../provider/ClientContext';
-import { usePagosHoyContext } from '../provider/PagosHoyContext';  
+import { cobranzaDelDia } from "../apis/postApi";
+import { PagosMapper } from '../interfaces/Pagos';
+
+// import { usePagosHoyContext } from '../provider/PagosHoyContext';  
 import loadingGIF from '../assets/loading.gif';
 import '../styles/Login.css';
 
@@ -14,7 +17,7 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
 
   const { refreshClientes } = useClientContext();
-  const { refreshPagosHoy } = usePagosHoyContext();  
+  // const { refreshPagosHoy } = usePagosHoyContext();  
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -22,12 +25,34 @@ const Login: React.FC = () => {
 
     try {
       const token = await login(dni, password);
-      localStorage.setItem('token', token);
+      localStorage.setItem('token', token);      
+      // await refreshPagosHoy();      
+      const rol = localStorage.getItem('rol');
+      const id = localStorage.getItem('id');
+      
+      if (rol === 'ADMIN') {
+        await refreshClientes();
+        navigate('/clientes');
+      }
+      else if (rol === 'COBRADOR') {
+        // navigate(`/cobradores/${id}/clientes`,{ state: { id: id , nombreyApellido : cobrador} });
+        try{          
+          const today = new Date().toISOString().split('T')[0];
+          const response = await cobranzaDelDia(Number(id), today);
+          const data = PagosMapper.fromJSON(response);
+              
+              if (!data || !data.pagos || !data.cobrador) {
+                console.error("Error: Datos incompletos en la respuesta del backend.");
+                return;
+              }                
+              const { pagos, cobrador } = data;
 
-      await refreshClientes();
-      await refreshPagosHoy();
+        navigate(`/pagos`,{ state: { pagos, cobrador } });
+        }catch(error){
+          console.error("Error al navegar a pagos",error);
+        }
 
-      navigate('/clientes');
+      }
     } catch (error) {
       console.error('Error en la autenticación', error);
       setError('Credenciales incorrectas. Inténtalo de nuevo.');
