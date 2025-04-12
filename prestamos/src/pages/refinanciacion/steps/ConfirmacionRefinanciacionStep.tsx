@@ -15,7 +15,7 @@ const ConfirmacionRefinanciacionStep = () => {
         idsPrestamos: values.prestamosSeleccionados,
         fechaInicio: values.fechaInicio,
         fechaFin: values.fechaFin,
-        interes: values.interes,
+        montoCuota: values.montoCuota,
         cuotas: values.cuotas,
         clienteID: values.cliente.id,
         periodo_pago: values.periodo_pago || "Diario",
