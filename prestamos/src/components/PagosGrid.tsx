@@ -126,6 +126,11 @@ const PagosGrid: React.FC<PagosGridProps> = ({
           ? `$${(row.monto - row.montoAbonado).toFixed(2)}`
           : "No pagado",
     },
+     {
+      name: "Saldo",
+      selector: (row) => `$${row.saldo}`,
+       
+    },
     {
       name: "Fecha de Pago",
       selector: (row) => formatearFechaLocal(row.fechaPago?.toString() || null),

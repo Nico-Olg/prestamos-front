@@ -20,6 +20,7 @@ export interface Pago {
     billetes:         string | "";
     nombreCliente:    string;
     cantCuotas:      number;
+    saldo:           number;
 }
 
 // ✅ Clase para mapear datos desde JSON
@@ -45,6 +46,7 @@ export class PagosMapper {
                 nroCuota: p.nroCuota,
                 montoAbonado: p.montoAbonado ?? null,
                 cantCuotas: p.cantCuotas,
+                saldo: p.saldo,
             })),
         };
     }

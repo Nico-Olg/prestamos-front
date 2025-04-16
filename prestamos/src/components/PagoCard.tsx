@@ -26,7 +26,10 @@ const PagoCard: React.FC<PagoCardProps> = ({
   showResumen,
   onCloseResumen
 }) => {
-  const diferencia = pago.montoAbonado ? pago.monto - (pago.montoAbonado || 0) : 0;
+  const diferencia =
+  pago.montoAbonado != null && pago.montoAbonado > 0
+    ? pago.monto - pago.montoAbonado
+    : pago.monto;
   const isPagado = pago.montoAbonado;
 
   return (
@@ -41,7 +44,7 @@ const PagoCard: React.FC<PagoCardProps> = ({
         <p><strong>💳 Cuota nro:</strong> {pago.nroCuota + " / "+ pago.cantCuotas}</p>
         <p><strong>💰 Monto Cuota:</strong> ${pago.monto.toFixed(2)}</p>
         <p><strong>💵 Monto Abonado:</strong> ${pago.montoAbonado || 0}</p>
-        <p><strong>⚠ Diferencia:</strong> ${diferencia}</p>
+        <p><strong>⚠ Saldo:</strong> ${pago.saldo}</p>
         <p><strong>📅 Fecha de Pago:</strong> {pago.fechaPago ? (pago.fechaPago instanceof Date ? pago.fechaPago.toLocaleDateString() : pago.fechaPago) : "No pagado"}</p>
 
         {isPagado ? (
