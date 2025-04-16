@@ -4,6 +4,8 @@ import PagoCard from "./PagoCard";
 import ResumenCobranza from "../components/ResumenCobranza";
 import "../styles/PagosGrid.css";
 import { Pago } from "../interfaces/Pagos";
+import { guardarTotalCobrado, obtenerTotalCobrado } from "../utils/localStorageCobranza";
+
 
 interface PagoExtendido extends Pago {}
 
@@ -16,24 +18,28 @@ interface PagosGridProps {
 
 const formatearFechaLocal = (fechaISO: string | null): string => {
   if (!fechaISO) return "No pagado";
-  const fecha = new Date(fechaISO);
-  return fecha.toLocaleDateString("es-AR", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
+  const [year, month, day] = fechaISO.split("-");
+  return `${day}/${month}/${year}`;
 };
+
 
 const PagosGrid: React.FC<PagosGridProps> = ({
   pagos,
   handlePagoCuota,
   mostrarCliente = false,
-  totalCobrado,
+ 
 }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [pagosCobrados, setPagosCobrados] = useState<Pago[]>([]);
   const [showResumen, setShowResumen] = useState(false);
   const [animarTotal, setAnimarTotal] = useState(false);
+  const [totalCobrado, setTotalCobrado] = useState<number>(0); 
+
+  useEffect(() => {
+  const totalGuardado = obtenerTotalCobrado();
+  setTotalCobrado(totalGuardado);
+}, []);
+
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -44,6 +50,7 @@ const PagosGrid: React.FC<PagosGridProps> = ({
   useEffect(() => {
     if (pagosCobrados.length > 0) {
       setAnimarTotal(true);
+       guardarTotalCobrado(totalCobrado);
       const timeout = setTimeout(() => setAnimarTotal(false), 800);
       return () => clearTimeout(timeout);
     }
@@ -67,6 +74,8 @@ const PagosGrid: React.FC<PagosGridProps> = ({
         return [...prev, pagoActualizado];
       }
     });
+    setTotalCobrado((prev) => prev + monto);
+
   };
 
   const pagosParciales = pagosCobrados.filter(
