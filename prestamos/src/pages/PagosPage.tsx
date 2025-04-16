@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import Header from "../components/Header.tsx";
 import Sidebar from "../components/Sidebar.tsx";
@@ -7,6 +7,8 @@ import "../styles/PagosPage.css";
 import Swal from "sweetalert2";
 import { registrarPago } from "../apis/postApi";
 import { Pago } from "../interfaces/Pagos";
+import { guardarTotalCobrado, obtenerTotalCobrado } from "../utils/localStorageCobranza";
+
 
 interface PagosPageProps {
   isMobile?: boolean;
@@ -16,7 +18,11 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   const location = useLocation();
   const { cliente, cobrador, pagos: pagosIniciales } = location.state || {};
   const [pagos, setPagos] = useState<Pago[]>(pagosIniciales || []);
-  const [totalCobrado, setTotalCobrado] = useState<number>(0);
+  const [totalCobrado, setTotalCobrado] = useState<number>(obtenerTotalCobrado());
+   useEffect(() => {
+     guardarTotalCobrado(totalCobrado);
+   }, [totalCobrado]);
+
 
   const esPagoDeCobrador = !!cobrador;
   const tituloPagina = isMobile
@@ -111,6 +117,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
           handlePagoCuota={handlePagoCuota}
           mostrarCliente={esPagoDeCobrador}
           totalCobrado={totalCobrado}
+          
         />
       </div>
     </div>
