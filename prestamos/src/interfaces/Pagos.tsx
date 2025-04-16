@@ -47,6 +47,7 @@ export class PagosMapper {
                 montoAbonado: p.montoAbonado ?? null,
                 cantCuotas: p.cantCuotas,
                 saldo: p.saldo,
+                fechaVencimiento: new Date(p.fechaVencimiento),
             })),
         };
     }
