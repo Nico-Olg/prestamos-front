@@ -126,10 +126,9 @@ const PagosGrid: React.FC<PagosGridProps> = ({
           ? `$${(row.monto - row.montoAbonado).toFixed(2)}`
           : "No pagado",
     },
-     {
+    {
       name: "Saldo",
       selector: (row) => `$${row.saldo}`,
-       
     },
     {
       name: "Fecha de Pago",
@@ -138,12 +137,17 @@ const PagosGrid: React.FC<PagosGridProps> = ({
     {
       name: "Acción",
       cell: (row) => {
-        const diferencia = row.montoAbonado
-          ? row.monto - row.montoAbonado
-          : row.monto;
-        if (row.montoAbonado != null && row.fechaPago !== null) {
+        // const diferencia = row.montoAbonado
+        //   ? row.monto - row.montoAbonado
+        //   : row.monto;
+        if (row.montoAbonado != null && row.montoAbonado >= row.monto) {
           return <span className="text-success">Cuota Pagada</span>;
-        } else if (row.montoAbonado && diferencia > 0) {
+        } else if (
+          row.montoAbonado != null &&
+          row.montoAbonado > 0 &&
+          row.montoAbonado < row.monto
+        ) {
+          const diferencia = row.monto - row.montoAbonado;
           return (
             <button
               className="btn btn-warning"
