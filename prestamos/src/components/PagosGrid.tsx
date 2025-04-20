@@ -198,8 +198,7 @@ const PagosGrid: React.FC<PagosGridProps> = ({
         );
       },
       ignoreRowClick: true,
-    },
-    ,
+    }
   ];
 
   if (mostrarCliente) {
