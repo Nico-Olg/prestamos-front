@@ -94,6 +94,30 @@
     padding-top: 40px; /* Para no tapar los primeros pagos */
   }
 }
+.btn-icon {
+  background-color: transparent;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 4px;
+  transition: transform 0.2s ease;
+}
+
+.btn-icon:hover {
+  transform: scale(1.2);
+}
+
+.btn-icon.pagar {
+  color: #28a745;
+}
+
+.btn-icon.completar {
+  color: #ffc107;
+}
+
+.btn-icon.edit {
+  color: #007bff;
+}
 
 
 /* 🟢 Hacer la tabla responsiva */

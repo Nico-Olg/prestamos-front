@@ -94,3 +94,18 @@
 .modal-content button:hover {
   background-color: #003bb5;
 }
+
+.btn-editar {
+  background-color: #ffa500;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  margin-top: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btn-editar:hover {
+  background-color: #cc8400;
+}
+

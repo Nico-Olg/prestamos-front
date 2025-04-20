@@ -493,6 +493,31 @@ export async function refinanciarPrestamos(data: RefinanciacionRequest) {
     throw error;
   }
 }
+export async function editarPago(pagoId: number, nuevoMonto: number, fechaPago?: string) {
+  try {
+    const token = getAuthToken();
+    const response = await axios.post(
+      `${API_BASE_URL}/pagos/editar-pago/${pagoId}`,
+      { pagoId, nuevoMonto, fechaPago },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Error al editar el pago: ${error.response?.status} ${error.response?.statusText}`);
+    } else {
+      throw new Error('Error desconocido al editar el pago');
+    }
+  }
+  
+}
+
 
 
 

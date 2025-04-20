@@ -1,3 +1,4 @@
+// src/components/PagosGrid.tsx
 import React, { useState, useEffect } from "react";
 import DataTable, { TableColumn } from "react-data-table-component";
 import PagoCard from "./PagoCard";
@@ -10,6 +11,7 @@ interface PagoExtendido extends Pago {}
 interface PagosGridProps {
   pagos: PagoExtendido[];
   handlePagoCuota: (pagoId: number, monto: number) => void;
+  handleEditarPago: (pago: Pago) => void;
   mostrarCliente?: boolean;
   totalCobrado: number;
 }
@@ -27,6 +29,7 @@ const formatearFechaLocal = (fechaISO: string | null): string => {
 const PagosGrid: React.FC<PagosGridProps> = ({
   pagos,
   handlePagoCuota,
+  handleEditarPago,
   mostrarCliente = false,
   totalCobrado,
 }) => {
@@ -83,11 +86,16 @@ const PagosGrid: React.FC<PagosGridProps> = ({
         {pagos.map((pago) => (
           <PagoCard
             key={pago.id}
-            pago={{ ...pago, handlePagoCuota: handlePagoMobile }}
+            pago={{
+              ...pago,
+              handlePagoCuota: handlePagoMobile,
+              handleEditarPago,
+            }}
             totalCobrado={totalCobrado}
             pagosCobrados={pagosCobrados.map((p) => ({
               ...p,
               handlePagoCuota: handlePagoMobile,
+              handleEditarPago,
             }))}
             onFinalizarCobranza={() => setShowResumen(true)}
             showResumen={showResumen}
@@ -137,38 +145,61 @@ const PagosGrid: React.FC<PagosGridProps> = ({
     {
       name: "Acción",
       cell: (row) => {
-        // const diferencia = row.montoAbonado
-        //   ? row.monto - row.montoAbonado
-        //   : row.monto;
-        if (row.montoAbonado != null && row.montoAbonado >= row.monto) {
-          return <span className="text-success">Cuota Pagada</span>;
-        } else if (
-          row.montoAbonado != null &&
-          row.montoAbonado > 0 &&
-          row.montoAbonado < row.monto
-        ) {
-          const diferencia = row.monto - row.montoAbonado;
-          return (
-            <button
-              className="btn btn-warning"
-              onClick={() => handlePagoCuota(row.id, diferencia)}
-            >
-              Completar Cuota
-            </button>
-          );
-        } else {
-          return (
-            <button
+        const diferencia = row.monto - (row.montoAbonado || 0);
+
+        return (
+          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+            {/* Cuota completa */}
+            {row.montoAbonado != null && row.montoAbonado >= row.monto && (
+              <>
+                <span className="text-success">✅</span>
+                <button
+                  className="btn-icon edit"
+                  onClick={() => handleEditarPago(row)}
+                  title="Editar Pago"
+                >
+                  ✏️
+                </button>
+              </>
+            )}
+
+            {/* Cuota parcial */}
+            {row.montoAbonado != null &&
+              row.montoAbonado > 0 &&
+              row.montoAbonado < row.monto && (
+                <>
+                  <button
+                    className="btn-icon completar"
+                    onClick={() => handlePagoCuota(row.id, diferencia)}
+                    title="Completar Cuota"
+                  >
+                    💰
+                  </button>
+                  <button
+                    className="btn-icon edit"
+                    onClick={() => handleEditarPago(row)}
+                    title="Editar Pago"
+                  >
+                    ✏️
+                  </button>
+                </>
+              )}
+
+            {/* Cuota sin pagar */}
+            {(row.montoAbonado == null || row.montoAbonado === 0) && (
+              <button
               className="btn btn-primary"
               onClick={() => handlePagoCuota(row.id, row.monto)}
             >
               Pagar
             </button>
-          );
-        }
+            )}
+          </div>
+        );
       },
       ignoreRowClick: true,
     },
+    ,
   ];
 
   if (mostrarCliente) {

@@ -7,6 +7,7 @@ import { Pago } from "../interfaces/Pagos";
 type PagoConExtras = Pago & {
   handlePagoCuota: (pagoId: number, monto: number) => void;
   montoAbonado?: number | null;
+  handleEditarPago: (pago: Pago) => void;
 };
 
 type PagoCardProps = {
@@ -54,6 +55,14 @@ const PagoCard: React.FC<PagoCardProps> = ({
             Pagar
           </button>
         )}
+        {isPagado && (
+  <div style={{ marginTop: "10px" }}>
+    <button className="btn-editar" onClick={() => pago.handleEditarPago(pago)}>
+      ✏️ Editar Pago
+    </button>
+  </div>
+)}
+
       </div>
 
       {/* <div className="footer-finalizar">

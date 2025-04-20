@@ -5,7 +5,7 @@ import Sidebar from "../components/Sidebar.tsx";
 import PagosGrid from "../components/PagosGrid.tsx";
 import "../styles/PagosPage.css";
 import Swal from "sweetalert2";
-import { registrarPago } from "../apis/postApi";
+import { registrarPago,editarPago } from "../apis/postApi";
 import { Pago } from "../interfaces/Pagos";
 import { guardarTotalCobrado, obtenerTotalCobrado } from "../utils/localStorageCobranza";
 
@@ -81,8 +81,9 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
           p.id === pagoId
             ? {
                 ...p,
-                montoAbonado: (p.montoAbonado || 0) + montoFinal,
+               montoAbonado: montoFinal,
                 fechaPago: new Date(),
+                saldo: p.monto - montoFinal,
               }
             : p
         )
@@ -106,6 +107,58 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
       });
     }
   };
+  const handleEditarPago = async (pago: Pago) => {
+  const { value: nuevoMonto } = await Swal.fire({
+    title: "Editar Monto Pagado",
+    input: "number",
+    inputLabel: "Nuevo Monto Abonado",
+    inputValue: pago.montoAbonado || 0,
+    showCancelButton: true,
+    confirmButtonText: "Guardar",
+    cancelButtonText: "Cancelar",
+    inputValidator: (value) => {
+      if (!value || parseFloat(value) < 0) {
+        return "Debe ingresar un monto válido";
+      }
+      return null;
+    },
+    width: "85%",
+  });
+
+  if (nuevoMonto !== undefined) {
+    try {
+      const fechaPagoActual = pago.fechaPago
+        ? new Date(pago.fechaPago).toISOString().split("T")[0]
+        : new Date().toISOString().split("T")[0];
+
+      await editarPago(pago.id, parseFloat(nuevoMonto), fechaPagoActual);
+
+      // 🔁 Actualizar el pago en el estado local de pagos:
+      setPagos((prevPagos) =>
+        prevPagos.map((p) =>
+          p.id === pago.id
+            ? {
+                ...p,
+                montoAbonado: parseFloat(nuevoMonto),
+                fechaPago: new Date(fechaPagoActual),
+                saldo: p.monto - parseFloat(nuevoMonto),
+              }
+            : p
+        )
+      );
+
+      // 🔁 Actualizar el total cobrado
+      const diferencia = parseFloat(nuevoMonto) - (pago.montoAbonado || 0);
+      setTotalCobrado((prev) => prev + diferencia);
+
+      Swal.fire("Pago actualizado", `Nuevo monto: $${nuevoMonto}`, "success");
+    } catch (error) {
+      Swal.fire("Error", "No se pudo editar el pago", "error");
+    }
+  }
+};
+
+
 
   return (
     <div className="pagos-page">
@@ -115,6 +168,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
         <PagosGrid
           pagos={pagos}
           handlePagoCuota={handlePagoCuota}
+          handleEditarPago={handleEditarPago}
           mostrarCliente={esPagoDeCobrador}
           totalCobrado={totalCobrado}
           
