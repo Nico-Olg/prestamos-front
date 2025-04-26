@@ -230,7 +230,7 @@ const PagosGrid: React.FC<PagosGridProps> = ({
             when: (row) =>
               row.montoAbonado !== null &&
               row.montoAbonado !== undefined
-               && row.montoAbonado >= row.monto,
+               && row.montoAbonado != row.monto,
             style: { backgroundColor: "#ffeb99" },
           },
         ]}
