@@ -227,10 +227,14 @@ const PagosGrid: React.FC<PagosGridProps> = ({
         }}
         conditionalRowStyles={[
           {
-            when: (row) =>
-              row.montoAbonado !== null &&
-              row.montoAbonado !== undefined
-               && row.montoAbonado != row.monto,
+            when: (row) => {
+              // Si todavía no pagó nada, no pintar
+              if (row.montoAbonado == null || row.montoAbonado === 0) {
+                return false;
+              }
+              // Si ya pagó algo, pero pagó menos de lo que debía
+              return row.montoAbonado < row.monto;
+            },
             style: { backgroundColor: "#ffeb99" },
           },
         ]}
