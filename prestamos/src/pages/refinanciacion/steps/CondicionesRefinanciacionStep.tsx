@@ -4,6 +4,8 @@ import { Box, Grid } from "@mui/material";
 import { TextField } from "formik-material-ui";
 import dayjs from "dayjs";
 import { Prestamo } from "../../../interfaces/Prestamo";
+import { formatearNumero } from "../../../utils/formatters";
+
 
 const CondicionesRefinanciacionStep = () => {
   const { values, setFieldValue } = useFormikContext<any>();
@@ -22,6 +24,7 @@ const CondicionesRefinanciacionStep = () => {
 
     return domingos;
   };
+
   useEffect(() => {
     if (values.fechaInicio && values.cuotas > 0) {
       const fechaInicio = dayjs(values.fechaInicio);
@@ -43,6 +46,7 @@ const CondicionesRefinanciacionStep = () => {
       const prestamosSeleccionados = prestamos.filter((p) =>
         seleccionados.includes(Number(p.idPrestamo))
       );
+
       console.log("prestamos seleccionados", prestamosSeleccionados);
 
       const total = prestamosSeleccionados.reduce((acc, prestamo) => {
@@ -50,21 +54,21 @@ const CondicionesRefinanciacionStep = () => {
         const saldo = prestamo.montoPrestamo - pagado;
         return acc + saldo;
       }, 0);
+
       console.log("total", total);
-      setFieldValue("totalConInteres", total.toFixed(2));
+      setFieldValue("totalRefinanciado", total.toFixed(2));
     }
   }, [values.prestamosSeleccionados, values.prestamosCliente, setFieldValue]);
 
   useEffect(() => {
-    const total = Number(values.totalRefinanciado);
-    const interes = Number(values.interes);
+    const cuotas = Number(values.cuotas);
+    const montoCuota = Number(values.montoCuota);
 
-    if (!isNaN(total) && !isNaN(interes)) {
-      const interesDecimal = interes / 100;
-      const montoConInteres = total * (1 + interesDecimal);
-      setFieldValue("totalConInteres", montoConInteres.toFixed(2));
+    if (!isNaN(cuotas) && !isNaN(montoCuota)) {
+      const total = cuotas * montoCuota;
+      setFieldValue("totalConInteres", formatearNumero(Number(total.toFixed(2))||0));
     }
-  }, [values.interes, values.totalRefinanciado, setFieldValue]);
+  }, [values.cuotas, values.montoCuota, setFieldValue]);
 
   return (
     <Box padding={2}>
@@ -82,7 +86,7 @@ const CondicionesRefinanciacionStep = () => {
           <Field
             name="montoCuota"
             component={TextField}
-            label="Monto de Cutoa"
+            label="Monto de Cuota"
             type="number"
             fullWidth
           />
@@ -112,7 +116,7 @@ const CondicionesRefinanciacionStep = () => {
             name="totalConInteres"
             component={TextField}
             type="text"
-            label="Total a Refinanciar con Interés"
+            label="Total a Refinanciar"
             disabled
             fullWidth
           />

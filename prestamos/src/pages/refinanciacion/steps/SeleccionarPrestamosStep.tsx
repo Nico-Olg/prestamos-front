@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Checkbox, FormControlLabel, Box, Typography, Grid, Paper } from "@mui/material";
 import { useFormikContext } from "formik";
 import { Prestamo } from "../../../interfaces/Prestamo";
-import { getPrestamosPorCliente } from "../../../apis/postApi";
+import { getPrestamosPorClienteParaRefinanciar } from "../../../apis/postApi";
 
 const SeleccionarPrestamosStep: React.FC = () => {
   const { values, setFieldValue } = useFormikContext<any>();
@@ -13,7 +13,7 @@ const SeleccionarPrestamosStep: React.FC = () => {
       if (!values.cliente?.dni) return;
 
       try {
-        const data = await getPrestamosPorCliente(values.cliente.dni);
+        const data = await getPrestamosPorClienteParaRefinanciar(values.cliente.dni);
         setPrestamos(data);
         setFieldValue("prestamosCliente", data);
       } catch (error) {

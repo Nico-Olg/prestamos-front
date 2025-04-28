@@ -34,6 +34,30 @@ export async function getPrestamosPorCliente(dni: number) {
     }
   }
 }
+export async function getPrestamosPorClienteParaRefinanciar(dni: number) {
+  try {
+    const token = getAuthToken();
+    const response = await axios.post(
+      `${API_BASE_URL}/prestamos/refinanciar/prestamos-por-Cliente`,
+      { param: { dni } },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // Agregar el token en el header
+        },
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Error al obtener los clientes: ${error.response?.status} ${error.response?.statusText}`);
+    } else {
+      throw new Error('Error desconocido al obtener los clientes');
+    }
+  }
+}
+
 
 export async function getPagosPorPrestamo(prestamoId: number) {
   try {

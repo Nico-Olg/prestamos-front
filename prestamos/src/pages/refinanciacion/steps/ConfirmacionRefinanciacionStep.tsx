@@ -1,6 +1,7 @@
 import { useFormikContext } from "formik";
 import { Box, Typography, Button, Grid } from "@mui/material";
 import { refinanciarPrestamos } from "../../../apis/postApi";
+import { formatearNumero } from "../../../utils/formatters";
 import { useNavigate } from "react-router-dom";
 import useAlert from "../../../hooks/useAlert";
 
@@ -52,16 +53,16 @@ const ConfirmacionRefinanciacionStep = () => {
         <strong>{values.prestamosSeleccionados?.length}</strong>
       </Typography>
       <Typography variant="body1" gutterBottom>
-        Total a refinanciar: <strong>${values.totalRefinanciado}</strong>
+        Total a refinanciar: <strong>${formatearNumero(Number(values.totalRefinanciado)||0)}</strong>
       </Typography>
       <Typography variant="body1" gutterBottom>
-        Interés: <strong>{values.interes}</strong>
-      </Typography>
-      <Typography variant="body1" gutterBottom>
-        Total con interés: <strong>${values.totalConInteres}</strong>
+        Monto Cuota: <strong>${formatearNumero(Number(values.montoCuota)||0)}</strong>
       </Typography>
       <Typography variant="body1" gutterBottom>
         Cuotas: <strong>{values.cuotas}</strong>
+      </Typography>
+      <Typography variant="body1" gutterBottom>
+        Total : <strong>${formatearNumero(Number(values.totalConInteres)||0)}</strong>
       </Typography>
       <Typography variant="body1" gutterBottom>
         Fecha de inicio: <strong>{values.fechaInicio}</strong>
