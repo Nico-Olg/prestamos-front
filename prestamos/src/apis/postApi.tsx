@@ -521,7 +521,7 @@ export async function editarPago(pagoId: number, nuevoMonto: number, fechaPago?:
   try {
     const token = getAuthToken();
     const response = await axios.post(
-      `${API_BASE_URL}/pagos/editar-pago/${pagoId}`,
+      `${API_BASE_URL}/prestamos/editar-pago/${pagoId}`,
       { pagoId, nuevoMonto, fechaPago },
       {
         headers: {
