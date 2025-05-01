@@ -2,7 +2,6 @@
 import React from "react";
 import "../styles/PagoCard.css";
 import { Pago } from "../interfaces/Pagos";
-import { isNullOrUndefined } from "util";
 
 // Extender el tipo Pago para incluir las props adicionales usadas en el componente
 type PagoConExtras = Pago & {
