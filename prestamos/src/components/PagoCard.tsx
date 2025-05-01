@@ -2,6 +2,7 @@
 import React from "react";
 import "../styles/PagoCard.css";
 import { Pago } from "../interfaces/Pagos";
+import { isNullOrUndefined } from "util";
 
 // Extender el tipo Pago para incluir las props adicionales usadas en el componente
 type PagoConExtras = Pago & {
@@ -25,12 +26,12 @@ const PagoCard: React.FC<PagoCardProps> = ({
   pagosCobrados,
   // onFinalizarCobranza,
   showResumen,
-  onCloseResumen
+  onCloseResumen,
 }) => {
   const diferencia =
-  pago.montoAbonado != null && pago.montoAbonado > 0
-    ? pago.monto - pago.montoAbonado
-    : pago.monto;
+    pago.montoAbonado != null && pago.montoAbonado > 0
+      ? pago.monto - pago.montoAbonado
+      : pago.monto;
   const isPagado = pago.montoAbonado;
 
   return (
@@ -39,30 +40,68 @@ const PagoCard: React.FC<PagoCardProps> = ({
         <h3>Total Cobrado: ${totalCobrado.toFixed(2)}</h3>
       </div> */}
 
-      <div className="pago-card" style={{ backgroundColor: isPagado ? "#C7C8CA" : "white" }}>
-        <p><strong>📌 Cliente:</strong> {pago.nombreCliente}</p>
-        <p><strong>💳 Producto:</strong> {pago.nombreProducto}</p>
-        <p><strong>💳 Cuota nro:</strong> {pago.nroCuota + " / "+ pago.cantCuotas}</p>
-        <p><strong>💰 Monto Cuota:</strong> ${pago.monto.toFixed(2)}</p>
-        <p><strong>💵 Monto Abonado:</strong> ${pago.montoAbonado || 0}</p>
-        <p><strong>⚠ Saldo:</strong> ${pago.saldo}</p>
-        <p><strong>📅 Fecha de Pago:</strong> {pago.fechaPago ? (pago.fechaPago instanceof Date ? pago.fechaPago.toLocaleDateString() : pago.fechaPago) : "No pagado"}</p>
+      <div
+        className="pago-card"
+        style={{ backgroundColor: isPagado ? "#C7C8CA" : "white" }}
+      >
+        <p>
+          <strong>📌 Cliente:</strong> {pago.nombreCliente}
+        </p>
+        <p>
+          <strong>💳 Producto:</strong> {pago.nombreProducto}
+        </p>
+        <p>
+          <strong>💳 Cuotas Pagas:</strong>{" "}
+          {pago.nroCuota && pago.cantCuotas
+            ? `${pago.nroCuota - 1} / ${pago.cantCuotas}`
+            : "Sin datos"}
+        </p>
+
+        <p>
+          <strong>💰 Monto Cuota:</strong> ${pago.monto.toFixed(2)}
+        </p>
+        {isPagado && pago.nroCuota ? (
+          <p>
+            <strong>💳 Se pagó la cuota nro:</strong> {pago.nroCuota}
+          </p>
+        ) : null}
+        <p>
+          <strong>💵 Monto Abonado:</strong> ${pago.montoAbonado || 0}
+        </p>
+        <p>
+          <strong>⚠ Saldo:</strong> ${pago.saldo}
+        </p>
+        <p>
+          <strong>📅 Fecha de Pago:</strong>{" "}
+          {pago.fechaPago
+            ? pago.fechaPago instanceof Date
+              ? pago.fechaPago.toLocaleDateString()
+              : pago.fechaPago
+            : "No pagado"}
+        </p>
 
         {isPagado ? (
           <span className="pagado">✅ Cuota Pagada</span>
         ) : (
-          <button className="btn-pagar" onClick={() => pago.handlePagoCuota(pago.id, diferencia)}>
+          <button
+            className="btn-pagar"
+            onClick={() => {
+              pago.handlePagoCuota(pago.id, diferencia);
+            }}
+          >
             Pagar
           </button>
         )}
         {isPagado && (
-  <div style={{ marginTop: "10px" }}>
-    <button className="btn-editar" onClick={() => pago.handleEditarPago(pago)}>
-      ✏️ Editar Pago
-    </button>
-  </div>
-)}
-
+          <div style={{ marginTop: "10px" }}>
+            <button
+              className="btn-editar"
+              onClick={() => pago.handleEditarPago(pago)}
+            >
+              ✏️ Editar Pago
+            </button>
+          </div>
+        )}
       </div>
 
       {/* <div className="footer-finalizar">
@@ -75,8 +114,12 @@ const PagoCard: React.FC<PagoCardProps> = ({
         <div className="modal-resumen">
           <div className="modal-content">
             <h2>Resumen de Cobranza</h2>
-            <p><strong>Total Cobrado:</strong> ${totalCobrado.toFixed(2)}</p>
-            <p><strong>Cuotas cobradas:</strong> {pagosCobrados.length}</p>
+            <p>
+              <strong>Total Cobrado:</strong> ${totalCobrado.toFixed(2)}
+            </p>
+            <p>
+              <strong>Cuotas cobradas:</strong> {pagosCobrados.length}
+            </p>
             <button onClick={onCloseResumen}>Cerrar</button>
           </div>
         </div>

@@ -7,6 +7,7 @@ import "../styles/PagosPage.css";
 import Swal from "sweetalert2";
 import { registrarPago, editarPago } from "../apis/postApi";
 import { Pago } from "../interfaces/Pagos";
+import { getPagosPorPrestamo } from "../apis/postApi";
 import {
   guardarTotalCobrado,
   obtenerTotalCobrado,
@@ -34,7 +35,15 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
       setTotalCobrado(totalYaCobrado);
     }
   }, [pagosIniciales]);
-  
+  useEffect(() => {
+    if (pagosIniciales?.length > 0) {
+      localStorage.setItem(
+        "prestamoId",
+        pagosIniciales[0].prestamoId?.toString() || ""
+      );
+    }
+  }, [pagosIniciales]);
+
   useEffect(() => {
     guardarTotalCobrado(totalCobrado);
   }, [totalCobrado]);
@@ -91,18 +100,32 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
 
       await registrarPago(pagoId, montoFinal);
 
-      setPagos((prevPagos) =>
-        prevPagos.map((p) =>
-          p.id === pagoId
-            ? {
-                ...p,
-                montoAbonado: montoFinal,
-                fechaPago: new Date(),
-                saldo: p.monto - montoFinal,
-              }
-            : p
-        )
-      );
+      const prestamoId = localStorage.getItem("prestamoId");
+
+      const pagoOriginal = pagos.find((p) => p.id === pagoId);
+
+      if (pagoOriginal && montoFinal > pagoOriginal.monto) {
+        // 🔁 Volver a cargar todos los pagos porque se adelantaron cuotas
+        if (!prestamoId) {
+          throw new Error("El ID del préstamo no está disponible.");
+        }
+        const response = await getPagosPorPrestamo(parseInt(prestamoId)); // ⚠️ Reemplazar con tu endpoint real
+        setPagos(response);
+      } else {
+        // ✅ Solo se pagó una cuota normal, actualizar localmente
+        setPagos((prevPagos) =>
+          prevPagos.map((p) =>
+            p.id === pagoId
+              ? {
+                  ...p,
+                  montoAbonado: montoFinal,
+                  fechaPago: new Date(),
+                  saldo: p.monto - montoFinal,
+                }
+              : p
+          )
+        );
+      }
 
       setTotalCobrado((prev) => prev + montoFinal);
 
@@ -122,6 +145,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
       });
     }
   };
+
   const handleEditarPago = async (pago: Pago) => {
     const { value: nuevoMonto } = await Swal.fire({
       title: "Editar Monto Pagado",
@@ -172,6 +196,11 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
       }
     }
   };
+  useEffect(() => {
+    return () => {
+      localStorage.removeItem("prestamoId");
+    };
+  }, []);
 
   return (
     <div className="pagos-page">
