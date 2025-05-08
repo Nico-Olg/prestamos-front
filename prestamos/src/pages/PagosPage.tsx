@@ -12,6 +12,12 @@ import {
   guardarTotalCobrado,
   obtenerTotalCobrado,
 } from "../utils/localStorageCobranza";
+import {
+  agregarSobrante,
+  totalSobrantesDelDia,
+  limpiarSobrantesViejos,  
+  obtenerSobrantesComoMapa,
+} from "../utils/sobrantes.tsx";
 
 interface PagosPageProps {
   isMobile?: boolean;
@@ -24,6 +30,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   const [totalCobrado, setTotalCobrado] = useState<number>(
     obtenerTotalCobrado()
   );
+  const [sobrantes, setSobrantes] = useState<Record<number, number>>({});
 
   useEffect(() => {
     if (pagosIniciales) {
@@ -35,6 +42,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
       setTotalCobrado(totalYaCobrado);
     }
   }, [pagosIniciales]);
+
   useEffect(() => {
     if (pagosIniciales?.length > 0) {
       localStorage.setItem(
@@ -47,6 +55,11 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   useEffect(() => {
     guardarTotalCobrado(totalCobrado);
   }, [totalCobrado]);
+
+  useEffect(() => {
+    limpiarSobrantesViejos();
+    setSobrantes(obtenerSobrantesComoMapa());
+  }, []);
 
   const esPagoDeCobrador = !!cobrador;
   const tituloPagina = isMobile
@@ -107,6 +120,12 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
       if (!prestamoId) return;
 
       const pagoOriginal = pagos.find((p) => p.id === pagoId);
+
+      if (pagoOriginal && montoFinal > pagoOriginal.monto) {
+        const sobrante = montoFinal - pagoOriginal.monto;
+        agregarSobrante(pagoId, sobrante);
+        setSobrantes(obtenerSobrantesComoMapa());
+      }
 
       if (esPagoDeCobrador && cobradorId) {
         const response = await cobranzaDelDia(
@@ -177,7 +196,6 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
 
         await editarPago(pago.id, parseFloat(nuevoMonto), fechaPagoActual);
 
-        // 🔁 Actualizar el pago en el estado local de pagos:
         setPagos((prevPagos) =>
           prevPagos.map((p) =>
             p.id === pago.id
@@ -191,7 +209,6 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
           )
         );
 
-        // 🔁 Actualizar el total cobrado
         const diferencia = parseFloat(nuevoMonto) - (pago.montoAbonado || 0);
         setTotalCobrado((prev) => prev + diferencia);
 
@@ -201,6 +218,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
       }
     }
   };
+
   useEffect(() => {
     return () => {
       localStorage.removeItem("prestamoId");
@@ -217,7 +235,8 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
           handlePagoCuota={handlePagoCuota}
           handleEditarPago={handleEditarPago}
           mostrarCliente={esPagoDeCobrador}
-          totalCobrado={totalCobrado}
+          totalCobrado={totalCobrado + totalSobrantesDelDia()}
+          sobrantes={sobrantes} // 👈 nuevo prop
         />
       </div>
     </div>

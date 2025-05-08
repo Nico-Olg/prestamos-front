@@ -15,6 +15,7 @@ interface PagosGridProps {
   handleEditarPago: (pago: Pago) => void;
   mostrarCliente?: boolean;
   totalCobrado: number;
+  sobrantes?: Record<number, number>; // 👈 nuevo
 }
 
 const formatearFechaLocal = (fechaISO: string | null): string => {
@@ -33,6 +34,7 @@ const PagosGrid: React.FC<PagosGridProps> = ({
   handleEditarPago,
   mostrarCliente = false,
   totalCobrado,
+  sobrantes,
 }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [pagosCobrados, setPagosCobrados] = useState<Pago[]>([]);
@@ -97,6 +99,7 @@ const PagosGrid: React.FC<PagosGridProps> = ({
             onFinalizarCobranza={() => setShowResumen(true)}
             showResumen={showResumen}
             onCloseResumen={() => setShowResumen(false)}
+             sobrante={sobrantes?.[pago.id] || 0} // 👈 nuevo
           />
         ))}
 

@@ -17,6 +17,7 @@ type PagoCardProps = {
   onFinalizarCobranza: () => void;
   showResumen: boolean;
   onCloseResumen: () => void;
+  sobrante: number; // 👈 nuevo
 };
 
 const PagoCard: React.FC<PagoCardProps> = ({
@@ -26,6 +27,7 @@ const PagoCard: React.FC<PagoCardProps> = ({
   // onFinalizarCobranza,
   showResumen,
   onCloseResumen,
+  sobrante,
 }) => {
   const diferencia =
     pago.montoAbonado != null && pago.montoAbonado > 0
@@ -80,9 +82,10 @@ const PagoCard: React.FC<PagoCardProps> = ({
             <strong>💳 Se pagó la cuota nro:</strong> {pago.nroCuota}
           </p>
         ) : null}
-        <p>
-          <strong>💵 Monto Abonado:</strong> ${pago.montoAbonado || 0}
-        </p>
+       <p>
+  <strong>💵 Monto Recibido:</strong> ${((pago.montoAbonado || 0) + sobrante).toFixed(2)}
+</p>
+
         <p>
           <strong>⚠ Saldo:</strong> ${pago.saldo}
         </p>
