@@ -5,6 +5,7 @@ import PagoCard from "./PagoCard";
 import ResumenCobranza from "../components/ResumenCobranza";
 import "../styles/PagosGrid.css";
 import { Pago } from "../interfaces/Pagos";
+import { cobranzaDelDia } from "../apis/postApi";
 
 interface PagoExtendido extends Pago {}
 
@@ -52,25 +53,21 @@ const PagosGrid: React.FC<PagosGridProps> = ({
     }
   }, [totalCobrado]);
 
-  const handlePagoMobile = (pagoId: number, monto: number) => {
-    handlePagoCuota(pagoId, monto);
-    const pagoOriginal = pagos.find((p) => p.id === pagoId);
-    if (!pagoOriginal) return;
+  const handlePagoMobile = async (pagoId: number, monto: number) => {
+  await handlePagoCuota(pagoId, monto);
 
-    const pagoActualizado: Pago = {
-      ...pagoOriginal,
-      montoAbonado: (pagoOriginal.montoAbonado || 0) + monto,
-    };
+  const prestamoId = localStorage.getItem("prestamoId");
+  if (!prestamoId) return;
+  const cobradorId = localStorage.getItem("cobradorId")? parseInt(localStorage.getItem("cobradorId") || "") : null;
+  if (!cobradorId) return;
+  try {
+    const pagosActualizados = await cobranzaDelDia(cobradorId, new Date().toISOString());    
+    setPagosCobrados(pagosActualizados.pagos);
+  } catch (error) {
+    console.error("Error al actualizar pagos en móvil:", error);
+  }
+};
 
-    setPagosCobrados((prev) => {
-      const existe = prev.find((p) => p.id === pagoId);
-      if (existe) {
-        return prev.map((p) => (p.id === pagoId ? pagoActualizado : p));
-      } else {
-        return [...prev, pagoActualizado];
-      }
-    });
-  };
 
   const pagosParciales = pagosCobrados.filter(
     (p) => (p.montoAbonado || 0) > 0 && (p.montoAbonado || 0) < p.monto

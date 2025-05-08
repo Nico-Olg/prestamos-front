@@ -204,6 +204,7 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
 
   const handleVerCobranza = async () => {
     try {
+      localStorage.setItem("cobradorId", cobradorId.toString());
       const today = new Date().toISOString().split("T")[0];
       const response = await cobranzaDelDia(cobradorId, today);
       const data = PagosMapper.fromJSON(response);

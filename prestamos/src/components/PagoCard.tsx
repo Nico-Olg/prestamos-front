@@ -32,6 +32,19 @@ const PagoCard: React.FC<PagoCardProps> = ({
       ? pago.monto - pago.montoAbonado
       : pago.monto;
   const isPagado = pago.montoAbonado;
+  const seAdelantoParcial = () => {
+    if (!pago.montoAbonado || pago.montoAbonado <= 0 || !pago.nroCuota)
+      return false;
+
+    const cuotaSiguiente = pagosCobrados.find(
+      (p) =>
+        p.nroCuota === pago.nroCuota + 1 &&
+        (p.montoAbonado || 0) > 0 &&
+        (p.montoAbonado || 0) < p.monto
+    );
+
+    return !!cuotaSiguiente;
+  };
 
   return (
     <>
@@ -59,6 +72,9 @@ const PagoCard: React.FC<PagoCardProps> = ({
         <p>
           <strong>💰 Monto Cuota:</strong> ${pago.monto.toFixed(2)}
         </p>
+        {seAdelantoParcial() && (
+          <p>⚠ Se adelantó parcialmente la próxima cuota</p>
+        )}
         {isPagado && pago.nroCuota ? (
           <p>
             <strong>💳 Se pagó la cuota nro:</strong> {pago.nroCuota}

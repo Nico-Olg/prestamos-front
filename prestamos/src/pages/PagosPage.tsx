@@ -5,7 +5,7 @@ import Sidebar from "../components/Sidebar.tsx";
 import PagosGrid from "../components/PagosGrid.tsx";
 import "../styles/PagosPage.css";
 import Swal from "sweetalert2";
-import { registrarPago, editarPago } from "../apis/postApi";
+import { registrarPago, editarPago, cobranzaDelDia } from "../apis/postApi";
 import { Pago } from "../interfaces/Pagos";
 import { getPagosPorPrestamo } from "../apis/postApi";
 import {
@@ -101,18 +101,23 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
       await registrarPago(pagoId, montoFinal);
 
       const prestamoId = localStorage.getItem("prestamoId");
+      const cobradorId = localStorage.getItem("cobradorId")
+        ? parseInt(localStorage.getItem("cobradorId") || "")
+        : null;
+      if (!prestamoId) return;
 
       const pagoOriginal = pagos.find((p) => p.id === pagoId);
 
-      if (pagoOriginal && montoFinal > pagoOriginal.monto) {
-        // 🔁 Volver a cargar todos los pagos porque se adelantaron cuotas
-        if (!prestamoId) {
-          throw new Error("El ID del préstamo no está disponible.");
-        }
-        const response = await getPagosPorPrestamo(parseInt(prestamoId)); // ⚠️ Reemplazar con tu endpoint real
+      if (esPagoDeCobrador && cobradorId) {
+        const response = await cobranzaDelDia(
+          cobradorId,
+          new Date().toISOString()
+        );
+        setPagos(response.pagos);
+      } else if (pagoOriginal && montoFinal !== pagoOriginal.monto) {
+        const response = await getPagosPorPrestamo(parseInt(prestamoId));
         setPagos(response);
       } else {
-        // ✅ Solo se pagó una cuota normal, actualizar localmente
         setPagos((prevPagos) =>
           prevPagos.map((p) =>
             p.id === pagoId
@@ -167,8 +172,8 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
     if (nuevoMonto !== undefined) {
       try {
         const fechaPagoActual = pago.fechaPago
-          ? new Date(pago.fechaPago).toISOString().split("T")[0]
-          : new Date().toISOString().split("T")[0];
+          ? new Date(pago.fechaPago).toISOString()
+          : new Date().toISOString();
 
         await editarPago(pago.id, parseFloat(nuevoMonto), fechaPagoActual);
 
