@@ -47,6 +47,15 @@ const PagoCard: React.FC<PagoCardProps> = ({
 
     return !!cuotaSiguiente;
   };
+  const fueAdelantado = () => {
+    if (!pago.montoAbonado || !pago.fechaPago) return false;
+    const hoy = new Date().toISOString().split("T")[0];
+    const fechaPago =
+      pago.fechaPago instanceof Date
+        ? pago.fechaPago.toISOString().split("T")[0]
+        : (pago.fechaPago as String).split("T")[0];
+    return fechaPago !== hoy;
+  };
 
   return (
     <>
@@ -82,9 +91,16 @@ const PagoCard: React.FC<PagoCardProps> = ({
             <strong>💳 Se pagó la cuota nro:</strong> {pago.nroCuota}
           </p>
         ) : null}
-       <p>
-  <strong>💵 Monto Recibido:</strong> ${((pago.montoAbonado || 0) + sobrante).toFixed(2)}
-</p>
+        {fueAdelantado() && (
+          <p style={{ color: "#555", fontStyle: "italic" }}>
+            🕓 Este pago fue adelantado días atrás
+          </p>
+        )}
+
+        <p>
+          <strong>💵 Monto Recibido:</strong> $
+          {((pago.montoAbonado || 0) + sobrante).toFixed(2)}
+        </p>
 
         <p>
           <strong>⚠ Saldo:</strong> ${pago.saldo}
