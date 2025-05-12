@@ -1,9 +1,7 @@
-// src/components/PagoCard.tsx
 import React from "react";
 import "../styles/PagoCard.css";
 import { Pago } from "../interfaces/Pagos";
 
-// Extender el tipo Pago para incluir las props adicionales usadas en el componente
 type PagoConExtras = Pago & {
   handlePagoCuota: (pagoId: number, monto: number) => void;
   montoAbonado?: number | null;
@@ -17,23 +15,32 @@ type PagoCardProps = {
   onFinalizarCobranza: () => void;
   showResumen: boolean;
   onCloseResumen: () => void;
-  sobrante: number; // 👈 nuevo
+  sobrante: number;
 };
 
 const PagoCard: React.FC<PagoCardProps> = ({
   pago,
   totalCobrado,
   pagosCobrados,
-  // onFinalizarCobranza,
+  //onFinalizarCobranza,
   showResumen,
   onCloseResumen,
   sobrante,
 }) => {
-  const diferencia =
-    pago.montoAbonado != null && pago.montoAbonado > 0
-      ? pago.monto - pago.montoAbonado
-      : pago.monto;
-  const isPagado = pago.montoAbonado;
+  const montoTotalAbonado = (pago.montoAbonado || 0) + sobrante;
+  const diferencia = pago.monto - montoTotalAbonado;
+  const cuotaCompleta = montoTotalAbonado >= pago.monto;
+
+  const fueAdelantado = () => {
+    if (!pago.fechaPago) return false;
+    const hoy = new Date().toISOString().split("T")[0];
+    const fechaPago =
+      pago.fechaPago instanceof Date
+        ? pago.fechaPago.toISOString().split("T")[0]
+        : (pago.fechaPago as string).split("T")[0];
+    return fechaPago !== hoy;
+  };
+
   const seAdelantoParcial = () => {
     if (!pago.montoAbonado || pago.montoAbonado <= 0 || !pago.nroCuota)
       return false;
@@ -47,26 +54,11 @@ const PagoCard: React.FC<PagoCardProps> = ({
 
     return !!cuotaSiguiente;
   };
-  const fueAdelantado = () => {
-    if (!pago.montoAbonado || !pago.fechaPago) return false;
-    const hoy = new Date().toISOString().split("T")[0];
-    const fechaPago =
-      pago.fechaPago instanceof Date
-        ? pago.fechaPago.toISOString().split("T")[0]
-        : (pago.fechaPago as String).split("T")[0];
-    return fechaPago !== hoy;
-  };
 
   return (
     <>
-      {/* <div className="header-total-cobrado">
-        <h3>Total Cobrado: ${totalCobrado.toFixed(2)}</h3>
-      </div> */}
+      <div className={`pago-card ${cuotaCompleta ? "completado" : ""}`}>
 
-      <div
-        className="pago-card"
-        style={{ backgroundColor: isPagado ? "#C7C8CA" : "white" }}
-      >
         <p>
           <strong>📌 Cliente:</strong> {pago.nombreCliente}
         </p>
@@ -83,14 +75,17 @@ const PagoCard: React.FC<PagoCardProps> = ({
         <p>
           <strong>💰 Monto Cuota:</strong> ${pago.monto.toFixed(2)}
         </p>
+
         {seAdelantoParcial() && (
           <p>⚠ Se adelantó parcialmente la próxima cuota</p>
         )}
-        {isPagado && pago.nroCuota ? (
+
+        {pago.nroCuota && pago.montoAbonado ? (
           <p>
             <strong>💳 Se pagó la cuota nro:</strong> {pago.nroCuota}
           </p>
         ) : null}
+
         {fueAdelantado() && (
           <p style={{ color: "#555", fontStyle: "italic" }}>
             🕓 Este pago fue adelantado días atrás
@@ -98,13 +93,14 @@ const PagoCard: React.FC<PagoCardProps> = ({
         )}
 
         <p>
-          <strong>💵 Monto Recibido:</strong> $
-          {((pago.montoAbonado || 0) + sobrante).toFixed(2)}
+          <strong>💵 Monto Recibido:</strong> ${montoTotalAbonado.toFixed(2)}
         </p>
 
         <p>
-          <strong>⚠ Saldo:</strong> ${pago.saldo}
+          <strong>⚠ Saldo:</strong>{" "}
+          {diferencia > 0 ? `$${diferencia.toFixed(2)}` : "Sin deuda"}
         </p>
+
         <p>
           <strong>📅 Fecha de Pago:</strong>{" "}
           {pago.fechaPago
@@ -114,19 +110,36 @@ const PagoCard: React.FC<PagoCardProps> = ({
             : "No pagado"}
         </p>
 
-        {isPagado ? (
-          <span className="pagado">✅ Cuota Pagada</span>
-        ) : (
+        {/* Mensaje si la cuota fue completada */}
+        {cuotaCompleta && (
+          <div>
+            <span className="pagado">✅ Cuota completada</span>
+            {fueAdelantado() && (
+              <p className="alerta-completado">
+                Completada con pagos anteriores
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Alerta si está parcialmente abonada */}
+        {montoTotalAbonado > 0 && montoTotalAbonado < pago.monto && (
+          <p className="alerta-parcial">
+            ⚠ Cuota parcialmente abonada - faltan ${diferencia.toFixed(2)}
+          </p>
+        )}
+
+        {/* Botón para pagar solo si falta */}
+        {!cuotaCompleta && (
           <button
             className="btn-pagar"
-            onClick={() => {
-              pago.handlePagoCuota(pago.id, diferencia);
-            }}
+            onClick={() => pago.handlePagoCuota(pago.id, diferencia)}
           >
             Pagar
           </button>
         )}
-        {isPagado && (
+
+        {pago.montoAbonado && (
           <div style={{ marginTop: "10px" }}>
             <button
               className="btn-editar"
@@ -137,12 +150,6 @@ const PagoCard: React.FC<PagoCardProps> = ({
           </div>
         )}
       </div>
-
-      {/* <div className="footer-finalizar">
-        <button className="btn-finalizar" onClick={onFinalizarCobranza}>
-          Finalizar Cobranza
-        </button>
-      </div> */}
 
       {showResumen && (
         <div className="modal-resumen">

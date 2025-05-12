@@ -56,20 +56,24 @@ const PagosGrid: React.FC<PagosGridProps> = ({
   }, [totalCobrado]);
 
   const handlePagoMobile = async (pagoId: number, monto: number) => {
-  await handlePagoCuota(pagoId, monto);
+    await handlePagoCuota(pagoId, monto);
 
-  const prestamoId = localStorage.getItem("prestamoId");
-  if (!prestamoId) return;
-  const cobradorId = localStorage.getItem("cobradorId")? parseInt(localStorage.getItem("cobradorId") || "") : null;
-  if (!cobradorId) return;
-  try {
-    const pagosActualizados = await cobranzaDelDia(cobradorId, new Date().toISOString());    
-    setPagosCobrados(pagosActualizados.pagos);
-  } catch (error) {
-    console.error("Error al actualizar pagos en móvil:", error);
-  }
-};
-
+    const prestamoId = localStorage.getItem("prestamoId");
+    if (!prestamoId) return;
+    const cobradorId = localStorage.getItem("cobradorId")
+      ? parseInt(localStorage.getItem("cobradorId") || "")
+      : null;
+    if (!cobradorId) return;
+    try {
+      const pagosActualizados = await cobranzaDelDia(
+        cobradorId,
+        new Date().toISOString()
+      );
+      setPagosCobrados(pagosActualizados.pagos);
+    } catch (error) {
+      console.error("Error al actualizar pagos en móvil:", error);
+    }
+  };
 
   const pagosParciales = pagosCobrados.filter(
     (p) => (p.montoAbonado || 0) > 0 && (p.montoAbonado || 0) < p.monto
@@ -99,7 +103,7 @@ const PagosGrid: React.FC<PagosGridProps> = ({
             onFinalizarCobranza={() => setShowResumen(true)}
             showResumen={showResumen}
             onCloseResumen={() => setShowResumen(false)}
-             sobrante={sobrantes?.[pago.id] || 0} // 👈 nuevo
+            sobrante={sobrantes?.[pago.id] || 0} // 👈 nuevo
           />
         ))}
 
@@ -188,17 +192,17 @@ const PagosGrid: React.FC<PagosGridProps> = ({
             {/* Cuota sin pagar */}
             {(row.montoAbonado == null || row.montoAbonado === 0) && (
               <button
-              className="btn btn-primary"
-              onClick={() => handlePagoCuota(row.id, row.monto)}
-            >
-              Pagar
-            </button>
+                className="btn btn-primary"
+                onClick={() => handlePagoCuota(row.id, row.monto)}
+              >
+                Pagar
+              </button>
             )}
           </div>
         );
       },
       ignoreRowClick: true,
-    }
+    },
   ];
 
   if (mostrarCliente) {
@@ -226,16 +230,22 @@ const PagosGrid: React.FC<PagosGridProps> = ({
           rangeSeparatorText: "de",
         }}
         conditionalRowStyles={[
+          // 👉 Fila completada (gris claro)
           {
-            when: (row) => {
-              // Si todavía no pagó nada, no pintar
-              if (row.montoAbonado == null || row.montoAbonado === 0) {
-                return false;
-              }
-              // Si ya pagó algo, pero pagó menos de lo que debía
-              return row.montoAbonado < row.monto;
+            when: (row) => (row.montoAbonado || 0) >= row.monto,
+            style: {
+              backgroundColor: "#C7C8CA",
             },
-            style: { backgroundColor: "#ffeb99" },
+          },
+          // 👉 Fila parcialmente abonada (amarillo claro)
+          {
+            when: (row) =>
+              row.montoAbonado != null &&
+              row.montoAbonado > 0 &&
+              row.montoAbonado < row.monto,
+            style: {
+              backgroundColor: "#fff3cd",
+            },
           },
         ]}
       />

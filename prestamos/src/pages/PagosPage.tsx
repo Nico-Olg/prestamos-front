@@ -13,8 +13,8 @@ import {
   obtenerTotalCobrado,
 } from "../utils/localStorageCobranza";
 import {
-  agregarSobrante,  
-  limpiarSobrantesViejos,  
+  agregarSobrante,
+  limpiarSobrantesViejos,
   obtenerSobrantesComoMapa,
 } from "../utils/sobrantes.tsx";
 
@@ -70,28 +70,27 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
     : `Pagos de ${cliente?.apellidoYnombre}`;
 
   const esHoy = (fecha: string | Date | null | undefined): boolean => {
-  if (!fecha) return false;
-  const hoy = new Date().toISOString().split("T")[0];
-  const fechaStr =
-    typeof fecha === "string"
-      ? fecha.split("T")[0]
-      : fecha.toISOString().split("T")[0];
-  return fechaStr === hoy;
-};
+    if (!fecha) return false;
+    const hoy = new Date().toISOString().split("T")[0];
+    const fechaStr =
+      typeof fecha === "string"
+        ? fecha.split("T")[0]
+        : fecha.toISOString().split("T")[0];
+    return fechaStr === hoy;
+  };
 
-const totalPagosRealesDelDia = (
-  pagos: Pago[],
-  sobrantesMap: Record<number, number>
-): number => {
-  return pagos.reduce((acc, pago) => {
-    if (pago.montoAbonado && esHoy(pago.fechaPago)) {
-      const sobrante = sobrantesMap[pago.id] || 0;
-      return acc + pago.montoAbonado + sobrante;
-    }
-    return acc;
-  }, 0);
-};
-
+  const totalPagosRealesDelDia = (
+    pagos: Pago[],
+    sobrantesMap: Record<number, number>
+  ): number => {
+    return pagos.reduce((acc, pago) => {
+      if (pago.montoAbonado && esHoy(pago.fechaPago)) {
+        const sobrante = sobrantesMap[pago.id] || 0;
+        return acc + pago.montoAbonado + sobrante;
+      }
+      return acc;
+    }, 0);
+  };
 
   const handlePagoCuota = async (pagoId: number, monto: number) => {
     try {
@@ -156,24 +155,12 @@ const totalPagosRealesDelDia = (
           new Date().toISOString()
         );
         setPagos(response.pagos);
-      } else if (pagoOriginal && montoFinal !== pagoOriginal.monto) {
+      } else {
         const response = await getPagosPorPrestamo(parseInt(prestamoId));
         setPagos(response);
-      } else {
-        setPagos((prevPagos) =>
-          prevPagos.map((p) =>
-            p.id === pagoId
-              ? {
-                  ...p,
-                  montoAbonado: montoFinal,
-                  fechaPago: new Date(),
-                  saldo: p.monto - montoFinal,
-                }
-              : p
-          )
-        );
       }
 
+      // ✅ CORRECCIÓN: solo sumamos lo que efectivamente se pagó ahora (sin duplicar monto adelantado)
       setTotalCobrado((prev) => prev + montoFinal);
 
       Swal.fire({
@@ -213,29 +200,36 @@ const totalPagosRealesDelDia = (
 
     if (nuevoMonto !== undefined) {
       try {
+        const nuevoMontoParsed = parseFloat(nuevoMonto);
+        const montoAnterior = pago.montoAbonado || 0;
+        const diferencia = nuevoMontoParsed - montoAnterior;
+
         const fechaPagoActual = pago.fechaPago
           ? new Date(pago.fechaPago).toISOString()
           : new Date().toISOString();
 
-        await editarPago(pago.id, parseFloat(nuevoMonto), fechaPagoActual);
+        await editarPago(pago.id, nuevoMontoParsed, fechaPagoActual);
 
         setPagos((prevPagos) =>
           prevPagos.map((p) =>
             p.id === pago.id
               ? {
                   ...p,
-                  montoAbonado: parseFloat(nuevoMonto),
+                  montoAbonado: nuevoMontoParsed,
                   fechaPago: new Date(fechaPagoActual),
-                  saldo: p.monto - parseFloat(nuevoMonto),
+                  saldo: p.monto - nuevoMontoParsed,
                 }
               : p
           )
         );
 
-        const diferencia = parseFloat(nuevoMonto) - (pago.montoAbonado || 0);
         setTotalCobrado((prev) => prev + diferencia);
 
-        Swal.fire("Pago actualizado", `Nuevo monto: $${nuevoMonto}`, "success");
+        Swal.fire(
+          "Pago actualizado",
+          `Nuevo monto: $${nuevoMontoParsed.toFixed(2)}`,
+          "success"
+        );
       } catch (error) {
         Swal.fire("Error", "No se pudo editar el pago", "error");
       }
@@ -258,8 +252,8 @@ const totalPagosRealesDelDia = (
           handlePagoCuota={handlePagoCuota}
           handleEditarPago={handleEditarPago}
           mostrarCliente={esPagoDeCobrador}
-         totalCobrado={totalPagosRealesDelDia(pagos, sobrantes)}
-          sobrantes={sobrantes} // 👈 nuevo prop
+          totalCobrado={totalCobrado}
+          sobrantes={sobrantes}
         />
       </div>
     </div>

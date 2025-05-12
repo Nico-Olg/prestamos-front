@@ -118,6 +118,10 @@
 .btn-icon.edit {
   color: #007bff;
 }
+.fila-completa {
+  background-color: #C7C8CA !important;
+}
+
 
 
 /* 🟢 Hacer la tabla responsiva */

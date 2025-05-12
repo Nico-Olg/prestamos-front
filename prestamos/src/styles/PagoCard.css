@@ -6,6 +6,7 @@
   margin: 10px 0;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
   font-family: Arial, sans-serif;
+  transition: background-color 0.4s ease, border 0.4s ease;
 }
 
 .pago-card p {
@@ -107,5 +108,39 @@
 
 .btn-editar:hover {
   background-color: #cc8400;
+}
+.pagado {
+  display: inline-block;
+  background-color: #28a745;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 5px;
+  font-weight: bold;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.pago-card.completado {
+  background-color: #C7C8CA;
+  border: 2px solid green;
+}
+
+
+.pago-card p.alerta-completado {
+  color: #155724;
+  background-color: #d4edda;
+  border-left: 4px solid #28a745;
+  padding: 6px 10px;
+  margin-top: 10px;
+  border-radius: 4px;
+  font-style: italic;
+}
+.alerta-parcial {
+  color: #856404;
+  background-color: #fff3cd;
+  border-left: 4px solid #ffc107;
+  padding: 6px 10px;
+  margin-top: 10px;
+  border-radius: 4px;
+  font-style: italic;
 }
 
