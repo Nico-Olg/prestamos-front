@@ -69,28 +69,28 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
     ? `Pagos del día de ${cobrador?.nombreyApellido}`
     : `Pagos de ${cliente?.apellidoYnombre}`;
 
-  // const esHoy = (fecha: string | Date | null | undefined): boolean => {
-  //   if (!fecha) return false;
-  //   const hoy = new Date().toISOString().split("T")[0];
-  //   const fechaStr =
-  //     typeof fecha === "string"
-  //       ? fecha.split("T")[0]
-  //       : fecha.toISOString().split("T")[0];
-  //   return fechaStr === hoy;
-  // };
+  const esHoy = (fecha: string | Date | null | undefined): boolean => {
+    if (!fecha) return false;
+    const hoy = new Date().toISOString().split("T")[0];
+    const fechaStr =
+      typeof fecha === "string"
+        ? fecha.split("T")[0]
+        : fecha.toISOString().split("T")[0];
+    return fechaStr === hoy;
+  };
 
-  // const totalPagosRealesDelDia = (
-  //   pagos: Pago[],
-  //   sobrantesMap: Record<number, number>
-  // ): number => {
-  //   return pagos.reduce((acc, pago) => {
-  //     if (pago.montoAbonado && esHoy(pago.fechaPago)) {
-  //       const sobrante = sobrantesMap[pago.id] || 0;
-  //       return acc + pago.montoAbonado + sobrante;
-  //     }
-  //     return acc;
-  //   }, 0);
-  // };
+  const totalPagosRealesDelDia = (
+    pagos: Pago[],
+    sobrantesMap: Record<number, number>
+  ): number => {
+    return pagos.reduce((acc, pago) => {
+      if (pago.montoAbonado && esHoy(pago.fechaPago)) {
+        const sobrante = sobrantesMap[pago.id] || 0;
+        return acc + pago.montoAbonado + sobrante;
+      }
+      return acc;
+    }, 0);
+  };
 
   const handlePagoCuota = async (pagoId: number, monto: number) => {
     try {
@@ -252,7 +252,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
           handlePagoCuota={handlePagoCuota}
           handleEditarPago={handleEditarPago}
           mostrarCliente={esPagoDeCobrador}
-          totalCobrado={totalCobrado}
+          totalCobrado={totalPagosRealesDelDia(pagos, sobrantes)}
           sobrantes={sobrantes}
         />
       </div>
