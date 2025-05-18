@@ -1,5 +1,8 @@
 import React from "react";
-import DataTable, { TableColumn, ConditionalStyles } from "react-data-table-component";
+import DataTable, {
+  TableColumn,
+  ConditionalStyles,
+} from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
 import { Cliente } from "../interfaces/Cliente"; // Importa las interfaces
 import { Prestamo } from "../interfaces/Prestamo"; // Importa las interfaces
@@ -10,21 +13,23 @@ import { IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete"; // Importa el ícono de tacho de basura
 import Swal from "sweetalert2";
 import { useClientContext } from "../provider/ClientContext";
-import { getPagosPorPrestamo } from "../apis/postApi"; 
+import { getPagosPorPrestamo } from "../apis/postApi";
 
 interface PrestamosGridProps {
   cliente: Cliente; // Datos del cliente que también provienen de PrestamosPage
   prestamos?: Prestamo[]; // Opcional, ya que los préstamos se obtienen del contexto
 }
 
-const PrestamosGrid: React.FC<PrestamosGridProps> = ({ cliente, prestamos }) => {
+const PrestamosGrid: React.FC<PrestamosGridProps> = ({
+  cliente,
+  prestamos,
+}) => {
   const { refreshClientes } = useClientContext(); // Incluye `clientes` para obtener actualizaciones
   const navigate = useNavigate();
 
-
   const handleRowClicked = async (prestamo: Prestamo) => {
     try {
-      const pagos = await getPagosPorPrestamo(prestamo.idPrestamo);       
+      const pagos = await getPagosPorPrestamo(prestamo.idPrestamo);
       navigate(`/pagos`, { state: { cliente, prestamo, pagos } });
     } catch (error) {
       console.error("Error al cargar los pagos del préstamo:", error);
@@ -87,9 +92,11 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ cliente, prestamos }) => 
   const columns: TableColumn<Prestamo>[] = [
     {
       name: "ID",
-      selector: (row) => (row.idPrestamo  ? row.idPrestamo.toString() : "N/A"), // Validar `row.id`
+      selector: (row) => row.idPrestamo || 0, // Devuelve un número
       sortable: true,
+      format: (row) => row.idPrestamo?.toString() || "N/A", // Para mostrarlo como string si querés
     },
+
     {
       name: "Plan",
       selector: (row) => row.tipoPlan || "N/A", // Validar `row.tipoPlan`
@@ -97,24 +104,36 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({ cliente, prestamos }) => 
     },
     {
       name: "Monto",
-      selector: (row) => (row.montoPrestamo ? `$ ${row.montoPrestamo.toString()}` : "N/A"), // Validar `row.total`
+      selector: (row) =>
+        row.montoPrestamo ? `$ ${row.montoPrestamo.toString()}` : "N/A", // Validar `row.total`
       sortable: true,
     },
     {
       name: "Fecha de Inicio",
-      selector: (row) => formatDate(typeof row.fechaInicio === "string" ? row.fechaInicio : row.fechaInicio?.toISOString().split("T")[0] || ""), // Validar `row.fechaInicio`
+      selector: (row) =>
+        formatDate(
+          typeof row.fechaInicio === "string"
+            ? row.fechaInicio
+            : row.fechaInicio?.toISOString().split("T")[0] || ""
+        ), // Validar `row.fechaInicio`
       sortable: true,
       width: "150px",
     },
     {
       name: "Fecha de Finalizacion",
-      selector: (row) => formatDate(typeof row.fechaFinalizacion === "string" ? row.fechaFinalizacion : row.fechaFinalizacion?.toISOString().split("T")[0] || ""), // Validar `row.fechaFinalizacion`
+      selector: (row) =>
+        formatDate(
+          typeof row.fechaFinalizacion === "string"
+            ? row.fechaFinalizacion
+            : row.fechaFinalizacion?.toISOString().split("T")[0] || ""
+        ), // Validar `row.fechaFinalizacion`
       sortable: true,
       width: "180px",
     },
     {
       name: "Cantidad de Cuotas",
-      selector: (row) => (row.cantidadPagos ? row.cantidadPagos.toString() : "0"), // Validar `row.pagos`
+      selector: (row) =>
+        row.cantidadPagos ? row.cantidadPagos.toString() : "0", // Validar `row.pagos`
       sortable: true,
       width: "180px",
     },

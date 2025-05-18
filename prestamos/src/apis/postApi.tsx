@@ -283,7 +283,6 @@ export async function login(dni: string, password: string) {
   }
 }
 export async function registrarPago(id: number, monto: number) {
- 
   try {
     const token = getAuthToken();
     const response = await axios.post(
@@ -297,7 +296,16 @@ export async function registrarPago(id: number, monto: number) {
         withCredentials: true,
       }
     );
-    return response.data;
+
+    // Asegurarse de que el backend devuelve un DTO con la estructura { prestamo, montoRecibido }
+    const resultado = response.data;
+
+    // Validación mínima por si acaso
+    if (!resultado || typeof resultado.montoRecibido !== 'number') {
+      throw new Error("La respuesta del backend no contiene 'montoRecibido'");
+    }
+
+    return resultado; // { prestamo, montoRecibido }
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(`Error al registrar el pago: ${error.response?.status} ${error.response?.statusText}`);

@@ -116,7 +116,7 @@ const PagoCard: React.FC<PagoCardProps> = ({
             <span className="pagado">✅ Cuota completada</span>
             {fueAdelantado() && (
               <p className="alerta-completado">
-                Completada con pagos anteriores
+                Se completo correctamente el pago de la cuota
               </p>
             )}
           </div>
