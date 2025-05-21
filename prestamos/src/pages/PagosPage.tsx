@@ -13,17 +13,31 @@ import {
   limpiarSobrantesViejos,
   obtenerSobrantesComoMapa,
 } from "../utils/sobrantes.tsx";
+import {
+  guardarTotalCobrado,
+  obtenerTotalCobrado,
+} from "../utils/localStorageCobranza.tsx";
 
 interface PagosPageProps {
   isMobile?: boolean;
 }
 
 const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
+  // -------------------- ESTADO Y EFECTOS --------------------
   const location = useLocation();
   const { cliente, cobrador, pagos: pagosInicialesProp } = location.state || {};
   const [pagos, setPagos] = useState<Pago[]>(pagosInicialesProp || []);
-  const [totalCobrado, setTotalCobrado] = useState<number>(0);
+  const [totalCobrado, setTotalCobrado] = useState<number>(() => obtenerTotalCobrado());
   const [sobrantes, setSobrantes] = useState<Record<number, number>>({});
+
+  const esPagoDeCobrador = !!cobrador;
+  const tituloPagina = isMobile
+    ? esPagoDeCobrador
+      ? `Bienvenido ${cobrador?.nombreyApellido}`
+      : `Pagos de ${cliente?.apellidoYnombre}`
+    : esPagoDeCobrador
+    ? `Pagos del día de ${cobrador?.nombreyApellido}`
+    : `Pagos de ${cliente?.apellidoYnombre}`;
 
   useEffect(() => {
     limpiarSobrantesViejos();
@@ -39,7 +53,6 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
     }
   }, [pagosInicialesProp]);
 
-  // ✅ Inicializar totalCobrado con lo que ya se cobró hoy
   useEffect(() => {
     const hoy = new Date();
     let totalInicial = 0;
@@ -63,15 +76,13 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
     setTotalCobrado(totalInicial);
   }, [pagosInicialesProp, sobrantes]);
 
-  const esPagoDeCobrador = !!cobrador;
-  const tituloPagina = isMobile
-    ? esPagoDeCobrador
-      ? `Bienvenido ${cobrador?.nombreyApellido}`
-      : `Pagos de ${cliente?.apellidoYnombre}`
-    : esPagoDeCobrador
-    ? `Pagos del día de ${cobrador?.nombreyApellido}`
-    : `Pagos de ${cliente?.apellidoYnombre}`;
+  useEffect(() => {
+    return () => {
+      localStorage.removeItem("prestamoId");
+    };
+  }, []);
 
+  // -------------------- HANDLERS --------------------
   const handlePagoCuota = async (pagoId: number, monto: number) => {
     try {
       const result = await Swal.fire({
@@ -129,18 +140,18 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
       }
 
       if (esPagoDeCobrador && cobradorId) {
-        const response = await cobranzaDelDia(
-          cobradorId,
-          new Date().toISOString()
-        );
+        const response = await cobranzaDelDia(cobradorId, new Date().toISOString());
         setPagos(response.pagos);
       } else {
         const response = await getPagosPorPrestamo(parseInt(prestamoId));
         setPagos(response);
       }
 
-      // ✅ Acumulamos solo lo realmente recibido
-      setTotalCobrado((prev) => prev + montoRecibido);
+      setTotalCobrado((prev) => {
+        const nuevoTotal = prev + montoRecibido;
+        guardarTotalCobrado(nuevoTotal);
+        return nuevoTotal;
+      });
 
       Swal.fire({
         icon: "success",
@@ -199,23 +210,14 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
           )
         );
 
-        Swal.fire(
-          "Pago actualizado",
-          `Nuevo monto: $${nuevoMontoParsed.toFixed(2)}`,
-          "success"
-        );
+        Swal.fire("Pago actualizado", `Nuevo monto: $${nuevoMontoParsed.toFixed(2)}`, "success");
       } catch (error) {
         Swal.fire("Error", "No se pudo editar el pago", "error");
       }
     }
   };
 
-  useEffect(() => {
-    return () => {
-      localStorage.removeItem("prestamoId");
-    };
-  }, []);
-
+  // -------------------- RENDER --------------------
   return (
     <div className="pagos-page">
       <Header title={tituloPagina} isMobile={isMobile} />
