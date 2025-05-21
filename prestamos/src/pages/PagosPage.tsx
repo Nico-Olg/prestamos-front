@@ -54,27 +54,32 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   }, [pagosInicialesProp]);
 
   useEffect(() => {
-    const hoy = new Date();
-    let totalInicial = 0;
+  const totalLocal = obtenerTotalCobrado();
+  if (totalLocal > 0) return; // Ya se inició el día y se acumuló algo
 
-    for (const pago of pagosInicialesProp || []) {
-      if (!pago.fechaPago) continue;
+  const hoy = new Date();
+  let totalInicial = 0;
 
-      const fechaPago = new Date(pago.fechaPago);
-      const esHoy =
-        fechaPago.getFullYear() === hoy.getFullYear() &&
-        fechaPago.getMonth() === hoy.getMonth() &&
-        fechaPago.getDate() === hoy.getDate();
+  for (const pago of pagosInicialesProp || []) {
+    if (!pago.fechaPago) continue;
 
-      if (esHoy) {
-        const monto = pago.montoAbonado || 0;
-        const sobrante = (sobrantes && sobrantes[pago.id]) || 0;
-        totalInicial += monto + sobrante;
-      }
+    const fechaPago = new Date(pago.fechaPago);
+    const esHoy =
+      fechaPago.getFullYear() === hoy.getFullYear() &&
+      fechaPago.getMonth() === hoy.getMonth() &&
+      fechaPago.getDate() === hoy.getDate();
+
+    if (esHoy) {
+      const monto = pago.montoAbonado || 0;
+      const sobrante = (sobrantes && sobrantes[pago.id]) || 0;
+      totalInicial += monto + sobrante;
     }
+  }
 
-    setTotalCobrado(totalInicial);
-  }, [pagosInicialesProp, sobrantes]);
+  setTotalCobrado(totalInicial);
+  guardarTotalCobrado(totalInicial);
+}, [pagosInicialesProp, sobrantes]);
+
 
   useEffect(() => {
     return () => {
