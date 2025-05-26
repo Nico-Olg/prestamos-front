@@ -94,10 +94,10 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   }, []);
 
   useEffect(() => {
-    if (process.env.NODE_ENV !== "production") {
+   
       (window as any).verLogCobranza = obtenerLogCobranza;
       (window as any).limpiarLogCobranza = limpiarLogCobranza;
-    }
+    
   }, []);
 
   // -------------------- HANDLERS --------------------
