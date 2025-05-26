@@ -14,11 +14,6 @@ import {
   limpiarLogCobranza,
 } from "../utils/debugLogger";
 import {
-  agregarSobrante,
-  limpiarSobrantesViejos,
-  obtenerSobrantesComoMapa,
-} from "../utils/sobrantes.tsx";
-import {
   guardarTotalCobrado,
   obtenerTotalCobrado,
 } from "../utils/localStorageCobranza.tsx";
@@ -34,7 +29,6 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   const [totalCobrado, setTotalCobrado] = useState<number>(() =>
     obtenerTotalCobrado()
   );
-  const [sobrantes, setSobrantes] = useState<Record<number, number>>({});
 
   const esPagoDeCobrador = !!cobrador;
   const tituloPagina = isMobile
@@ -46,11 +40,6 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
     : `Pagos de ${cliente?.apellidoYnombre}`;
 
   useEffect(() => {
-    limpiarSobrantesViejos();
-    setSobrantes(obtenerSobrantesComoMapa());
-  }, []);
-
-  useEffect(() => {
     if (pagosInicialesProp?.length > 0) {
       localStorage.setItem(
         "prestamoId",
@@ -58,32 +47,6 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
       );
     }
   }, [pagosInicialesProp]);
-
-  const recalcularTotalCobrado = (pagosRecalculados: Pago[]) => {
-    const hoy = new Date();
-    let total = 0;
-    for (const pago of pagosRecalculados) {
-      if (!pago.fechaPago) continue;
-      const fechaPago = new Date(pago.fechaPago);
-      const esHoy =
-        fechaPago.getFullYear() === hoy.getFullYear() &&
-        fechaPago.getMonth() === hoy.getMonth() &&
-        fechaPago.getDate() === hoy.getDate();
-      if (esHoy) {
-        const monto = pago.montoAbonado || 0;
-        const sobrante = (sobrantes && sobrantes[pago.id]) || 0;
-        total += monto + sobrante;
-      }
-    }
-    setTotalCobrado(total);
-    guardarTotalCobrado(total);
-  };
-
-  useEffect(() => {
-    const totalLocal = obtenerTotalCobrado();
-    if (totalLocal > 0) return;
-    recalcularTotalCobrado(pagosInicialesProp || []);
-  }, [pagosInicialesProp, sobrantes]);
 
   useEffect(() => {
     return () => {
@@ -95,6 +58,33 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
     (window as any).verLogCobranza = obtenerLogCobranza;
     (window as any).limpiarLogCobranza = limpiarLogCobranza;
   }, []);
+
+  useEffect(() => {
+    // Siempre recalcula al cargar
+    recalcularTotalCobrado(pagosInicialesProp || []);
+  }, [pagosInicialesProp]);
+
+  const recalcularTotalCobrado = (pagosRecalculados: Pago[]) => {
+    const hoy = new Date().toLocaleDateString("sv-SE"); // 'YYYY-MM-DD'
+
+    const total = pagosRecalculados.reduce((acum, pago) => {
+      if (!pago.fechaPago) return acum;
+
+      const fechaPago = new Date(pago.fechaPago).toLocaleDateString("sv-SE");
+      const monto = pago.montoAbonado || 0;
+
+      if (fechaPago === hoy) {
+        console.log(`✔️ Sumando pago del día: $${monto}`);
+        return acum + monto;
+      } else {
+        console.log(`⏭️ Ignorando pago fuera de hoy: ${fechaPago}`);
+        return acum;
+      }
+    }, 0);
+
+    setTotalCobrado(total);
+    guardarTotalCobrado(total);
+  };
 
   const handlePagoCuota = async (pagoId: number, monto: number) => {
     try {
@@ -148,13 +138,6 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
         : null;
       if (!prestamoId) return;
 
-      const pagoOriginal = pagos.find((p) => p.id === pagoId);
-      if (pagoOriginal && montoFinal > pagoOriginal.monto) {
-        const sobrante = montoFinal - pagoOriginal.monto;
-        agregarSobrante(pagoId, sobrante);
-        setSobrantes(obtenerSobrantesComoMapa());
-      }
-
       if (esPagoDeCobrador && cobradorId) {
         const response = await cobranzaDelDia(
           cobradorId,
@@ -168,10 +151,8 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
         recalcularTotalCobrado(response);
       }
 
+      const pagoOriginal = pagos.find((p) => p.id === pagoId);
       const clienteLog = pagoOriginal?.nombreCliente || "Cliente desconocido";
-      console.log(
-        `[LOG] Se registró pago de $${montoRecibido} de ${clienteLog}`
-      );
       logPagoRecibido(clienteLog, montoRecibido);
 
       Swal.fire({
@@ -255,7 +236,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
           handleEditarPago={handleEditarPago}
           mostrarCliente={esPagoDeCobrador}
           totalCobrado={totalCobrado}
-          sobrantes={sobrantes}
+          sobrantes={{}} // sobrantes desactivado
         />
       </div>
     </div>
