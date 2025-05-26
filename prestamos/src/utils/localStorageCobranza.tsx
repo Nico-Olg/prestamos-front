@@ -1,25 +1,25 @@
-const STORAGE_KEY = "totalCobradoHoy";
+const TOTAL_KEY = "totalCobradoDelDia";
 
-export const guardarTotalCobrado = (total: number) => {
-  const hoy = new Date().toISOString().split("T")[0]; // "2025-04-15"
-  const data = { total, fecha: hoy };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+interface TotalCobradoData {
+  fecha: string; // formato 'YYYY-MM-DD'
+  total: number;
+}
+
+export const guardarTotalCobrado = (monto: number) => {
+  const hoy = new Date().toLocaleDateString("sv-SE"); // 'YYYY-MM-DD'
+  const data: TotalCobradoData = { fecha: hoy, total: monto };
+  localStorage.setItem(TOTAL_KEY, JSON.stringify(data));
 };
 
 export const obtenerTotalCobrado = (): number => {
-  const data = localStorage.getItem(STORAGE_KEY);
-  if (!data) return 0;
+  const raw = localStorage.getItem(TOTAL_KEY);
+  if (!raw) return 0;
 
   try {
-    const { total, fecha } = JSON.parse(data);
-    const hoy = new Date().toISOString().split("T")[0];
-    if (fecha === hoy) return total;
-    else {
-      localStorage.removeItem(STORAGE_KEY); // Limpia si es otro día
-      return 0;
-    }
-  } catch {
-    localStorage.removeItem(STORAGE_KEY); // Limpia si está roto el JSON
+    const { fecha, total } = JSON.parse(raw) as TotalCobradoData;
+    const hoy = new Date().toLocaleDateString("sv-SE"); // 'YYYY-MM-DD'
+    return fecha === hoy ? total : 0;
+  } catch (e) {
     return 0;
   }
 };
