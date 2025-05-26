@@ -28,7 +28,6 @@ interface PagosPageProps {
 }
 
 const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
-  // -------------------- ESTADO Y EFECTOS --------------------
   const location = useLocation();
   const { cliente, cobrador, pagos: pagosInicialesProp } = location.state || {};
   const [pagos, setPagos] = useState<Pago[]>(pagosInicialesProp || []);
@@ -60,31 +59,30 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
     }
   }, [pagosInicialesProp]);
 
-  useEffect(() => {
-    const totalLocal = obtenerTotalCobrado();
-    if (totalLocal > 0) return; // Ya se inició el día y se acumuló algo
-
+  const recalcularTotalCobrado = (pagosRecalculados: Pago[]) => {
     const hoy = new Date();
-    let totalInicial = 0;
-
-    for (const pago of pagosInicialesProp || []) {
+    let total = 0;
+    for (const pago of pagosRecalculados) {
       if (!pago.fechaPago) continue;
-
       const fechaPago = new Date(pago.fechaPago);
       const esHoy =
         fechaPago.getFullYear() === hoy.getFullYear() &&
         fechaPago.getMonth() === hoy.getMonth() &&
         fechaPago.getDate() === hoy.getDate();
-
       if (esHoy) {
         const monto = pago.montoAbonado || 0;
         const sobrante = (sobrantes && sobrantes[pago.id]) || 0;
-        totalInicial += monto + sobrante;
+        total += monto + sobrante;
       }
     }
+    setTotalCobrado(total);
+    guardarTotalCobrado(total);
+  };
 
-    setTotalCobrado(totalInicial);
-    guardarTotalCobrado(totalInicial);
+  useEffect(() => {
+    const totalLocal = obtenerTotalCobrado();
+    if (totalLocal > 0) return;
+    recalcularTotalCobrado(pagosInicialesProp || []);
   }, [pagosInicialesProp, sobrantes]);
 
   useEffect(() => {
@@ -94,13 +92,10 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   }, []);
 
   useEffect(() => {
-   
-      (window as any).verLogCobranza = obtenerLogCobranza;
-      (window as any).limpiarLogCobranza = limpiarLogCobranza;
-    
+    (window as any).verLogCobranza = obtenerLogCobranza;
+    (window as any).limpiarLogCobranza = limpiarLogCobranza;
   }, []);
 
-  // -------------------- HANDLERS --------------------
   const handlePagoCuota = async (pagoId: number, monto: number) => {
     try {
       const result = await Swal.fire({
@@ -166,23 +161,17 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
           new Date().toISOString()
         );
         setPagos(response.pagos);
+        recalcularTotalCobrado(response.pagos);
       } else {
         const response = await getPagosPorPrestamo(parseInt(prestamoId));
         setPagos(response);
+        recalcularTotalCobrado(response);
       }
 
-      setTotalCobrado((prev) => {
-        const nuevoTotal = prev + montoRecibido;
-        guardarTotalCobrado(nuevoTotal);
-        return nuevoTotal;
-      });
-
-      // Log de auditoría
       const clienteLog = pagoOriginal?.nombreCliente || "Cliente desconocido";
       console.log(
         `[LOG] Se registró pago de $${montoRecibido} de ${clienteLog}`
       );
-
       logPagoRecibido(clienteLog, montoRecibido);
 
       Swal.fire({
@@ -229,8 +218,8 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
 
         await editarPago(pago.id, nuevoMontoParsed, fechaPagoActual);
 
-        setPagos((prevPagos) =>
-          prevPagos.map((p) =>
+        setPagos((prevPagos) => {
+          const nuevosPagos = prevPagos.map((p) =>
             p.id === pago.id
               ? {
                   ...p,
@@ -239,8 +228,10 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
                   saldo: p.monto - nuevoMontoParsed,
                 }
               : p
-          )
-        );
+          );
+          recalcularTotalCobrado(nuevosPagos);
+          return nuevosPagos;
+        });
 
         Swal.fire(
           "Pago actualizado",
@@ -253,7 +244,6 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
     }
   };
 
-  // -------------------- RENDER --------------------
   return (
     <div className="pagos-page">
       <Header title={tituloPagina} isMobile={isMobile} />
