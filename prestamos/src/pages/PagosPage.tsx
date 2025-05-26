@@ -9,11 +9,6 @@ import { registrarPago, editarPago, cobranzaDelDia } from "../apis/postApi";
 import { Pago } from "../interfaces/Pagos";
 import { getPagosPorPrestamo } from "../apis/postApi";
 import {
-  logPagoRecibido,
-  obtenerLogCobranza,
-  limpiarLogCobranza,
-} from "../utils/debugLogger";
-import {
   guardarTotalCobrado,
   obtenerTotalCobrado,
 } from "../utils/localStorageCobranza.tsx";
@@ -55,35 +50,16 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   }, []);
 
   useEffect(() => {
-    (window as any).verLogCobranza = obtenerLogCobranza;
-    (window as any).limpiarLogCobranza = limpiarLogCobranza;
+    // const hoy = new Date().toLocaleDateString("sv-SE");
+    const total = obtenerTotalCobrado();
+    setTotalCobrado(total);
   }, []);
 
-  useEffect(() => {
-    // Siempre recalcula al cargar
-    recalcularTotalCobrado(pagosInicialesProp || []);
-  }, [pagosInicialesProp]);
-
-  const recalcularTotalCobrado = (pagosRecalculados: Pago[]) => {
-    const hoy = new Date().toLocaleDateString("sv-SE"); // 'YYYY-MM-DD'
-
-    const total = pagosRecalculados.reduce((acum, pago) => {
-      if (!pago.fechaPago) return acum;
-
-      const fechaPago = new Date(pago.fechaPago).toLocaleDateString("sv-SE");
-      const monto = pago.montoAbonado || 0;
-
-      if (fechaPago === hoy) {
-        console.log(`✔️ Sumando pago del día: $${monto}`);
-        return acum + monto;
-      } else {
-        console.log(`⏭️ Ignorando pago fuera de hoy: ${fechaPago}`);
-        return acum;
-      }
-    }, 0);
-
-    setTotalCobrado(total);
-    guardarTotalCobrado(total);
+  const sumarMontoCobradoHoy = (montoRecibido: number) => {
+    const totalActual = obtenerTotalCobrado();
+    const nuevoTotal = totalActual + montoRecibido;
+    guardarTotalCobrado(nuevoTotal);
+    setTotalCobrado(nuevoTotal);
   };
 
   const handlePagoCuota = async (pagoId: number, monto: number) => {
@@ -144,16 +120,12 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
           new Date().toISOString()
         );
         setPagos(response.pagos);
-        recalcularTotalCobrado(response.pagos);
       } else {
         const response = await getPagosPorPrestamo(parseInt(prestamoId));
         setPagos(response);
-        recalcularTotalCobrado(response);
       }
 
-      const pagoOriginal = pagos.find((p) => p.id === pagoId);
-      const clienteLog = pagoOriginal?.nombreCliente || "Cliente desconocido";
-      logPagoRecibido(clienteLog, montoRecibido);
+      sumarMontoCobradoHoy(montoRecibido);
 
       Swal.fire({
         icon: "success",
@@ -199,20 +171,29 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
 
         await editarPago(pago.id, nuevoMontoParsed, fechaPagoActual);
 
-        setPagos((prevPagos) => {
-          const nuevosPagos = prevPagos.map((p) =>
-            p.id === pago.id
-              ? {
-                  ...p,
-                  montoAbonado: nuevoMontoParsed,
-                  fechaPago: new Date(fechaPagoActual),
-                  saldo: p.monto - nuevoMontoParsed,
-                }
-              : p
+        const cobradorId = localStorage.getItem("cobradorId")
+          ? parseInt(localStorage.getItem("cobradorId") || "")
+          : null;
+
+        if (esPagoDeCobrador && cobradorId) {
+          const response = await cobranzaDelDia(
+            cobradorId,
+            new Date().toISOString()
           );
-          recalcularTotalCobrado(nuevosPagos);
-          return nuevosPagos;
-        });
+          setPagos(response.pagos);
+
+          const hoy = new Date().toLocaleDateString("sv-SE");
+
+          const total = response.pagos.reduce((acum: number, p: Pago) => {
+            const fecha = p.fechaPago
+              ? new Date(p.fechaPago).toLocaleDateString("sv-SE")
+              : "";
+            return fecha === hoy ? acum + (p.montoAbonado || 0) : acum;
+          }, 0);
+
+          guardarTotalCobrado(total);
+          setTotalCobrado(total);
+        }
 
         Swal.fire(
           "Pago actualizado",
@@ -236,7 +217,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
           handleEditarPago={handleEditarPago}
           mostrarCliente={esPagoDeCobrador}
           totalCobrado={totalCobrado}
-          sobrantes={{}} // sobrantes desactivado
+          sobrantes={{}}
         />
       </div>
     </div>
