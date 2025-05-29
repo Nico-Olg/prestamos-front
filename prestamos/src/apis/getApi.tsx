@@ -150,5 +150,23 @@ export async function getUsuarios() {
     }
   }
 }
+export async function getCajaCobrador(cobradorId: number, fecha: string) {
+  try {
+    const token = getAuthToken();
+    const response = await axios.get(`${API_BASE_URL}/caja/dia/${fecha}/cobrador/${cobradorId}`, {      
+      headers: {
+        'Authorization': `Bearer ${token}`, // Agregar el token en el header
+      },
+      withCredentials: true,
+    });
+    return response.data; // Retorna { CajaCobrador: { idCobrador, nombreCobrador, fecha, totalCobrado } }
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Error al obtener la caja del cobrador: ${error.response?.status} ${error.response?.statusText}`);
+    } else {
+      throw new Error('Error desconocido al obtener la caja del cobrador');
+    }
+  }
+}
 
 
