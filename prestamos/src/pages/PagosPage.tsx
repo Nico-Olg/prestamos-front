@@ -45,25 +45,37 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
     return () => {
       localStorage.removeItem("prestamoId");
     };
-  }, []);
+  }, [cobrador]);
 
   const obtenerFechaArgentina = (): string => {
-  const ahora = new Date();
-  const fechaArgentina = new Date(ahora.toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" }));
-  const año = fechaArgentina.getFullYear();
-  const mes = String(fechaArgentina.getMonth() + 1).padStart(2, "0");
-  const dia = String(fechaArgentina.getDate()).padStart(2, "0");
-  return `${año}-${mes}-${dia}`;
-};
+    const ahora = new Date();
+    const fechaArgentina = new Date(
+      ahora.toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" })
+    );
+    const año = fechaArgentina.getFullYear();
+    const mes = String(fechaArgentina.getMonth() + 1).padStart(2, "0");
+    const dia = String(fechaArgentina.getDate()).padStart(2, "0");
+    return `${año}-${mes}-${dia}`;
+  };
+
   const actualizarCajaDelDia = async () => {
-    const cobradorId = localStorage.getItem("cobradorId")
+    let cobradorId = localStorage.getItem("cobradorId")
       ? parseInt(localStorage.getItem("cobradorId") || "")
       : null;
 
+    if (!cobradorId && cobrador?.id) {
+      cobradorId = cobrador.id;
+      if (cobradorId !== null && cobradorId !== undefined) {
+        localStorage.setItem("cobradorId", cobradorId.toString());
+      }
+    }
+
     if (cobradorId) {
       try {
-        const fechaHoy = obtenerFechaArgentina(); 
+        const fechaHoy = obtenerFechaArgentina();
+        console.log("🔁 Ejecutando actualizarCajaDelDia()");
         const cajaResponse = await getCajaCobrador(cobradorId, fechaHoy);
+        console.log("📦 totalCobrado recibido:", cajaResponse?.totalCobrado);
         setTotalCobrado(cajaResponse?.totalCobrado || 0);
       } catch (error) {
         console.error("Error al obtener la caja del día:", error);
@@ -114,9 +126,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
 
       const { prestamo, montoRecibido } = await registrarPago(pagoId, montoFinal);
       const prestamoId = prestamo.id;
-      const cobradorId = localStorage.getItem("cobradorId")
-        ? parseInt(localStorage.getItem("cobradorId") || "")
-        : null;
+      const cobradorId = parseInt(localStorage.getItem("cobradorId") || "0");
 
       if (!prestamoId) return;
 
