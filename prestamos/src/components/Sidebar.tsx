@@ -15,10 +15,11 @@ import "../styles/Sidebar.css";
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
+ const handleLogout = () => {
+  localStorage.clear();     // Borra todo el localStorage
+  sessionStorage.clear();   // Borra todo el sessionStorage
+  navigate("/login");
+};
 
   const handleNavigation = (path: string) => {
     navigate(path);

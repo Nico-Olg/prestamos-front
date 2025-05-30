@@ -20,46 +20,51 @@ const Login: React.FC = () => {
   // const { refreshPagosHoy } = usePagosHoyContext();  
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
+  e.preventDefault();
+  setIsLoading(true);
 
-    try {
-      const token = await login(dni, password);
-      localStorage.setItem('token', token);      
-      // await refreshPagosHoy();      
-      const rol = localStorage.getItem('rol');
-      const id = localStorage.getItem('id');
-      
-      if (rol === 'ADMIN') {
-        await refreshClientes();
-        navigate('/clientes');
-      }
-      else if (rol === 'COBRADOR') {
-        // navigate(`/cobradores/${id}/clientes`,{ state: { id: id , nombreyApellido : cobrador} });
-        try{          
-          const today = new Date().toISOString().split('T')[0];
-          const response = await cobranzaDelDia(Number(id), today);
-          const data = PagosMapper.fromJSON(response);
-              
-              if (!data || !data.pagos || !data.cobrador) {
-                console.error("Error: Datos incompletos en la respuesta del backend.");
-                return;
-              }                
-              const { pagos, cobrador } = data;
+  try {
+    // Limpieza al iniciar sesión
+    localStorage.clear();
+    sessionStorage.clear();
 
-        navigate(`/pagos`,{ state: { pagos, cobrador } });
-        }catch(error){
-          console.error("Error al navegar a pagos",error);
+    const token = await login(dni, password);
+    localStorage.setItem('token', token); // El token puede seguir en localStorage si necesitás persistencia
+    const rol = localStorage.getItem('rol');
+    const id = localStorage.getItem('id');
+
+    if (rol === 'ADMIN') {
+      await refreshClientes();
+      navigate('/clientes');
+    } else if (rol === 'COBRADOR') {
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const response = await cobranzaDelDia(Number(id), today);
+        const data = PagosMapper.fromJSON(response);
+
+        if (!data || !data.pagos || !data.cobrador) {
+          console.error("Error: Datos incompletos en la respuesta del backend.");
+          return;
         }
 
+        const { pagos, cobrador } = data;
+
+        // ✅ Guardar el cobradorId en sessionStorage en lugar de localStorage
+        sessionStorage.setItem("cobradorId", cobrador.id.toString());
+
+        navigate(`/pagos`, { state: { pagos, cobrador } });
+      } catch (error) {
+        console.error("Error al navegar a pagos", error);
       }
-    } catch (error) {
-      console.error('Error en la autenticación', error);
-      setError('Credenciales incorrectas. Inténtalo de nuevo.');
-    } finally {
-      setIsLoading(false);
     }
-  };
+  } catch (error) {
+    console.error('Error en la autenticación', error);
+    setError('Credenciales incorrectas. Inténtalo de nuevo.');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <div className="login-page">
