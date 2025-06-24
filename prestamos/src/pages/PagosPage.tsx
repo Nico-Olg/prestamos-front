@@ -9,7 +9,7 @@ import {
   registrarPago,
   editarPago,
   cobranzaDelDia,
-  getPagosPorPrestamo
+  getPagosPorPrestamo,
 } from "../apis/postApi";
 import { Pago } from "../interfaces/Pagos";
 import { getCajaCobrador } from "../apis/getApi";
@@ -36,7 +36,10 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
 
   useEffect(() => {
     if (pagosInicialesProp?.length > 0) {
-      localStorage.setItem("prestamoId", pagosInicialesProp[0].prestamoId?.toString() || "");
+      localStorage.setItem(
+        "prestamoId",
+        pagosInicialesProp[0].prestamoId?.toString() || ""
+      );
     }
   }, [pagosInicialesProp]);
 
@@ -50,7 +53,9 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   const obtenerFechaArgentina = (): string => {
     const ahora = new Date();
     const fechaArgentina = new Date(
-      ahora.toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" })
+      ahora.toLocaleString("en-US", {
+        timeZone: "America/Argentina/Buenos_Aires",
+      })
     );
     const año = fechaArgentina.getFullYear();
     const mes = String(fechaArgentina.getMonth() + 1).padStart(2, "0");
@@ -59,14 +64,14 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   };
 
   const actualizarCajaDelDia = async () => {
-    let cobradorId = localStorage.getItem("cobradorId")
-      ? parseInt(localStorage.getItem("cobradorId") || "")
+    let cobradorId = sessionStorage.getItem("cobradorId")
+      ? parseInt(sessionStorage.getItem("cobradorId") || "")
       : null;
 
     if (!cobradorId && cobrador?.id) {
       cobradorId = cobrador.id;
       if (cobradorId !== null && cobradorId !== undefined) {
-        localStorage.setItem("cobradorId", cobradorId.toString());
+        sessionStorage.setItem("cobradorId", cobradorId.toString());
       }
     }
 
@@ -124,14 +129,20 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
         if (nuevoMonto) montoFinal = parseFloat(nuevoMonto);
       }
 
-      const { prestamo, montoRecibido } = await registrarPago(pagoId, montoFinal);
+      const { prestamo, montoRecibido } = await registrarPago(
+        pagoId,
+        montoFinal
+      );
       const prestamoId = prestamo.id;
-      const cobradorId = parseInt(localStorage.getItem("cobradorId") || "0");
+      const cobradorId = parseInt(sessionStorage.getItem("cobradorId") || "0");
 
       if (!prestamoId) return;
 
       if (esPagoDeCobrador && cobradorId) {
-        const response = await cobranzaDelDia(cobradorId, new Date().toISOString());
+        const response = await cobranzaDelDia(
+          cobradorId,
+          new Date().toISOString()
+        );
         setPagos(response.pagos);
       } else {
         const response = await getPagosPorPrestamo(parseInt(prestamoId));
@@ -182,17 +193,35 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
           ? new Date(pago.fechaPago).toISOString()
           : new Date().toISOString();
 
-        const response = await editarPago(pago.id, nuevoMontoParsed, fechaPagoActual);
-        const pagoEditado = response.pago;
-
-        setPagos((prevPagos) =>
-          prevPagos.map((p) => (p.id === pagoEditado.id ? pagoEditado : p))
+        const response = await editarPago(
+          pago.id,
+          nuevoMontoParsed,
+          fechaPagoActual
         );
+        const pagoEditado = response.pago;
+        const prestamoId = pagoEditado.prestamoId;
+
+        // 🔄 Actualizar lista completa de pagos (no solo uno)
+        if (esPagoDeCobrador && cobrador?.id) {
+          const pagosActualizados = await cobranzaDelDia(
+            cobrador.id,
+            new Date().toISOString()
+          );
+          setPagos(pagosActualizados.pagos);
+        } else if (prestamoId) {
+          const pagosActualizados = await getPagosPorPrestamo(prestamoId);
+          setPagos(pagosActualizados);
+        }
 
         await actualizarCajaDelDia();
 
-        Swal.fire("Pago actualizado", `Nuevo monto: $${nuevoMontoParsed.toFixed(2)}`, "success");
+        Swal.fire(
+          "Pago actualizado",
+          `Nuevo monto: $${nuevoMontoParsed.toFixed(2)}`,
+          "success"
+        );
       } catch (error) {
+        console.error("Error editando el pago:", error);
         Swal.fire("Error", "No se pudo editar el pago", "error");
       }
     }
