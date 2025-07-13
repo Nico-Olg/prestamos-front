@@ -2,6 +2,8 @@ import React, { Suspense, lazy, useEffect, useState } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import "../src/styles/Sidebar.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+
 
 
 // Importa el ClientProvider
