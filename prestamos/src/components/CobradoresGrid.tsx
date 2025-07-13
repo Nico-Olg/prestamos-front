@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
-import DataTable, { TableColumn } from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
-import { getCobradores } from "../apis/getApi"; // Asegúrate de agregar esta función en tu getApi
-import "../styles/ClientesGrid.css"; // Reutilizamos el mismo archivo de estilos de ClientesGrid
+import { getCobradores } from "../apis/getApi";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 interface Cobrador {
   id: number;
@@ -10,6 +9,9 @@ interface Cobrador {
   dni: number;
   zona: number;
   tel: string;
+  totalCobrado: number;
+  montoEfectivo: number;
+  montoTransferencia: number;
 }
 
 const CobradoresGrid: React.FC = () => {
@@ -22,7 +24,7 @@ const CobradoresGrid: React.FC = () => {
   useEffect(() => {
     const fetchCobradores = async () => {
       try {
-        const data = await getCobradores(); // Función que obtiene todos los cobradores
+        const data = await getCobradores();
         setCobradores(data);
         setFilteredCobradores(data);
       } catch (error) {
@@ -34,7 +36,12 @@ const CobradoresGrid: React.FC = () => {
   }, []);
 
   const handleRowClicked = (cobrador: Cobrador) => {
-    navigate(`/cobradores/${cobrador.id}/clientes`, { state: { id: cobrador.id , nombreyApellido : cobrador.nombreyApellido} });
+    navigate(`/cobradores/${cobrador.id}/clientes`, {
+      state: {
+        id: cobrador.id,
+        nombreyApellido: cobrador.nombreyApellido,
+      },
+    });
   };
 
   const handleSearchName = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,80 +60,75 @@ const CobradoresGrid: React.FC = () => {
     const filteredData = cobradores.filter(
       (cobrador) =>
         cobrador.nombreyApellido.toLowerCase().includes(name.toLowerCase()) &&
-        (dni === "" || (cobrador.dni && cobrador.dni.toString().startsWith(dni)))
+        (dni === "" ||
+          (cobrador.dni && cobrador.dni.toString().startsWith(dni)))
     );
     setFilteredCobradores(filteredData);
   };
 
-  const columns: TableColumn<Cobrador>[] = [
-    {
-      name: "Nombre",
-      selector: (row) => row.nombreyApellido,
-      sortable: true,
-    },
-    {
-      name: "DNI",
-      selector: (row) => row.dni.toString(),
-      sortable: true,
-    },
-    {
-      name: "Zona",
-      selector: (row) => row.zona.toString(),
-      sortable: true,
-    },
-    {
-      name: "Teléfono",
-      selector: (row) => row.tel,
-      sortable: true,
-    },
-  ];
-
   return (
-    <div className="clientes-grid">
-      <div>
-        <div className="group">
-          <div className="buscarPornombre">
-            <svg className="icon" aria-hidden="true" viewBox="0 0 24 24">
-              <g>
-                <path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z"></path>
-              </g>
-            </svg>
-            <input
-              type="search"
-              placeholder="Buscar por nombre"
-              value={searchName}
-              onChange={handleSearchName}
-              className="input"
-            />
-          </div>
-          <div className="buscarPorDNI">
-            <svg className="icon" aria-hidden="true" viewBox="0 0 24 24">
-              <g>
-                <path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z"></path>
-              </g>
-            </svg>
-            <input
-              type="search"
-              placeholder="Buscar por DNI"
-              value={searchDNI}
-              onChange={handleSearchDNI}
-              className="input"
-            />
-          </div>
-        </div>
+    <div className="container mt-4">
+      <h2 className="mb-4">Listado de Cobradores</h2>
 
-        <DataTable
-          columns={columns}
-          data={filteredCobradores}
-          pagination
-          highlightOnHover
-          onRowClicked={handleRowClicked}
-        />
-        <div className="button-container">
-          <button className="action-btn secondary" onClick={() => navigate("/alta-cobrador")}>
-            Añadir Cobrador
-          </button>
+      <div className="row mb-3">
+        <div className="col-md-6">
+          <input
+            type="search"
+            className="form-control"
+            placeholder="Buscar por nombre"
+            value={searchName}
+            onChange={handleSearchName}
+          />
         </div>
+        <div className="col-md-6">
+          <input
+            type="search"
+            className="form-control"
+            placeholder="Buscar por DNI"
+            value={searchDNI}
+            onChange={handleSearchDNI}
+          />
+        </div>
+      </div>
+
+      <table className="table table-bordered table-hover table-striped align-middle text-center">
+        <thead className="table-dark">
+          <tr>
+            <th>Nombre</th>
+            <th>DNI</th>
+            <th>Zona</th>
+            <th>Teléfono</th>
+            <th>Total Cobrado</th>
+            <th>Efectivo</th>
+            <th>Transferencia</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredCobradores.map((cobrador) => (
+            <tr
+              key={cobrador.id}
+              style={{ cursor: "pointer" }}
+              onClick={() => handleRowClicked(cobrador)}
+            >
+              <td>{cobrador.nombreyApellido}</td>
+              <td>{cobrador.dni}</td>
+              <td>{cobrador.zona}</td>
+              <td>{cobrador.tel}</td>
+              <td><strong>${cobrador.totalCobrado.toFixed(2)}</strong></td>
+              <td className="text-success fw-bold">${cobrador.montoEfectivo.toFixed(2)}</td>
+              <td className="text-primary fw-bold">${cobrador.montoTransferencia.toFixed(2)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div className="text-end mt-3">
+        <button
+          className="btn btn-secondary"
+          onClick={() => navigate("/alta-cobrador")}
+        >
+          Añadir Cobrador
+        </button>
       </div>
     </div>
   );
