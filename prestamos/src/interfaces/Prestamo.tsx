@@ -15,4 +15,6 @@ export interface Prestamo {
     producto:          string;
     periodo_pago:      string;
     cantidadPagos:     number;
+    efectividad:          number;
+    montoPrestado:   number;
 }
