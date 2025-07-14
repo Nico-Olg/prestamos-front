@@ -25,7 +25,7 @@ const PagoCard: React.FC<PagoCardProps> = ({
   pago,
   totalCobrado,
   transferencias,
-  efectivo,
+  //efectivo,
   pagosCobrados,
   //onFinalizarCobranza,
   showResumen,

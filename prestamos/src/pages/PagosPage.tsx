@@ -23,8 +23,8 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   const { cliente, cobrador, pagos: pagosInicialesProp } = location.state || {};
   const [pagos, setPagos] = useState<Pago[]>(pagosInicialesProp || []);
   const [totalCobrado, setTotalCobrado] = useState<number>(0);
-  const [transferencias, setTransferencias] = useState<number>(0);
-  const [efectivo, setEfectivo] = useState<number>(0);
+  const [/*transferencias*/, setTransferencias] = useState<number>(0);
+  const [/*efectivo*/, setEfectivo] = useState<number>(0);
 
   const esPagoDeCobrador = !!cobrador;
 
@@ -194,6 +194,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
         popup.querySelector("#btn-transferencia")?.addEventListener("click", () => registrar("TRANSFERENCIA"));
       },
     });
+    console.log("Resultado del pago:", result);
 
   } catch (error) {
     console.error("Error realizando el pago: ", error);
@@ -299,7 +300,9 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
         popup.querySelector("#btn-transferencia")?.addEventListener("click", () => manejarMetodo("TRANSFERENCIA"));
       },
     });
+    console.log("Resultado de la edición:", result);
   } catch (error) {
+    
     console.error("Error al iniciar edición de pago:", error);
     Swal.fire("Error", "No se pudo iniciar la edición del pago", "error");
   }
@@ -311,6 +314,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
       <Header title={tituloPagina} isMobile={isMobile} />
       <div className="content">
         {!isMobile && <Sidebar />}
+        
         <PagosGrid
           pagos={pagos}
           handlePagoCuota={handlePagoCuota}
