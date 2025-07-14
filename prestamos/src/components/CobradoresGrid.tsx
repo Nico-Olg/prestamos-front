@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCobradores } from "../apis/getApi";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "../styles/CobradoresGrid.css";
 
 interface Cobrador {
   id: number;
@@ -91,36 +92,44 @@ const CobradoresGrid: React.FC = () => {
         </div>
       </div>
 
-      <table className="table table-bordered table-hover table-striped align-middle text-center">
-        <thead className="table-dark">
-          <tr>
-            <th>Nombre</th>
-            <th>DNI</th>
-            <th>Zona</th>
-            <th>Teléfono</th>
-            <th>Total Cobrado</th>
-            <th>Efectivo</th>
-            <th>Transferencia</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredCobradores.map((cobrador) => (
-            <tr
-              key={cobrador.id}
-              style={{ cursor: "pointer" }}
-              onClick={() => handleRowClicked(cobrador)}
-            >
-              <td>{cobrador.nombreyApellido}</td>
-              <td>{cobrador.dni}</td>
-              <td>{cobrador.zona}</td>
-              <td>{cobrador.tel}</td>
-              <td><strong>${cobrador.totalCobrado.toFixed(2)}</strong></td>
-              <td className="text-success fw-bold">${cobrador.montoEfectivo.toFixed(2)}</td>
-              <td className="text-primary fw-bold">${cobrador.montoTransferencia.toFixed(2)}</td>
+      <div className="table-container rounded-4 overflow-hidden  shadow">
+        <table className="table table-bordered table-hover table-striped align-middle text-center m-0">
+          <thead className="table-secondary">
+            <tr>
+              <th>Nombre</th>
+              <th>DNI</th>
+              <th>Zona</th>
+              <th>Teléfono</th>
+              <th>Total Cobrado</th>
+              <th>Efectivo</th>
+              <th>Transferencia</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredCobradores.map((cobrador) => (
+              <tr
+                key={cobrador.id}
+                style={{ cursor: "pointer" }}
+                onClick={() => handleRowClicked(cobrador)}
+              >
+                <td>{cobrador.nombreyApellido}</td>
+                <td>{cobrador.dni}</td>
+                <td>{cobrador.zona}</td>
+                <td>{cobrador.tel}</td>
+                <td>
+                  <strong>${cobrador.totalCobrado.toFixed(2)}</strong>
+                </td>
+                <td className="text-success fw-bold">
+                  ${cobrador.montoEfectivo.toFixed(2)}
+                </td>
+                <td className="text-primary fw-bold">
+                  ${cobrador.montoTransferencia.toFixed(2)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <div className="text-end mt-3">
         <button

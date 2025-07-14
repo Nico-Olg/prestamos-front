@@ -23,6 +23,8 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   const { cliente, cobrador, pagos: pagosInicialesProp } = location.state || {};
   const [pagos, setPagos] = useState<Pago[]>(pagosInicialesProp || []);
   const [totalCobrado, setTotalCobrado] = useState<number>(0);
+  const [transferencias, setTransferencias] = useState<number>(0);
+  const [efectivo, setEfectivo] = useState<number>(0);
 
   const esPagoDeCobrador = !!cobrador;
 
@@ -162,6 +164,9 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
             montoFinal,
             metodoPago
           );
+          metodoPago === "TRANSFERENCIA"
+            ? setTransferencias((prev) => prev + montoRecibido)
+            : setEfectivo((prev) => prev + montoRecibido);
           const prestamoId = prestamo.id;
           const cobradorId = parseInt(sessionStorage.getItem("cobradorId") || "0");
 
@@ -312,6 +317,8 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
           handleEditarPago={handleEditarPago}
           mostrarCliente={esPagoDeCobrador}
           totalCobrado={totalCobrado}
+          transferencias={0} // Placeholder, update as needed
+          efectivo={0} // Placeholder, update as needed
           sobrantes={{}}
         />
       </div>
