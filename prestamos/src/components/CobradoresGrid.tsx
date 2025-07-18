@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getCobradores } from "../apis/getApi";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/CobradoresGrid.css";
+import { formatearNumero } from "../utils/formatters";
 
 interface Cobrador {
   id: number;
@@ -104,6 +105,7 @@ const CobradoresGrid: React.FC = () => {
               <th>Efectivo</th>
               <th>Transferencia</th>
             </tr>
+            
           </thead>
           <tbody>
             {filteredCobradores.map((cobrador) => (
@@ -117,17 +119,33 @@ const CobradoresGrid: React.FC = () => {
                 <td>{cobrador.zona}</td>
                 <td>{cobrador.tel}</td>
                 <td>
-                  <strong>${cobrador.totalCobrado.toFixed(2)}</strong>
+                  <strong>${formatearNumero(cobrador.totalCobrado)}</strong>
                 </td>
                 <td className="text-success fw-bold">
-                  ${cobrador.montoEfectivo.toFixed(2)}
+                  ${formatearNumero(cobrador.montoEfectivo)}
                 </td>
                 <td className="text-primary fw-bold">
-                  ${cobrador.montoTransferencia.toFixed(2)}
+                  ${formatearNumero(cobrador.montoTransferencia)}
                 </td>
               </tr>
             ))}
           </tbody>
+          <tr className="fw-bold">
+            <td colSpan={4} className="text-end">TOTALES</td>
+            <td>
+              ${formatearNumero(
+                filteredCobradores
+                  .reduce((acc, curr) => acc + curr.totalCobrado, 0)                  
+              )}
+            </td>
+            <td className="text-success">
+              ${formatearNumero(filteredCobradores.reduce((acc, curr) => acc + curr.montoEfectivo, 0))}
+            </td>
+            <td className="text-primary">
+              ${formatearNumero(filteredCobradores.reduce((acc, curr) => acc + curr.montoTransferencia, 0))}
+            </td>
+          </tr>
+
         </table>
       </div>
 
