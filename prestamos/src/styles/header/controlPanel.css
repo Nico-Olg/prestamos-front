@@ -2,6 +2,7 @@
   position: relative;
   right: 35vh;
 }
+
 .setting-btn {
   width: 30px;
   height: 30px;
@@ -16,6 +17,7 @@
   border: none;
   box-shadow: 0px 0px 0px 2px rgb(212, 209, 255);
 }
+
 .bar {
   width: 50%;
   height: 2px;
@@ -26,6 +28,7 @@
   position: relative;
   border-radius: 2px;
 }
+
 .bar::before {
   content: "";
   width: 2px;
@@ -54,57 +57,53 @@
   transform: translateX(-4px);
 }
 
-
-
-
-
-/* Menú desplegable del panel de Control*/
-.dropdown-menu {
+/* 🔽 Menú desplegable del panel de Control */
+.custom-dropdown-menu {
   position: absolute;
-  top: 60px; 
+  top: 60px;
   right: 0;
-  background-color: rgba(50, 50, 50, 0.95); /* Fondo semitransparente */
+  background-color: rgba(50, 50, 50, 0.95);
   border-radius: 10px;
-  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.25); /* Sombra sofisticada */
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.25);
   padding: 10px;
   width: 220px;
-  z-index: 10;
-  opacity: 0; /* Oculto inicialmente */
-  transform: translateY(-10px); /* Posición inicial para la animación */
-  transition: opacity 0.3s ease, transform 0.3s ease; /* Animación suave */
-  pointer-events: none; /* Desactiva el pointer-events cuando está oculto */
+  z-index: 999;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
 }
 
-.show-dropdown {
-  opacity: 1; /* Visibilidad al mostrar */
-  transform: translateY(0); /* Vuelve a su posición original */
-  pointer-events: auto; /* Activa los eventos de clic cuando se despliega */
+.custom-dropdown-menu.show-dropdown {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
-.dropdown-menu ul {
+.custom-dropdown-menu ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.dropdown-menu ul li {
+.custom-dropdown-menu ul li {
   padding: 12px 15px;
   color: white;
   cursor: pointer;
   font-family: Arial, sans-serif;
   font-size: 16px;
   font-weight: 500;
-  transition: background-color 0.2s ease, transform 0.2s ease; /* Animación al pasar el mouse */
-  border-radius: 6px; /* Bordes redondeados */
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  border-radius: 6px;
 }
 
-.dropdown-menu ul li:hover {
-  background-color: #444; /* Cambia el color de fondo cuando se pasa el cursor */
-  transform: scale(1.05); /* Pequeño aumento de tamaño */
-  color: #f0f0f0; /* Cambia el color del texto */
+.custom-dropdown-menu ul li:hover {
+  background-color: #444;
+  transform: scale(1.05);
+  color: #f0f0f0;
 }
 
-.dropdown-menu ul li button {
+.custom-dropdown-menu ul li button {
   background: none;
   border: none;
   color: inherit;
@@ -116,40 +115,52 @@
   font-weight: 500;
 }
 
-.dropdown-menu ul li button:hover {
+.custom-dropdown-menu ul li button:hover {
   background-color: #444;
   transform: scale(1.05);
 }
 
-/* Animación para el despliegue del menú */
+.custom-dropdown-menu {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  background-color: rgba(50, 50, 50, 0.95);
+  border-radius: 10px;
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.25);
+  padding: 10px;
+  width: 220px;
+  z-index: 999;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+.custom-dropdown-menu.show-dropdown {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  animation: slideDown 0.3s ease forwards;
+}
+
 @keyframes slideDown {
-  0% {
+  from {
     opacity: 0;
     transform: translateY(-20px);
   }
-  100% {
+  to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
 @keyframes slideUp {
-  0% {
+  from {
     opacity: 1;
     transform: translateY(0);
   }
-  100% {
+  to {
     opacity: 0;
     transform: translateY(-20px);
   }
 }
-/* Añade las animaciones */
-.dropdown-menu.show-dropdown {
-  animation: slideDown 0.3s ease forwards;
-}
-
-.dropdown-menu.hide-dropdown {
-  animation: slideUp 0.3s ease forwards;
-  pointer-events: none;
-}
-

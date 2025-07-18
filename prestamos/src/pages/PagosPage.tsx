@@ -23,8 +23,8 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   const { cliente, cobrador, pagos: pagosInicialesProp } = location.state || {};
   const [pagos, setPagos] = useState<Pago[]>(pagosInicialesProp || []);
   const [totalCobrado, setTotalCobrado] = useState<number>(0);
-  const [/*transferencias*/, setTransferencias] = useState<number>(0);
-  const [/*efectivo*/, setEfectivo] = useState<number>(0);
+  const [transferencias, setTransferencias] = useState<number>(0);
+  const [efectivo, setEfectivo] = useState<number>(0);
 
   const esPagoDeCobrador = !!cobrador;
 
@@ -46,6 +46,9 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   }, [pagosInicialesProp]);
 
   useEffect(() => {
+    setTotalCobrado(0); 
+    setTransferencias(0);
+    setEfectivo(0);
     actualizarCajaDelDia();
     return () => {
       localStorage.removeItem("prestamoId");
@@ -66,28 +69,57 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   };
 
   const actualizarCajaDelDia = async () => {
-    let cobradorId = sessionStorage.getItem("cobradorId")
-      ? parseInt(sessionStorage.getItem("cobradorId") || "")
-      : null;
+  let cobradorId = null;
 
-    if (!cobradorId && cobrador?.id) {
-      cobradorId = cobrador.id;
-      if (cobradorId !== null && cobradorId !== undefined) {
-        sessionStorage.setItem("cobradorId", cobradorId.toString());
-      }
+  if (cobrador?.id) {
+    cobradorId = cobrador.id;
+    sessionStorage.setItem("cobradorId", cobradorId.toString());
+  } else {
+    const idGuardado = sessionStorage.getItem("cobradorId");
+    if (idGuardado) {
+      cobradorId = parseInt(idGuardado);
     }
+  }
 
-    if (cobradorId) {
-      try {
-        const fechaHoy = obtenerFechaArgentina();
-        console.log("🔁 Ejecutando actualizarCajaDelDia()");
-        const cajaResponse = await getCajaCobrador(cobradorId, fechaHoy);
-        console.log("📦 totalCobrado recibido:", cajaResponse?.totalCobrado);
-        setTotalCobrado(cajaResponse?.totalCobrado || 0);
-      } catch (error) {
-        console.error("Error al obtener la caja del día:", error);
-      }
+  if (cobradorId) {
+    try {
+      const fechaHoy = obtenerFechaArgentina();
+      console.log("🔁 Ejecutando actualizarCajaDelDia() para cobrador", cobradorId);
+      const cajaResponse = await getCajaCobrador(cobradorId, fechaHoy);
+      console.log("📦 totalCobrado recibido:", cajaResponse?.totalCobrado);
+      console.log("📦 efectivo:", cajaResponse?.montoEfectivo);
+      console.log("📦 transferencia:", cajaResponse?.montoTransferencia);
+
+      setTotalCobrado(cajaResponse?.totalCobrado || 0);
+      setTransferencias(cajaResponse?.montoTransferencia || 0);
+      setEfectivo(cajaResponse?.montoEfectivo || 0);
+    } catch (error) {
+      console.error("Error al obtener la caja del día:", error);
     }
+  } else {
+    console.warn("❌ No se pudo determinar el ID del cobrador");
+  }
+};
+
+  const agruparPagosPorCuota = (pagosOriginales: Pago[]): Pago[] => {
+    const agrupados = new Map<number, Pago>();
+
+    pagosOriginales.forEach((pago) => {
+      const key = pago.nroCuota ?? pago.id;
+      const existente = agrupados.get(key);
+
+      if (existente) {
+        existente.montoAbonado =
+          (existente.montoAbonado || 0) + (pago.montoAbonado || 0);
+        if (!existente.fechaPago && pago.fechaPago) {
+          existente.fechaPago = pago.fechaPago;
+        }
+      } else {
+        agrupados.set(key, { ...pago });
+      }
+    });
+
+    return Array.from(agrupados.values());
   };
 
   const handlePagoCuota = async (
@@ -174,10 +206,10 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
 
           if (esPagoDeCobrador && cobradorId) {
             const response = await cobranzaDelDia(cobradorId, new Date().toISOString());
-            setPagos(response.pagos);
+            setPagos(agruparPagosPorCuota(response.pagos));
           } else {
             const response = await getPagosPorPrestamo(parseInt(prestamoId));
-            setPagos(response);
+            setPagos(agruparPagosPorCuota(response));
           }
 
           await actualizarCajaDelDia();
@@ -275,10 +307,11 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
                 cobrador.id,
                 new Date().toISOString()
               );
-              setPagos(pagosActualizados.pagos);
+              setPagos(agruparPagosPorCuota(pagosActualizados.pagos));
             } else if (prestamoId) {
               const pagosActualizados = await getPagosPorPrestamo(prestamoId);
-              setPagos(pagosActualizados);
+              setPagos(agruparPagosPorCuota(pagosActualizados));
+
             }
 
             await actualizarCajaDelDia();
@@ -308,7 +341,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   }
 };
 
-
+const pagosAgrupados = agruparPagosPorCuota(pagos);
   return (
     <div className="pagos-page">
       <Header title={tituloPagina} isMobile={isMobile} />
@@ -316,13 +349,13 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
         {!isMobile && <Sidebar />}
         
         <PagosGrid
-          pagos={pagos}
+          pagos={pagosAgrupados}
           handlePagoCuota={handlePagoCuota}
           handleEditarPago={handleEditarPago}
           mostrarCliente={esPagoDeCobrador}
           totalCobrado={totalCobrado}
-          transferencias={0} // Placeholder, update as needed
-          efectivo={0} // Placeholder, update as needed
+          transferencias={transferencias} // Placeholder, update as needed
+          efectivo={efectivo} // Placeholder, update as needed
           sobrantes={{}}
         />
       </div>

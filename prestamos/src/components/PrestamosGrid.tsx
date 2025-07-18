@@ -195,7 +195,7 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({
       ),
       ignoreRowClick: true,
       allowOverflow: true,
-      button: true,
+      
     },
     {
       name: "Eliminar Créditos",
@@ -216,7 +216,7 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({
       ),
       ignoreRowClick: true,
       allowOverflow: true,
-      button: true,
+      
     },
   ];
 
