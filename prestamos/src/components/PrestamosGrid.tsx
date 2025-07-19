@@ -14,6 +14,7 @@ import DeleteIcon from "@mui/icons-material/Delete"; // Importa el ícono de tac
 import Swal from "sweetalert2";
 import { useClientContext } from "../provider/ClientContext";
 import { getPagosPorPrestamo } from "../apis/postApi";
+import { formatearNumero } from "../utils/formatters";
 
 interface PrestamosGridProps {
   cliente: Cliente; // Datos del cliente que también provienen de PrestamosPage
@@ -96,17 +97,24 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({
       sortable: true,
       format: (row) => row.idPrestamo?.toString() || "N/A", // Para mostrarlo como string si querés
     },
-
+    {
+      name: "Monto Prestado",
+      selector: (row) =>
+        row.montoPrestamo ? `$ ${formatearNumero(row.montoPrestado)}` : "N/A", // Validar `row.montoPrestamo`
+      sortable: true,
+      minWidth: "150px",
+    },
     {
       name: "Plan",
       selector: (row) => row.tipoPlan || "N/A", // Validar `row.tipoPlan`
       sortable: true,
     },
     {
-      name: "Monto",
+      name: "Monto a Devolver",
       selector: (row) =>
-        row.montoPrestamo ? `$ ${row.montoPrestamo.toString()}` : "N/A", // Validar `row.total`
+        row.montoPrestamo ? `$ ${formatearNumero(row.montoPrestamo)}` : "N/A", // Validar `row.total`
       sortable: true,
+      minWidth: "150px",
     },
     {
       name: "Fecha de Inicio",
@@ -138,6 +146,43 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({
       width: "180px",
     },
     {
+      name: "Efectividad",
+      sortable: true,
+      cell: (row) => (
+        <div style={{ width: "100%", padding: "4px 0" }}>
+          <div
+            className="progress position-relative"
+            style={{ height: "18px" }}
+          >
+            <div
+              className={`progress-bar ${
+                row.efectividad >= 80
+                  ? "bg-success"
+                  : row.efectividad >= 50
+                  ? "bg-warning"
+                  : "bg-danger"
+              }`}
+              role="progressbar"
+              style={{
+                width: `${row.efectividad || 0}%`,
+                transition: "width 0.6s ease",
+              }}
+              aria-valuenow={row.efectividad}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            ></div>
+            <span
+              className="position-absolute top-50 start-50 translate-middle text-dark fw-semibold"
+              style={{ fontSize: "0.8rem" }}
+            >
+              {row.efectividad ? `${row.efectividad.toFixed(0)}%` : "0%"}
+            </span>
+          </div>
+        </div>
+      ),
+    },
+
+    {
       name: "Acciones",
       cell: (row) => (
         <div>
@@ -150,7 +195,7 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({
       ),
       ignoreRowClick: true,
       allowOverflow: true,
-      button: true,
+      
     },
     {
       name: "Eliminar Créditos",
@@ -171,7 +216,7 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({
       ),
       ignoreRowClick: true,
       allowOverflow: true,
-      button: true,
+      
     },
   ];
 

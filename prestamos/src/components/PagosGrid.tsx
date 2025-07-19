@@ -6,6 +6,7 @@ import ResumenCobranza from "../components/ResumenCobranza";
 import "../styles/PagosGrid.css";
 import { Pago } from "../interfaces/Pagos";
 import { cobranzaDelDia } from "../apis/postApi";
+import { formatearNumero } from "../utils/formatters";
 
 interface PagoExtendido extends Pago {}
 
@@ -15,7 +16,9 @@ interface PagosGridProps {
   handleEditarPago: (pago: Pago) => void;
   mostrarCliente?: boolean;
   totalCobrado: number;
-  sobrantes?: Record<number, number>; // 👈 nuevo
+  transferencias: number; 
+  efectivo: number; 
+  sobrantes?: Record<number, number>; 
 }
 
 const formatearFechaLocal = (fechaISO: string | null): string => {
@@ -34,6 +37,8 @@ const PagosGrid: React.FC<PagosGridProps> = ({
   handleEditarPago,
   mostrarCliente = false,
   totalCobrado,
+  transferencias,
+  efectivo,
   sobrantes,
 }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -80,44 +85,54 @@ const PagosGrid: React.FC<PagosGridProps> = ({
   );
 
   if (isMobile) {
-    return (
-      <div className="pagos-list">
-        <div className={`total-cobrado ${animarTotal ? "animado" : ""}`}>
-          💵 Total cobrado: ${totalCobrado.toFixed(2)}
-        </div>
+  return (
+    <div className="pagos-list">
+      <div className={`total-cobrado ${animarTotal ? "animado" : ""}`}>
+  💵 Total cobrado: ${totalCobrado.toFixed(2)}
+  <div className="detalle-cobros">
+    <div className="detalle-item">
+      🏦 Transferencia: ${transferencias.toFixed(2)}
+    </div>
+    <div className="detalle-item">
+      💵 Efectivo: ${efectivo.toFixed(2)}
+    </div>
+  </div>
+</div>
 
-        {pagos.map((pago) => (
-          <PagoCard
-            key={pago.id}
-            pago={{
-              ...pago,
-              handlePagoCuota: handlePagoMobile,
-              handleEditarPago,
-            }}
-            totalCobrado={totalCobrado}
-            pagosCobrados={pagosCobrados.map((p) => ({
-              ...p,
-              handlePagoCuota: handlePagoMobile,
-              handleEditarPago,
-            }))}
-            onFinalizarCobranza={() => setShowResumen(true)}
-            showResumen={showResumen}
-            onCloseResumen={() => setShowResumen(false)}
-            sobrante={sobrantes?.[pago.id] || 0} // 👈 nuevo
-          />
-        ))}
 
-        {showResumen && (
-          <ResumenCobranza
-            totalCobrado={totalCobrado}
-            pagosParciales={pagosParciales}
-            onClose={() => setShowResumen(false)}
-          />
-        )}
-      </div>
-    );
-  }
+      {pagos.map((pago) => (
+        <PagoCard
+          key={pago.id}
+          pago={{
+            ...pago,
+            handlePagoCuota: handlePagoMobile,
+            handleEditarPago,
+          }}
+          totalCobrado={totalCobrado}
+          transferencias={transferencias}
+          efectivo={efectivo}
+          pagosCobrados={pagosCobrados.map((p) => ({
+            ...p,
+            handlePagoCuota: handlePagoMobile,
+            handleEditarPago,
+          }))}
+          onFinalizarCobranza={() => setShowResumen(true)}
+          showResumen={showResumen}
+          onCloseResumen={() => setShowResumen(false)}
+          sobrante={sobrantes?.[pago.id] || 0}
+        />
+      ))}
 
+      {showResumen && (
+        <ResumenCobranza
+          totalCobrado={totalCobrado}
+          pagosParciales={pagosParciales}
+          onClose={() => setShowResumen(false)}
+        />
+      )}
+    </div>
+  );
+}
   let columns: TableColumn<PagoExtendido>[] = [
     { name: "Nro. Cuota", selector: (row) => row.nroCuota || "Sin dato" },
     {
@@ -125,11 +140,11 @@ const PagosGrid: React.FC<PagosGridProps> = ({
       selector: (row) => row.nombreProducto || "Sin producto",
       sortable: true,
     },
-    { name: "Monto Cuota", selector: (row) => `$${row.monto.toFixed(2)}` },
+    { name: "Monto Cuota", selector: (row) => `$${formatearNumero(row.monto)}` },
     {
       name: "Monto Abonado",
       selector: (row) =>
-        row.montoAbonado ? `$${row.montoAbonado.toFixed(2)}` : "No pagado",
+        row.montoAbonado ? `$${formatearNumero(row.montoAbonado)}` : "No pagado",
     },
     {
       name: "Diferencia",
@@ -145,6 +160,10 @@ const PagosGrid: React.FC<PagosGridProps> = ({
     {
       name: "Fecha de Pago",
       selector: (row) => formatearFechaLocal(row.fechaPago?.toString() || null),
+    },
+    {
+      name: "Fecha de Vencimiento",
+      selector: (row) => formatearFechaLocal(row.fechaVencimiento?.toString() || null),
     },
     {
       name: "Acción",

@@ -23,6 +23,8 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   const { cliente, cobrador, pagos: pagosInicialesProp } = location.state || {};
   const [pagos, setPagos] = useState<Pago[]>(pagosInicialesProp || []);
   const [totalCobrado, setTotalCobrado] = useState<number>(0);
+  const [transferencias, setTransferencias] = useState<number>(0);
+  const [efectivo, setEfectivo] = useState<number>(0);
 
   const esPagoDeCobrador = !!cobrador;
 
@@ -44,6 +46,9 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   }, [pagosInicialesProp]);
 
   useEffect(() => {
+    setTotalCobrado(0); 
+    setTransferencias(0);
+    setEfectivo(0);
     actualizarCajaDelDia();
     return () => {
       localStorage.removeItem("prestamoId");
@@ -64,180 +69,293 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   };
 
   const actualizarCajaDelDia = async () => {
-    let cobradorId = sessionStorage.getItem("cobradorId")
-      ? parseInt(sessionStorage.getItem("cobradorId") || "")
-      : null;
+  let cobradorId = null;
 
-    if (!cobradorId && cobrador?.id) {
-      cobradorId = cobrador.id;
-      if (cobradorId !== null && cobradorId !== undefined) {
-        sessionStorage.setItem("cobradorId", cobradorId.toString());
-      }
+  if (cobrador?.id) {
+    cobradorId = cobrador.id;
+    sessionStorage.setItem("cobradorId", cobradorId.toString());
+  } else {
+    const idGuardado = sessionStorage.getItem("cobradorId");
+    if (idGuardado) {
+      cobradorId = parseInt(idGuardado);
     }
+  }
 
-    if (cobradorId) {
-      try {
-        const fechaHoy = obtenerFechaArgentina();
-        console.log("🔁 Ejecutando actualizarCajaDelDia()");
-        const cajaResponse = await getCajaCobrador(cobradorId, fechaHoy);
-        console.log("📦 totalCobrado recibido:", cajaResponse?.totalCobrado);
-        setTotalCobrado(cajaResponse?.totalCobrado || 0);
-      } catch (error) {
-        console.error("Error al obtener la caja del día:", error);
-      }
-    }
-  };
-
-  const handlePagoCuota = async (pagoId: number, monto: number) => {
+  if (cobradorId) {
     try {
-      const result = await Swal.fire({
-        icon: "warning",
-        title: "Confirmación de Pago",
-        text: `¿Desea abonar el total de la Cuota? $${monto}?`,
-        showCancelButton: true,
-        confirmButtonText: "Sí",
-        cancelButtonText: "No, cambiar monto",
-        showCloseButton: true,
-        allowOutsideClick: false,
-        width: "85%",
-      });
+      const fechaHoy = obtenerFechaArgentina();
+      console.log("🔁 Ejecutando actualizarCajaDelDia() para cobrador", cobradorId);
+      const cajaResponse = await getCajaCobrador(cobradorId, fechaHoy);
+      console.log("📦 totalCobrado recibido:", cajaResponse?.totalCobrado);
+      console.log("📦 efectivo:", cajaResponse?.montoEfectivo);
+      console.log("📦 transferencia:", cajaResponse?.montoTransferencia);
 
-      if (result.dismiss === Swal.DismissReason.close) return;
-
-      let montoFinal = monto;
-      if (result.dismiss === Swal.DismissReason.cancel) {
-        const { value: nuevoMonto, isDismissed } = await Swal.fire({
-          title: "Ingrese el nuevo monto a pagar",
-          input: "number",
-          inputLabel: "Monto",
-          inputValue: monto,
-          showCancelButton: true,
-          confirmButtonText: "Pagar",
-          cancelButtonText: "Cancelar",
-          allowOutsideClick: false,
-          showCloseButton: true,
-          width: "85%",
-          inputValidator: (value) => {
-            if (!value || parseFloat(value) <= 0) {
-              return "Debe ingresar un monto válido";
-            }
-            return null;
-          },
-        });
-
-        if (isDismissed) return;
-        if (nuevoMonto) montoFinal = parseFloat(nuevoMonto);
-      }
-
-      const { prestamo, montoRecibido } = await registrarPago(
-        pagoId,
-        montoFinal
-      );
-      const prestamoId = prestamo.id;
-      const cobradorId = parseInt(sessionStorage.getItem("cobradorId") || "0");
-
-      if (!prestamoId) return;
-
-      if (esPagoDeCobrador && cobradorId) {
-        const response = await cobranzaDelDia(
-          cobradorId,
-          new Date().toISOString()
-        );
-        setPagos(response.pagos);
-      } else {
-        const response = await getPagosPorPrestamo(parseInt(prestamoId));
-        setPagos(response);
-      }
-
-      await actualizarCajaDelDia();
-
-      Swal.fire({
-        icon: "success",
-        title: "Pago realizado",
-        text: `El pago de $${montoRecibido} fue registrado correctamente.`,
-        width: "85%",
-      });
+      setTotalCobrado(cajaResponse?.totalCobrado || 0);
+      setTransferencias(cajaResponse?.montoTransferencia || 0);
+      setEfectivo(cajaResponse?.montoEfectivo || 0);
     } catch (error) {
-      console.error("Error realizando el pago: ", error);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Hubo un problema al realizar el pago.",
-        width: "85%",
-      });
+      console.error("Error al obtener la caja del día:", error);
     }
-  };
+  } else {
+    console.warn("❌ No se pudo determinar el ID del cobrador");
+  }
+};
 
-  const handleEditarPago = async (pago: Pago) => {
-    const { value: nuevoMonto } = await Swal.fire({
-      title: "Editar Monto Pagado",
-      input: "number",
-      inputLabel: "Nuevo Monto Abonado",
-      inputValue: pago.montoAbonado || 0,
-      showCancelButton: true,
-      confirmButtonText: "Guardar",
-      cancelButtonText: "Cancelar",
-      inputValidator: (value) => {
-        if (!value || parseFloat(value) < 0) {
-          return "Debe ingresar un monto válido";
+  const agruparPagosPorCuota = (pagosOriginales: Pago[]): Pago[] => {
+    const agrupados = new Map<number, Pago>();
+
+    pagosOriginales.forEach((pago) => {
+      const key = pago.nroCuota ?? pago.id;
+      const existente = agrupados.get(key);
+
+      if (existente) {
+        existente.montoAbonado =
+          (existente.montoAbonado || 0) + (pago.montoAbonado || 0);
+        if (!existente.fechaPago && pago.fechaPago) {
+          existente.fechaPago = pago.fechaPago;
         }
-        return null;
-      },
-      width: "85%",
+      } else {
+        agrupados.set(key, { ...pago });
+      }
     });
 
-    if (nuevoMonto !== undefined) {
-      try {
-        const nuevoMontoParsed = parseFloat(nuevoMonto);
-        const fechaPagoActual = pago.fechaPago
-          ? new Date(pago.fechaPago).toISOString()
-          : new Date().toISOString();
-
-        const response = await editarPago(
-          pago.id,
-          nuevoMontoParsed,
-          fechaPagoActual
-        );
-        const pagoEditado = response.pago;
-        const prestamoId = pagoEditado.prestamoId;
-
-        // 🔄 Actualizar lista completa de pagos (no solo uno)
-        if (esPagoDeCobrador && cobrador?.id) {
-          const pagosActualizados = await cobranzaDelDia(
-            cobrador.id,
-            new Date().toISOString()
-          );
-          setPagos(pagosActualizados.pagos);
-        } else if (prestamoId) {
-          const pagosActualizados = await getPagosPorPrestamo(prestamoId);
-          setPagos(pagosActualizados);
-        }
-
-        await actualizarCajaDelDia();
-
-        Swal.fire(
-          "Pago actualizado",
-          `Nuevo monto: $${nuevoMontoParsed.toFixed(2)}`,
-          "success"
-        );
-      } catch (error) {
-        console.error("Error editando el pago:", error);
-        Swal.fire("Error", "No se pudo editar el pago", "error");
-      }
-    }
+    return Array.from(agrupados.values());
   };
 
+  const handlePagoCuota = async (
+  pagoId: number,
+  monto: number
+) => {
+  try {
+    const result = await Swal.fire({
+      title: "Seleccione el método de pago",
+      html: `
+        <div class="d-flex flex-column gap-3">
+          <button id="btn-efectivo" class="btn btn-success btn-lg">
+            <i class="bi bi-cash-coin"></i> Pago en Efectivo
+          </button>
+          <button id="btn-transferencia" class="btn btn-primary btn-lg">
+            <i class="bi bi-bank"></i> Pago por Transferencia
+          </button>
+        </div>
+      `,
+      showConfirmButton: false,
+      showCancelButton: true,
+      cancelButtonText: "Cancelar",
+      allowOutsideClick: false,
+      width: "85%",
+      didOpen: () => {
+        const popup = Swal.getPopup();
+        if (!popup) return;
+
+        const registrar = async (metodoPago: "EFECTIVO" | "TRANSFERENCIA") => {
+          Swal.close();
+
+          // Confirmar si se quiere abonar el monto completo o editar
+          const confirmacion = await Swal.fire({
+            icon: "warning",
+            title: `¿Registrar pago ${metodoPago.toLowerCase()}?`,
+            text: `¿Desea abonar el total de la cuota por $${monto}?`,
+            showCancelButton: true,
+            confirmButtonText: "Sí",
+            cancelButtonText: "No, cambiar monto",
+            showCloseButton: true,
+            allowOutsideClick: false,
+            width: "85%",
+          });
+
+          if (confirmacion.dismiss === Swal.DismissReason.close) return;
+
+          let montoFinal = monto;
+          if (confirmacion.dismiss === Swal.DismissReason.cancel) {
+            const { value: nuevoMonto, isDismissed } = await Swal.fire({
+              title: "Ingrese el nuevo monto a pagar",
+              input: "number",
+              inputLabel: "Monto",
+              inputValue: monto,
+              showCancelButton: true,
+              confirmButtonText: "Pagar",
+              cancelButtonText: "Cancelar",
+              allowOutsideClick: false,
+              showCloseButton: true,
+              width: "85%",
+              inputValidator: (value) => {
+                if (!value || parseFloat(value) <= 0) {
+                  return "Debe ingresar un monto válido";
+                }
+                return null;
+              },
+            });
+
+            if (isDismissed) return;
+            if (nuevoMonto) montoFinal = parseFloat(nuevoMonto);
+          }
+
+          const { prestamo, montoRecibido } = await registrarPago(
+            pagoId,
+            montoFinal,
+            metodoPago
+          );
+          metodoPago === "TRANSFERENCIA"
+            ? setTransferencias((prev) => prev + montoRecibido)
+            : setEfectivo((prev) => prev + montoRecibido);
+          const prestamoId = prestamo.id;
+          const cobradorId = parseInt(sessionStorage.getItem("cobradorId") || "0");
+
+          if (!prestamoId) return;
+
+          if (esPagoDeCobrador && cobradorId) {
+            const response = await cobranzaDelDia(cobradorId, new Date().toISOString());
+            setPagos(agruparPagosPorCuota(response.pagos));
+          } else {
+            const response = await getPagosPorPrestamo(parseInt(prestamoId));
+            setPagos(agruparPagosPorCuota(response));
+          }
+
+          await actualizarCajaDelDia();
+
+          Swal.fire({
+            icon: "success",
+            title: "Pago registrado",
+            text: `El pago de $${montoRecibido} fue registrado correctamente como ${metodoPago.toLowerCase()}.`,
+            width: "85%",
+          });
+        };
+
+        popup.querySelector("#btn-efectivo")?.addEventListener("click", () => registrar("EFECTIVO"));
+        popup.querySelector("#btn-transferencia")?.addEventListener("click", () => registrar("TRANSFERENCIA"));
+      },
+    });
+    console.log("Resultado del pago:", result);
+
+  } catch (error) {
+    console.error("Error realizando el pago: ", error);
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "Hubo un problema al realizar el pago.",
+      width: "85%",
+    });
+  }
+};
+
+
+
+
+  const handleEditarPago = async (pago: Pago) => {
+  try {
+    const result = await Swal.fire({
+      title: "Seleccione el nuevo método de pago",
+      html: `
+        <div class="d-flex flex-column gap-3">
+          <button id="btn-efectivo" class="btn btn-success btn-lg">
+            <i class="bi bi-cash-coin"></i> Efectivo
+          </button>
+          <button id="btn-transferencia" class="btn btn-primary btn-lg">
+            <i class="bi bi-bank"></i> Transferencia
+          </button>
+        </div>
+      `,
+      showConfirmButton: false,
+      showCancelButton: true,
+      cancelButtonText: "Cancelar",
+      allowOutsideClick: false,
+      width: "85%",
+      didOpen: () => {
+        const popup = Swal.getPopup();
+        if (!popup) return;
+
+        const manejarMetodo = async (metodoPago: "EFECTIVO" | "TRANSFERENCIA") => {
+          Swal.close();
+
+          const { value: nuevoMonto, isDismissed } = await Swal.fire({
+            title: "Editar Monto Pagado",
+            input: "number",
+            inputLabel: "Nuevo Monto Abonado",
+            inputValue: pago.montoAbonado || 0,
+            showCancelButton: true,
+            confirmButtonText: "Guardar",
+            cancelButtonText: "Cancelar",
+            inputValidator: (value) => {
+              if (!value || parseFloat(value) < 0) {
+                return "Debe ingresar un monto válido";
+              }
+              return null;
+            },
+            width: "85%",
+          });
+
+          if (isDismissed || nuevoMonto === undefined) return;
+
+          try {
+            const nuevoMontoParsed = parseFloat(nuevoMonto);
+            const fechaPagoActual = pago.fechaPago
+              ? new Date(pago.fechaPago).toISOString()
+              : new Date().toISOString();
+
+            const response = await editarPago(
+              pago.id,
+              nuevoMontoParsed,
+              fechaPagoActual,
+              metodoPago
+            );
+            const pagoEditado = response.pago;
+            const prestamoId = pagoEditado.prestamoId;
+
+            if (esPagoDeCobrador && cobrador?.id) {
+              const pagosActualizados = await cobranzaDelDia(
+                cobrador.id,
+                new Date().toISOString()
+              );
+              setPagos(agruparPagosPorCuota(pagosActualizados.pagos));
+            } else if (prestamoId) {
+              const pagosActualizados = await getPagosPorPrestamo(prestamoId);
+              setPagos(agruparPagosPorCuota(pagosActualizados));
+
+            }
+
+            await actualizarCajaDelDia();
+
+            Swal.fire(
+              "Pago actualizado",
+              `Nuevo monto: $${nuevoMontoParsed.toFixed(
+                2
+              )} registrado como ${metodoPago.toLowerCase()}`,
+              "success"
+            );
+          } catch (error) {
+            console.error("Error editando el pago:", error);
+            Swal.fire("Error", "No se pudo editar el pago", "error");
+          }
+        };
+
+        popup.querySelector("#btn-efectivo")?.addEventListener("click", () => manejarMetodo("EFECTIVO"));
+        popup.querySelector("#btn-transferencia")?.addEventListener("click", () => manejarMetodo("TRANSFERENCIA"));
+      },
+    });
+    console.log("Resultado de la edición:", result);
+  } catch (error) {
+    
+    console.error("Error al iniciar edición de pago:", error);
+    Swal.fire("Error", "No se pudo iniciar la edición del pago", "error");
+  }
+};
+
+const pagosAgrupados = agruparPagosPorCuota(pagos);
   return (
     <div className="pagos-page">
       <Header title={tituloPagina} isMobile={isMobile} />
       <div className="content">
         {!isMobile && <Sidebar />}
+        
         <PagosGrid
-          pagos={pagos}
+          pagos={pagosAgrupados}
           handlePagoCuota={handlePagoCuota}
           handleEditarPago={handleEditarPago}
           mostrarCliente={esPagoDeCobrador}
           totalCobrado={totalCobrado}
+          transferencias={transferencias} // Placeholder, update as needed
+          efectivo={efectivo} // Placeholder, update as needed
           sobrantes={{}}
         />
       </div>

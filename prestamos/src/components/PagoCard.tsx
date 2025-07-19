@@ -11,6 +11,9 @@ type PagoConExtras = Pago & {
 type PagoCardProps = {
   pago: PagoConExtras;
   totalCobrado: number;
+  transferencias: number;
+  efectivo: number;
+  //onFinalizarCobranza?: () => void; // Uncomment if needed
   pagosCobrados: PagoConExtras[];
   onFinalizarCobranza: () => void;
   showResumen: boolean;
@@ -21,6 +24,8 @@ type PagoCardProps = {
 const PagoCard: React.FC<PagoCardProps> = ({
   pago,
   totalCobrado,
+  transferencias,
+  //efectivo,
   pagosCobrados,
   //onFinalizarCobranza,
   showResumen,
@@ -158,6 +163,10 @@ const PagoCard: React.FC<PagoCardProps> = ({
             <p>
               <strong>Total Cobrado:</strong> ${totalCobrado.toFixed(2)}
             </p>
+            <p>
+              <strong>Transferencias:</strong> ${transferencias.toFixed(2)}
+            </p>
+            
             <p>
               <strong>Cuotas cobradas:</strong> {pagosCobrados.length}
             </p>

@@ -75,10 +75,25 @@
   background-color: #d4edda;
   transform: scale(1.05);
 }
+
+.detalle-cobros {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+}
+
+.detalle-item {
+  flex: 1;
+  text-align: center;
+}
+
 @media (max-width: 768px) {
   .total-cobrado {
     position: fixed;
-    top: 60px; /* Ajustá si tenés un header arriba */
+    top: 60px;
     left: 0;
     right: 0;
     z-index: 999;
@@ -91,9 +106,16 @@
   }
 
   .pagos-list {
-    padding-top: 40px; /* Para no tapar los primeros pagos */
+    padding-top: 100px; /* ajustado para dar lugar a los 3 totales */
+  }
+
+  .detalle-cobros {
+    flex-direction: row;
+    font-size: 14px;
+    gap: 8px;
   }
 }
+
 .btn-icon {
   background-color: transparent;
   border: none;
@@ -121,7 +143,6 @@
 .fila-completa {
   background-color: #C7C8CA !important;
 }
-
 
 
 /* 🟢 Hacer la tabla responsiva */

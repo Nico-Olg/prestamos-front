@@ -282,12 +282,12 @@ export async function login(dni: string, password: string) {
     }
   }
 }
-export async function registrarPago(id: number, monto: number) {
+export async function registrarPago(id: number, monto: number, metodoPago: string) {
   try {
     const token = getAuthToken();
     const response = await axios.post(
       `${API_BASE_URL}/prestamos/pagar-cuota`,
-      { id, monto },
+      { id, monto, metodoPago },
       {
         headers: {
           'Content-Type': 'application/json',
@@ -525,12 +525,12 @@ export async function refinanciarPrestamos(data: RefinanciacionRequest) {
     throw error;
   }
 }
-export async function editarPago(pagoId: number, nuevoMonto: number, fechaPago?: string) {
+export async function editarPago(pagoId: number, nuevoMonto: number, fechaPago?: string, metodoPago?: string) {
   try {
     const token = getAuthToken();
     const response = await axios.post(
       `${API_BASE_URL}/prestamos/editar-pago/${pagoId}`,
-      { pagoId, nuevoMonto, fechaPago },
+      { pagoId, nuevoMonto, fechaPago, metodoPago },
       {
         headers: {
           'Content-Type': 'application/json',
