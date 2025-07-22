@@ -143,4 +143,36 @@
   border-radius: 4px;
   font-style: italic;
 }
+.acciones-pago {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.btn-adelantar {
+  background-color: #17a2b8;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  flex: 1;
+  text-align: center;
+}
+
+.btn-adelantar:hover {
+  background-color: #138496;
+}
+
+/* Mejoras opcionales */
+@media (max-width: 500px) {
+  .acciones-pago {
+    flex-direction: column;
+  }
+
+  .acciones-pago button {
+    width: 100%;
+  }
+}
 

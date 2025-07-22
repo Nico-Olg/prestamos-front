@@ -1,0 +1,166 @@
+.pago-card-modern {
+  width: 90%;
+  max-width: 400px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  margin: 15px auto;
+  font-family: 'Segoe UI', sans-serif;
+  color: #111;
+  position: relative;
+  transition: background-color 0.3s ease;
+}
+
+.pago-card-modern.completado {
+  background-color: #f0f0f0;
+  border: 2px solid #28a745;
+}
+
+.pago-card-modern h2 {
+  margin-bottom: 4px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.pago-card-modern .producto {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.info-linea {
+  display: flex;
+  justify-content: space-between;
+  margin: 6px 0;
+  font-size: 15px;
+}
+
+.alerta {
+  background-color: #fff3cd;
+  color: #856404;
+  border-left: 4px solid #ffc107;
+  padding: 10px;
+  margin: 12px 0;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.alerta-info {
+  background-color: #e9f5ff;
+  color: #0c5460;
+  border-left: 4px solid #17a2b8;
+  padding: 10px;
+  margin: 12px 0;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.pagado {
+  background-color: #d4edda;
+  color: #155724;
+  border-left: 4px solid #28a745;
+  padding: 10px;
+  margin: 12px 0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.acciones-pago {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.btn {
+  width: 100%;
+  padding: 10px 0;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-pagar {
+  background-color: #2563eb;
+  color: white;
+}
+
+.btn-pagar:hover {
+  background-color: #1d4ed8;
+}
+
+.btn-editar {
+  background-color: #fbbf24;
+  color: #111;
+}
+
+.btn-editar:hover {
+  background-color: #f59e0b;
+}
+
+.btn-adelantar {
+  background-color: #0d9488;
+  color: white;
+}
+
+.btn-adelantar:hover {
+  background-color: #0f766e;
+}
+
+.fecha {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #555;
+  text-align: center;
+}
+
+.modal-resumen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h2 {
+  margin-bottom: 20px;
+}
+
+.modal-content p {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.modal-content button {
+  margin-top: 20px;
+  padding: 10px 15px;
+  background-color: #004dff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.modal-content button:hover {
+  background-color: #003bb5;
+}

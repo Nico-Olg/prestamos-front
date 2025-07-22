@@ -101,26 +101,57 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   }
 };
 
-  const agruparPagosPorCuota = (pagosOriginales: Pago[]): Pago[] => {
-    const agrupados = new Map<number, Pago>();
+  const agruparPagos = (pagosOriginales: Pago[]): Pago[] => {
+  const pagosPorCuota = new Map<string, Pago[]>();
 
-    pagosOriginales.forEach((pago) => {
-      const key = pago.nroCuota ?? pago.id;
-      const existente = agrupados.get(key);
+  pagosOriginales.forEach((pago) => {
+    const key = `${pago.prestamoId}-${pago.nroCuota}`;
+    if (!pagosPorCuota.has(key)) {
+      pagosPorCuota.set(key, []);
+    }
+    pagosPorCuota.get(key)!.push(pago);
+  });
 
-      if (existente) {
-        existente.montoAbonado =
-          (existente.montoAbonado || 0) + (pago.montoAbonado || 0);
-        if (!existente.fechaPago && pago.fechaPago) {
-          existente.fechaPago = pago.fechaPago;
+  const resultado: Pago[] = [];
+
+  pagosPorCuota.forEach((pagosDeLaCuota) => {
+    if (pagosDeLaCuota.length === 1) {
+      resultado.push(pagosDeLaCuota[0]);
+    } else {
+      const pagoBase = { ...pagosDeLaCuota[0] };
+      let montoTotal = 0;
+      let ultimaFecha: string | null = pagoBase.fechaPago
+        ? typeof pagoBase.fechaPago === "string"
+          ? pagoBase.fechaPago
+          : (pagoBase.fechaPago as Date).toISOString()
+        : null;
+      let formaPagoFinal = pagoBase.formaPago;
+
+      pagosDeLaCuota.forEach((pago) => {
+        montoTotal += pago.montoAbonado ?? 0;
+
+        if (pago.fechaPago && (!ultimaFecha || new Date(pago.fechaPago).getTime() > new Date(ultimaFecha).getTime())) {
+          ultimaFecha = typeof pago.fechaPago === "string" ? pago.fechaPago : (pago.fechaPago as Date).toISOString();
         }
-      } else {
-        agrupados.set(key, { ...pago });
-      }
-    });
 
-    return Array.from(agrupados.values());
-  };
+        if (pago.formaPago) {
+          formaPagoFinal = pago.formaPago;
+        }
+      });
+
+      pagoBase.montoAbonado = montoTotal;
+      pagoBase.fechaPago = ultimaFecha ? new Date(ultimaFecha) : null;
+      pagoBase.formaPago = formaPagoFinal;
+
+      resultado.push(pagoBase);
+    }
+  });
+
+  return resultado;
+};
+
+
+
 
   const handlePagoCuota = async (
   pagoId: number,
@@ -206,10 +237,10 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
 
           if (esPagoDeCobrador && cobradorId) {
             const response = await cobranzaDelDia(cobradorId, new Date().toISOString());
-            setPagos(agruparPagosPorCuota(response.pagos));
+            setPagos(agruparPagos(response.pagos));
           } else {
             const response = await getPagosPorPrestamo(parseInt(prestamoId));
-            setPagos(agruparPagosPorCuota(response));
+            setPagos(agruparPagos(response));
           }
 
           await actualizarCajaDelDia();
@@ -307,10 +338,10 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
                 cobrador.id,
                 new Date().toISOString()
               );
-              setPagos(agruparPagosPorCuota(pagosActualizados.pagos));
+              setPagos(agruparPagos(pagosActualizados.pagos));
             } else if (prestamoId) {
               const pagosActualizados = await getPagosPorPrestamo(prestamoId);
-              setPagos(agruparPagosPorCuota(pagosActualizados));
+              setPagos(agruparPagos(pagosActualizados));
 
             }
 
@@ -340,8 +371,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
     Swal.fire("Error", "No se pudo iniciar la edición del pago", "error");
   }
 };
-
-const pagosAgrupados = agruparPagosPorCuota(pagos);
+const pagosAgrupados = agruparPagos(pagos);
   return (
     <div className="pagos-page">
       <Header title={tituloPagina} isMobile={isMobile} />
