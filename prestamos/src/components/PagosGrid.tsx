@@ -100,7 +100,8 @@ const PagosGrid: React.FC<PagosGridProps> = ({
 </div>
 
 
-      {pagos.map((pago) => (
+      {
+      pagos.map((pago) => (
         <PagoCard
           key={pago.id}
           pago={{
@@ -220,8 +221,22 @@ const PagosGrid: React.FC<PagosGridProps> = ({
           </div>
         );
       },
+      
       ignoreRowClick: true,
     },
+    {
+       cell: (row) => {
+        return (
+            <button
+            className="btn-icon adelantar"
+            onClick={() => handlePagoCuota(row.id, row.monto)}
+            title="Adelantar Pago"
+            >
+            ⏩
+            </button>
+        );
+       }
+      },
   ];
 
   if (mostrarCliente) {

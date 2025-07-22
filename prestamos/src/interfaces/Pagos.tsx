@@ -21,6 +21,9 @@ export interface Pago {
     nombreCliente:    string;
     cantCuotas:      number;
     saldo:           number;
+    estaPagada?: boolean;
+  saldoPendiente?: number;
+    prestamoId:      number;
 }
 
 // ✅ Clase para mapear datos desde JSON
