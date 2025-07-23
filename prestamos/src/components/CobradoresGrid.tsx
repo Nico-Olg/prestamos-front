@@ -67,15 +67,15 @@ const CobradoresGrid: React.FC = () => {
     );
     setFilteredCobradores(filteredData);
   };
-  const totales = filteredCobradores.reduce(
-    (acc, curr) => {
-      acc.totalCobrado += curr.totalCobrado;
-      acc.montoEfectivo += curr.montoEfectivo;
-      acc.montoTransferencia += curr.montoTransferencia;
-      return acc;
-    },
-    { totalCobrado: 0, montoEfectivo: 0, montoTransferencia: 0 }
-  );
+  // const totales = filteredCobradores.reduce(
+  //   (acc, curr) => {
+  //     acc.totalCobrado += curr.totalCobrado;
+  //     acc.montoEfectivo += curr.montoEfectivo;
+  //     acc.montoTransferencia += curr.montoTransferencia;
+  //     return acc;
+  //   },
+  //   { totalCobrado: 0, montoEfectivo: 0, montoTransferencia: 0 }
+  // );
 
   return (
     <div className="container mt-4">
@@ -142,12 +142,32 @@ const CobradoresGrid: React.FC = () => {
             <td colSpan={4} className="text-end">
               TOTALES
             </td>
-            <td>${formatearNumero(totales.totalCobrado)}</td>
+            <td>
+              $
+              {formatearNumero(
+                filteredCobradores.reduce(
+                  (acc, curr) => acc + curr.totalCobrado,
+                  0
+                )
+              )}
+            </td>
             <td className="text-success">
-              ${formatearNumero(totales.montoEfectivo)}
+              $
+              {formatearNumero(
+                filteredCobradores.reduce(
+                  (acc, curr) => acc + curr.montoEfectivo,
+                  0
+                )
+              )}
             </td>
             <td className="text-primary">
-              ${formatearNumero(totales.montoTransferencia)}
+              $
+              {formatearNumero(
+                filteredCobradores.reduce(
+                  (acc, curr) => acc + curr.montoTransferencia,
+                  0
+                )
+              )}
             </td>
           </tr>
         </table>
