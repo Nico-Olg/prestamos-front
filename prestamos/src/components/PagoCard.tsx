@@ -1,6 +1,7 @@
 import React from "react";
 import "../styles/PagoCardModern.css";
 import { Pago } from "../interfaces/Pagos";
+import { formatearNumero } from "../utils/formatters";
 
 type PagoConExtras = Pago & {
   handlePagoCuota: (pagoId: number, monto: number) => void;
@@ -72,14 +73,14 @@ const PagoCard: React.FC<PagoCardProps> = ({
 
         <div className="info-linea">
           <span>💰 Monto Cuota</span>
-          <span>${pago.monto.toFixed(2)}</span>
+          <span>${formatearNumero(pago.monto)}</span>
         </div>
 
         <div className="info-linea">
           <span>🧾 Monto Recibido</span>
-          <span>${montoTotalAbonado.toFixed(2)}</span>
+          <span>${formatearNumero(montoTotalAbonado)}</span>
         </div>
-
+        
         {seAdelantoParcial() && (
           <div className="alerta-info">
             ⚠ Se adelantó parcialmente la próxima cuota
@@ -93,8 +94,16 @@ const PagoCard: React.FC<PagoCardProps> = ({
         )}
 
         {cuotaCompleta && (
-          <div className="pagado">✅ Cuota completada</div>
-        )}
+  <>
+    <div className="pagado">✅ Cuota completada</div>
+    {pago.nroCuota && pago.montoAbonado ? (
+      <p className="cuota-pagada">
+        <strong>💳 Se pagó la cuota nro:</strong> {pago.nroCuota}
+      </p>
+    ) : null}
+  </>
+)}
+
 
         <div className="acciones-pago">
           {!cuotaCompleta && (

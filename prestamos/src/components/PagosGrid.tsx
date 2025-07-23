@@ -88,13 +88,13 @@ const PagosGrid: React.FC<PagosGridProps> = ({
   return (
     <div className="pagos-list">
       <div className={`total-cobrado ${animarTotal ? "animado" : ""}`}>
-  💵 Total cobrado: ${totalCobrado.toFixed(2)}
+  💵 Total cobrado: ${formatearNumero(totalCobrado)}
   <div className="detalle-cobros">
     <div className="detalle-item">
-      🏦 Transferencia: ${transferencias.toFixed(2)}
+      🏦 Transferencia: ${formatearNumero(transferencias)}
     </div>
     <div className="detalle-item">
-      💵 Efectivo: ${efectivo.toFixed(2)}
+      💵 Efectivo: ${formatearNumero(efectivo)}
     </div>
   </div>
 </div>
@@ -151,12 +151,12 @@ const PagosGrid: React.FC<PagosGridProps> = ({
       name: "Diferencia",
       selector: (row) =>
         row.montoAbonado
-          ? `$${(row.monto - row.montoAbonado).toFixed(2)}`
+          ? `$${formatearNumero(row.monto - row.montoAbonado)}`
           : "No pagado",
     },
     {
       name: "Saldo",
-      selector: (row) => `$${row.saldo}`,
+      selector: (row) => `$${formatearNumero(row.saldo)}`,
     },
     {
       name: "Fecha de Pago",

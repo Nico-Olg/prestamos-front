@@ -4,3 +4,15 @@
   vertical-align: middle;
    background-color: #848b91
 }
+.btn.btn-secondary {
+  background-color: #0052cc;
+  color: white;
+  width: 10%;
+  padding: 10px 0;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}

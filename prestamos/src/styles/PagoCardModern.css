@@ -164,3 +164,9 @@
 .modal-content button:hover {
   background-color: #003bb5;
 }
+.cuota-pagada {
+  text-align: center;
+  font-size: 14px;
+  color: #333;
+  margin-top: 8px;
+}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCobradores } from "../apis/getApi";
+import { formatearNumero } from "../utils/formatters";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/CobradoresGrid.css";
 
@@ -66,6 +67,15 @@ const CobradoresGrid: React.FC = () => {
     );
     setFilteredCobradores(filteredData);
   };
+  const totales = filteredCobradores.reduce(
+    (acc, curr) => {
+      acc.totalCobrado += curr.totalCobrado;
+      acc.montoEfectivo += curr.montoEfectivo;
+      acc.montoTransferencia += curr.montoTransferencia;
+      return acc;
+    },
+    { totalCobrado: 0, montoEfectivo: 0, montoTransferencia: 0 }
+  );
 
   return (
     <div className="container mt-4">
@@ -117,17 +127,29 @@ const CobradoresGrid: React.FC = () => {
                 <td>{cobrador.zona}</td>
                 <td>{cobrador.tel}</td>
                 <td>
-                  <strong>${cobrador.totalCobrado.toFixed(2)}</strong>
+                  <strong>${formatearNumero(cobrador.totalCobrado)}</strong>
                 </td>
                 <td className="text-success fw-bold">
-                  ${cobrador.montoEfectivo.toFixed(2)}
+                  ${formatearNumero(cobrador.montoEfectivo)}
                 </td>
                 <td className="text-primary fw-bold">
-                  ${cobrador.montoTransferencia.toFixed(2)}
+                  ${formatearNumero(cobrador.montoTransferencia)}
                 </td>
               </tr>
             ))}
           </tbody>
+          <tr className="fw-bold">
+            <td colSpan={4} className="text-end">
+              TOTALES
+            </td>
+            <td>${formatearNumero(totales.totalCobrado)}</td>
+            <td className="text-success">
+              ${formatearNumero(totales.montoEfectivo)}
+            </td>
+            <td className="text-primary">
+              ${formatearNumero(totales.montoTransferencia)}
+            </td>
+          </tr>
         </table>
       </div>
 
