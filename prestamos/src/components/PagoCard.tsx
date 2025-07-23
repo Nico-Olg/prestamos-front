@@ -57,7 +57,7 @@ const PagoCard: React.FC<PagoCardProps> = ({
 
     return !!cuotaSiguiente;
   };
-
+  console.log("Cuota Completada:", fueAdelantado(), cuotaCompleta, pago.nroCuota, pago.montoAbonado);  //TODO: Remove this log
   return (
     <>
       <div className={`pago-card-modern ${cuotaCompleta ? "completado" : ""}`}>
