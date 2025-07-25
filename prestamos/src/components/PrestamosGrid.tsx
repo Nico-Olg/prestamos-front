@@ -100,7 +100,7 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({
     {
       name: "Monto Prestado",
       selector: (row) =>
-        row.montoPrestamo ? `$ ${formatearNumero(row.montoPrestado)}` : "N/A", // Validar `row.montoPrestamo`
+        row.montoPrestamo ? `$ ${formatearNumero(row.valorProducto)}` : "N/A", // Validar `row.montoPrestamo`
       sortable: true,
       minWidth: "150px",
     },
