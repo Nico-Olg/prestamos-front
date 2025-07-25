@@ -17,4 +17,5 @@ export interface Prestamo {
     cantidadPagos:     number;
     efectividad:          number;
     montoPrestado:   number;
+    valorProducto:     number;
 }
