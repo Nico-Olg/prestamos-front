@@ -100,7 +100,8 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({
     {
       name: "Monto Prestado",
       selector: (row) =>
-        row.montoPrestamo ? `$ ${formatearNumero(row.valorProducto)}` : "N/A", // Validar `row.montoPrestamo`
+        row.montoPrestado ? `$ ${formatearNumero(row.montoPrestado)}` : "N/A", // Validar `row.montoPrestamo`
+
       sortable: true,
       minWidth: "150px",
     },
@@ -195,7 +196,6 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({
       ),
       ignoreRowClick: true,
       allowOverflow: true,
-      
     },
     {
       name: "Eliminar Créditos",
@@ -216,7 +216,6 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({
       ),
       ignoreRowClick: true,
       allowOverflow: true,
-      
     },
   ];
 

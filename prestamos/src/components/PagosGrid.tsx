@@ -21,15 +21,49 @@ interface PagosGridProps {
   sobrantes?: Record<number, number>; 
 }
 
-const formatearFechaLocal = (fechaISO: string | null): string => {
-  if (!fechaISO) return "No pagado";
-  const fecha = new Date(fechaISO);
+// const formatearFechaLocal = (fechaISO: string | null): string => {
+//   if (!fechaISO) return "No pagado";
+//   const fecha = new Date(fechaISO);
+//   return fecha.toLocaleDateString("es-AR", {
+//     year: "numeric",
+//     month: "2-digit",
+//     day: "2-digit",
+//   });
+// };
+const formatearFechaLocal = (fechaInput: string | Date | null): string => {
+  if (!fechaInput) return "No pagado";
+
+  let fecha: Date;
+
+  if (fechaInput instanceof Date) {
+    fecha = fechaInput;
+  } else if (typeof fechaInput === "string") {
+    const isoPart = fechaInput.split("T")[0]; // Extraemos "2025-07-28"
+    const partes = isoPart.split("-");
+
+    // Si es formato "yyyy-MM-dd"
+    if (partes.length === 3) {
+      const [anio, mes, dia] = partes;
+      fecha = new Date(Number(anio), Number(mes) - 1, Number(dia)); // FORZA LOCAL
+    } else {
+      // Intentamos parsear con Date por si viene como "Wed May 21 2025 21:00:00 GMT-0300"
+      const tentativa = new Date(fechaInput);
+      if (isNaN(tentativa.getTime())) return "Fecha inválida";
+      fecha = tentativa;
+    }
+  } else {
+    return "Fecha inválida";
+  }
+
+  if (isNaN(fecha.getTime())) return "Fecha inválida";
+
   return fecha.toLocaleDateString("es-AR", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
   });
 };
+
 
 const PagosGrid: React.FC<PagosGridProps> = ({
   pagos,
@@ -164,7 +198,7 @@ const PagosGrid: React.FC<PagosGridProps> = ({
     },
     {
       name: "Fecha de Vencimiento",
-      selector: (row) => formatearFechaLocal(row.fechaVencimiento?.toString() || null),
+      selector: (row) => formatearFechaLocal(row.fechaVencimiento || null),
     },
     {
       name: "Acción",
