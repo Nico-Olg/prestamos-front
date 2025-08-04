@@ -14,6 +14,7 @@ import DeleteIcon from "@mui/icons-material/Delete"; // Importa el ícono de tac
 import Swal from "sweetalert2";
 import { useClientContext } from "../provider/ClientContext";
 import { getPagosPorPrestamo } from "../apis/postApi";
+import { getCarpetaPrestamo } from "../apis/getApi"; // Importa el método getCarpetaPrestamo
 import { formatearNumero } from "../utils/formatters";
 
 interface PrestamosGridProps {
@@ -38,7 +39,7 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({
   };
 
   const handleCarpetClicked = async (prestamo: Prestamo) => {
-    const pagos = await getPagosPorPrestamo(prestamo.idPrestamo);
+    const pagos = await getCarpetaPrestamo(prestamo.idPrestamo);
     generarPDF(cliente, prestamo, pagos); // Genera el PDF con los datos del cliente y el préstamo seleccionado
   };
 

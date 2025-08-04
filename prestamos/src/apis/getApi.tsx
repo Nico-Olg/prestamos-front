@@ -168,5 +168,27 @@ export async function getCajaCobrador(cobradorId: number, fecha: string) {
     }
   }
 }
+export async function getCarpetaPrestamo(prestamoId: number) {
+  try {
+    const token = getAuthToken();
+    const response = await axios.get(
+      `${API_BASE_URL}/pagos/carpeta/${prestamoId}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // Agregar el token en el header
+        },
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Error al obtener los pagos: ${error.response?.status} ${error.response?.statusText}`);
+    } else {
+      throw new Error('Error desconocido al obtener los pagos');
+    }
+  }
+}
 
 

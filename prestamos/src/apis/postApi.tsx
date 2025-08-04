@@ -83,6 +83,7 @@ export async function getPagosPorPrestamo(prestamoId: number) {
   }
 }
 
+
 export async function getClientebyDni(dni: number) {
   try {
     const token = getAuthToken();
