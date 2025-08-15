@@ -548,9 +548,52 @@ export async function editarPago(pagoId: number, nuevoMonto: number, fechaPago?:
       throw new Error('Error desconocido al editar el pago');
     }
   }
-  
 }
 
+  export async function habilitarPrestamo(prestamo_id: number) {
+    try {
+      const token = getAuthToken();
+      const response = await axios.post(
+        `${API_BASE_URL}/prestamos/activar/prestamo`,
+        { prestamo_id },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          withCredentials: true,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Error al habilitar el préstamo: ${error.response?.status} ${error.response?.statusText}`);
+      } else {
+        throw new Error('Error desconocido al habilitar el préstamo');
+      }
+    }
+  }
 
-
-
+  export async function deshabilitarPrestamo(prestamo_id: number) {
+    try {
+      const token = getAuthToken();
+      const response = await axios.post(
+        `${API_BASE_URL}/prestamos/desactivar/prestamo`,
+        { prestamo_id },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          withCredentials: true,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Error al deshabilitar el préstamo: ${error.response?.status} ${error.response?.statusText}`);
+      } else {
+        throw new Error('Error desconocido al deshabilitar el préstamo');
+      }
+    }
+  }

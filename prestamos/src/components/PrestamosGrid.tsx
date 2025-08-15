@@ -1,33 +1,43 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import DataTable, {
   TableColumn,
   ConditionalStyles,
 } from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
-import { Cliente } from "../interfaces/Cliente"; // Importa las interfaces
-import { Prestamo } from "../interfaces/Prestamo"; // Importa las interfaces
+import { Cliente } from "../interfaces/Cliente";
+import { Prestamo } from "../interfaces/Prestamo";
 import { generarPDF } from "./carpetaPDF";
-import { borrarCreditos } from "../apis/postApi"; // Importa el método borrarCreditos
+import { borrarCreditos, getPagosPorPrestamo, deshabilitarPrestamo, habilitarPrestamo } from "../apis/postApi";
+import { getCarpetaPrestamo } from "../apis/getApi";
+import { formatearNumero } from "../utils/formatters";
 import "../styles/PrestamosGrid.css";
-import { IconButton } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete"; // Importa el ícono de tacho de basura
+import { IconButton, Button, Stack, CircularProgress, Box } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import SettingsIcon from "@mui/icons-material/Settings";
 import Swal from "sweetalert2";
 import { useClientContext } from "../provider/ClientContext";
-import { getPagosPorPrestamo } from "../apis/postApi";
-import { getCarpetaPrestamo } from "../apis/getApi"; // Importa el método getCarpetaPrestamo
-import { formatearNumero } from "../utils/formatters";
 
 interface PrestamosGridProps {
-  cliente: Cliente; // Datos del cliente que también provienen de PrestamosPage
-  prestamos?: Prestamo[]; // Opcional, ya que los préstamos se obtienen del contexto
+  cliente: Cliente;
+  prestamos?: Prestamo[];
 }
 
-const PrestamosGrid: React.FC<PrestamosGridProps> = ({
-  cliente,
-  prestamos,
-}) => {
-  const { refreshClientes } = useClientContext(); // Incluye `clientes` para obtener actualizaciones
+const PrestamosGrid: React.FC<PrestamosGridProps> = ({ cliente, prestamos }) => {
+  const { refreshClientes } = useClientContext();
   const navigate = useNavigate();
+
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+  const [loading, setLoading] = useState(false);
+
+  const toggleExpand = (idPrestamo?: number) => {
+    if (idPrestamo == null) return;
+    setExpandedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(idPrestamo)) next.delete(idPrestamo);
+      else next.add(idPrestamo);
+      return next;
+    });
+  };
 
   const handleRowClicked = async (prestamo: Prestamo) => {
     try {
@@ -40,7 +50,7 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({
 
   const handleCarpetClicked = async (prestamo: Prestamo) => {
     const pagos = await getCarpetaPrestamo(prestamo.idPrestamo);
-    generarPDF(cliente, prestamo, pagos); // Genera el PDF con los datos del cliente y el préstamo seleccionado
+    generarPDF(cliente, prestamo, pagos);
   };
 
   const handleDeleteClicked = async (prestamoId: number) => {
@@ -57,16 +67,15 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({
       });
 
       if (result.isConfirmed) {
-        // Si el usuario confirma, elimina el crédito
+        setLoading(true);
         await borrarCreditos(prestamoId);
-        await refreshClientes(); // Actualiza los datos del cliente en el contexto
+        await refreshClientes();
         Swal.fire({
           icon: "success",
           title: "Crédito eliminado",
           text: "El crédito se eliminó correctamente.",
         });
       } else {
-        // Si cancela o cierra el diálogo
         Swal.fire({
           icon: "info",
           title: "Acción cancelada",
@@ -80,6 +89,67 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({
         title: "Error",
         text: "Hubo un problema al eliminar el crédito.",
       });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Actualización optimista + recarga desde backend
+  const actualizarPrestamoEnLista = (idPrestamo: number, activo: boolean) => {
+    if (!prestamos) return;
+    const index = prestamos.findIndex((p) => p.idPrestamo === idPrestamo);
+    if (index !== -1) {
+      prestamos[index].activo = activo;
+    }
+  };
+
+  const handleHabilitar = async (row: Prestamo) => {
+    try {
+      setLoading(true);
+      // Optimista
+      actualizarPrestamoEnLista(row.idPrestamo, true);
+      toggleExpand(row.idPrestamo);
+      // Backend
+      await habilitarPrestamo(row.idPrestamo);
+      await refreshClientes();
+      Swal.fire({
+        icon: "success",
+        title: "Habilitado",
+        text: `Crédito ${row.idPrestamo} habilitado.`,
+      });
+    } catch {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudo habilitar el crédito.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeshabilitar = async (row: Prestamo) => {
+    try {
+      setLoading(true);
+      // Optimista
+      actualizarPrestamoEnLista(row.idPrestamo, false);
+      toggleExpand(row.idPrestamo);
+      // Backend
+      await deshabilitarPrestamo(row.idPrestamo);
+      await refreshClientes();
+      Swal.fire({
+        icon: "success",
+        title: "Deshabilitado",
+        text: `Crédito ${row.idPrestamo} deshabilitado.`,
+      });
+    } catch {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudo deshabilitar el crédito.",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -91,118 +161,110 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({
     return `${day}/${month}/${year}`;
   };
 
-  const columns: TableColumn<Prestamo>[] = [
-    {
-      name: "ID",
-      selector: (row) => row.idPrestamo || 0, // Devuelve un número
-      sortable: true,
-      format: (row) => row.idPrestamo?.toString() || "N/A", // Para mostrarlo como string si querés
-    },
-    {
-      name: "Monto Prestado",
-      selector: (row) =>
-        row.montoPrestado ? `$ ${formatearNumero(row.montoPrestado)}` : "N/A", // Validar `row.montoPrestamo`
-
-      sortable: true,
-      minWidth: "150px",
-    },
-    {
-      name: "Plan",
-      selector: (row) => row.tipoPlan || "N/A", // Validar `row.tipoPlan`
-      sortable: true,
-    },
-    {
-      name: "Monto a Devolver",
-      selector: (row) =>
-        row.montoPrestamo ? `$ ${formatearNumero(row.montoPrestamo)}` : "N/A", // Validar `row.total`
-      sortable: true,
-      minWidth: "150px",
-    },
-    {
-      name: "Fecha de Inicio",
-      selector: (row) =>
-        formatDate(
-          typeof row.fechaInicio === "string"
-            ? row.fechaInicio
-            : row.fechaInicio?.toISOString().split("T")[0] || ""
-        ), // Validar `row.fechaInicio`
-      sortable: true,
-      width: "150px",
-    },
-    {
-      name: "Fecha de Finalizacion",
-      selector: (row) =>
-        formatDate(
-          typeof row.fechaFinalizacion === "string"
-            ? row.fechaFinalizacion
-            : row.fechaFinalizacion?.toISOString().split("T")[0] || ""
-        ), // Validar `row.fechaFinalizacion`
-      sortable: true,
-      width: "180px",
-    },
-    {
-      name: "Cantidad de Cuotas",
-      selector: (row) =>
-        row.cantidadPagos ? row.cantidadPagos.toString() : "0", // Validar `row.pagos`
-      sortable: true,
-      width: "180px",
-    },
-    {
-      name: "Efectividad",
-      sortable: true,
-      cell: (row) => (
-        <div style={{ width: "100%", padding: "4px 0" }}>
-          <div
-            className="progress position-relative"
-            style={{ height: "18px" }}
-          >
-            <div
-              className={`progress-bar ${
-                row.efectividad >= 80
-                  ? "bg-success"
-                  : row.efectividad >= 50
-                  ? "bg-warning"
-                  : "bg-danger"
-              }`}
-              role="progressbar"
-              style={{
-                width: `${row.efectividad || 0}%`,
-                transition: "width 0.6s ease",
-              }}
-              aria-valuenow={row.efectividad}
-              aria-valuemin={0}
-              aria-valuemax={100}
-            ></div>
-            <span
-              className="position-absolute top-50 start-50 translate-middle text-dark fw-semibold"
-              style={{ fontSize: "0.8rem" }}
-            >
-              {row.efectividad ? `${row.efectividad.toFixed(0)}%` : "0%"}
-            </span>
+  const columns: TableColumn<Prestamo>[] = useMemo(
+    () => [
+      {
+        name: "ID",
+        selector: (row) => row.idPrestamo || 0,
+        sortable: true,
+        format: (row) => row.idPrestamo?.toString() || "N/A",
+      },
+      {
+        name: "Monto Prestado",
+        selector: (row) =>
+          row.montoPrestado ? `$ ${formatearNumero(row.montoPrestado)}` : "N/A",
+        sortable: true,
+        minWidth: "150px",
+      },
+      {
+        name: "Plan",
+        selector: (row) => row.tipoPlan || "N/A",
+        sortable: true,
+      },
+      {
+        name: "Monto a Devolver",
+        selector: (row) =>
+          row.montoPrestamo ? `$ ${formatearNumero(row.montoPrestamo)}` : "N/A",
+        sortable: true,
+        minWidth: "150px",
+      },
+      {
+        name: "Fecha de Inicio",
+        selector: (row) =>
+          formatDate(
+            typeof row.fechaInicio === "string"
+              ? row.fechaInicio
+              : row.fechaInicio?.toISOString().split("T")[0] || ""
+          ),
+        sortable: true,
+        width: "150px",
+      },
+      {
+        name: "Fecha de Finalizacion",
+        selector: (row) =>
+          formatDate(
+            typeof row.fechaFinalizacion === "string"
+              ? row.fechaFinalizacion
+              : row.fechaFinalizacion?.toISOString().split("T")[0] || ""
+          ),
+        sortable: true,
+        width: "180px",
+      },
+      {
+        name: "Cantidad de Cuotas",
+        selector: (row) =>
+          row.cantidadPagos ? row.cantidadPagos.toString() : "0",
+        sortable: true,
+        width: "180px",
+      },
+      {
+        name: "Efectividad",
+        sortable: true,
+        cell: (row) => (
+          <div style={{ width: "100%", padding: "4px 0" }}>
+            <div className="progress position-relative" style={{ height: "18px" }}>
+              <div
+                className={`progress-bar ${
+                  row.efectividad >= 80
+                    ? "bg-success"
+                    : row.efectividad >= 50
+                    ? "bg-warning"
+                    : "bg-danger"
+                }`}
+                role="progressbar"
+                style={{
+                  width: `${row.efectividad || 0}%`,
+                  transition: "width 0.6s ease",
+                }}
+                aria-valuenow={row.efectividad}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              ></div>
+              <span
+                className="position-absolute top-50 start-50 translate-middle text-dark fw-semibold"
+                style={{ fontSize: "0.8rem" }}
+              >
+                {row.efectividad ? `${row.efectividad.toFixed(0)}%` : "0%"}
+              </span>
+            </div>
           </div>
-        </div>
-      ),
-    },
-
-    {
-      name: "Acciones",
-      cell: (row) => (
-        <div>
-          {row.activo ? (
+        ),
+      },
+      {
+        name: "Acciones",
+        cell: (row) =>
+          row.activo ? (
             <button onClick={() => handleCarpetClicked(row)}>Carpeta</button>
           ) : (
             <span>Finalizado</span>
-          )}
-        </div>
-      ),
-      ignoreRowClick: true,
-      allowOverflow: true,
-    },
-    {
-      name: "Eliminar Créditos",
-      cell: (row) => (
-        <div>
-          {row.activo ? (
+          ),
+        ignoreRowClick: true,
+        allowOverflow: true,
+      },
+      {
+        name: "Eliminar Créditos",
+        cell: (row) =>
+          row.activo ? (
             <IconButton
               aria-label="delete"
               color="error"
@@ -212,13 +274,29 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({
             </IconButton>
           ) : (
             <span>Finalizado</span>
-          )}
-        </div>
-      ),
-      ignoreRowClick: true,
-      allowOverflow: true,
-    },
-  ];
+          ),
+        ignoreRowClick: true,
+        allowOverflow: true,
+      },
+      {
+        name: "Configuración",
+        cell: (row) => (
+          <IconButton
+            aria-label="config"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleExpand(row.idPrestamo);
+            }}
+          >
+            <SettingsIcon />
+          </IconButton>
+        ),
+        ignoreRowClick: true,
+        allowOverflow: true,
+      },
+    ],
+    [] // eslint-disable-line react-hooks/exhaustive-deps
+  );
 
   const conditionalRowStyles: ConditionalStyles<Prestamo>[] = [
     {
@@ -233,8 +311,42 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({
     },
   ];
 
+  const ExpandContent: React.FC<{ data: Prestamo }> = ({ data }) => (
+    <div className="expand-wrapper">
+      <div className="expand-content">
+        <Stack direction="row" spacing={2}>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleHabilitar(data);
+            }}
+          >
+            Habilitar
+          </Button>
+          <Button
+            variant="outlined"
+            color="warning"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDeshabilitar(data);
+            }}
+          >
+            Deshabilitar
+          </Button>
+        </Stack>
+      </div>
+    </div>
+  );
+
   return (
     <div className="prestamos-grid">
+      {loading && (
+        <Box display="flex" justifyContent="center" my={2}>
+          <CircularProgress />
+        </Box>
+      )}
       <DataTable
         columns={columns}
         data={prestamos || []}
@@ -243,6 +355,10 @@ const PrestamosGrid: React.FC<PrestamosGridProps> = ({
         pointerOnHover
         onRowClicked={handleRowClicked}
         conditionalRowStyles={conditionalRowStyles}
+        expandableRows
+        expandableRowsHideExpander
+        expandableRowsComponent={ExpandContent}
+        expandableRowExpanded={(row) => expandedRows.has(row.idPrestamo)}
       />
     </div>
   );
