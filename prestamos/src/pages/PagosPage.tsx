@@ -78,7 +78,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
 
     if (cobrador?.id) {
       cobradorId = cobrador.id;
-      sessionStorage.setItem("cobradorId", cobradorId.toString());
+      sessionStorage.setItem("cobradorId", cobradorId!.toString());
     } else {
       const idGuardado = sessionStorage.getItem("cobradorId");
       if (idGuardado) {
