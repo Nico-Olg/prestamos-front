@@ -208,6 +208,7 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
       const today = new Date().toISOString().split("T")[0];
       const response = await cobranzaDelDia(cobradorId, today);
       const data = PagosMapper.fromJSON(response);
+      const cantidadClientes = clientes.length;
 
       if (!data || !data.pagos || !data.cobrador) {
         console.error("Error: Datos incompletos en la respuesta del backend.");
@@ -215,7 +216,7 @@ const ClientesPorCobradoresGrid: React.FC<ClientesPorCobradorGridProps> = ({
       }
 
       const { pagos, cobrador } = data;
-      navigate(`/pagos`, { state: { pagos, cobrador } });
+      navigate(`/pagos`, { state: { pagos, cobrador, cantidadClientes } }); 
     } catch (error) {
       console.error("Error obteniendo la cobranza del día:", error);
     }

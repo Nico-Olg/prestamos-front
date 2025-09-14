@@ -12,6 +12,7 @@ const ClientesPorCobradorPage: React.FC = () => {
   const [nombreCobrador, setNombreCobrador] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const location = useLocation();
+ 
 
   useEffect(() => {
     const fetchClientes = async () => {
@@ -35,7 +36,8 @@ const ClientesPorCobradorPage: React.FC = () => {
 
   return (
     <div className="clientes-page">
-      <Header title={`Clientes del Cobrador: ${nombreCobrador || ''}`} />
+      <Header title={`Clientes del Cobrador: ${nombreCobrador || ''}`}
+      subtitle={`Total de clientes: ${clientes.length}`} />
       <div className="content">
         <Sidebar />
 

@@ -1,8 +1,20 @@
+/* === Control Panel: botón y contenedor ============================= */
+
+/* Ubicamos el panel dentro del header, alineado a la derecha
+   pero dejando espacio para la tarjeta de fecha/hora */
 .control_panel {
-  position: relative;
-  right: 35vh;
+  position: absolute;
+  /* Dejamos un “colchón” a la derecha para no tapar el datetime card */
+  right: 400px;           /* ajustá si tu tarjeta de hora ocupa más/menos */
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1001;          /* por encima del fondo del header */
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
+/* Botón del panel */
 .setting-btn {
   width: 30px;
   height: 30px;
@@ -18,6 +30,7 @@
   box-shadow: 0px 0px 0px 2px rgb(212, 209, 255);
 }
 
+/* Barras del botón */
 .bar {
   width: 50%;
   height: 2px;
@@ -41,43 +54,37 @@
   box-shadow: 0px 0px 5px white;
 }
 
-.bar1::before {
-  transform: translateX(-4px);
-}
+.bar1::before { transform: translateX(-4px); }
+.bar2::before { transform: translateX(4px); }
 
-.bar2::before {
-  transform: translateX(4px);
-}
+.setting-btn:hover .bar1::before { transform: translateX(4px); }
+.setting-btn:hover .bar2::before { transform: translateX(-4px); }
 
-.setting-btn:hover .bar1::before {
-  transform: translateX(4px);
-}
+/* === Menú desplegable ================================================= */
 
-.setting-btn:hover .bar2::before {
-  transform: translateX(-4px);
-}
-
-/* 🔽 Menú desplegable del panel de Control */
+/* Importante: este menú debe estar DENTRO del nodo .control_panel en el DOM
+   para que “right/top” tomen como referencia el botón */
 .custom-dropdown-menu {
   position: absolute;
-  top: 60px;
+  top: 42px;              /* aparece debajo del botón */
   right: 0;
   background-color: rgba(50, 50, 50, 0.95);
   border-radius: 10px;
   box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.25);
   padding: 10px;
   width: 220px;
-  z-index: 999;
+  z-index: 2000;          /* por encima del datetime card y del header */
   opacity: 0;
   transform: translateY(-10px);
   transition: opacity 0.3s ease, transform 0.3s ease;
-  pointer-events: none;
+  pointer-events: none;   /* evita clics cuando está oculto */
 }
 
 .custom-dropdown-menu.show-dropdown {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
+  animation: slideDown 0.2s ease forwards;
 }
 
 .custom-dropdown-menu ul {
@@ -120,47 +127,36 @@
   transform: scale(1.05);
 }
 
-.custom-dropdown-menu {
-  position: absolute;
-  top: 60px;
-  right: 0;
-  background-color: rgba(50, 50, 50, 0.95);
-  border-radius: 10px;
-  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.25);
-  padding: 10px;
-  width: 220px;
-  z-index: 999;
-  opacity: 0;
-  transform: translateY(-10px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  pointer-events: none;
-}
-
-.custom-dropdown-menu.show-dropdown {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-  animation: slideDown 0.3s ease forwards;
-}
-
 @keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideUp {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-20px); }
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 1;
-    transform: translateY(0);
+/* === Responsividad ==================================================== */
+
+/* En pantallas más angostas, acercamos el botón más a la derecha
+   (el datetime card suele ocultarse o achicarse) */
+@media (max-width: 1200px) {
+  .control_panel { right: 140px; }
+}
+
+@media (max-width: 992px) {
+  .control_panel { right: 110px; }
+}
+
+/* En mobile header (si lo mostrás) lo llevamos a la esquina derecha */
+@media (max-width: 768px) {
+  .control_panel {
+    right: 12px;
+    top: 14px;
+    transform: none;
   }
-  to {
-    opacity: 0;
-    transform: translateY(-20px);
+  .custom-dropdown-menu {
+    top: 38px;
+    right: 0;
   }
 }

@@ -10,10 +10,11 @@ import ControlPanel from '../components/ControlPanel'; // ✅ Nuevo import
 
 interface HeaderProps {
   title: string;
+  subtitle?: string; // ✅ Nuevo prop opcional
   isMobile?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ title, isMobile }) => {
+const Header: React.FC<HeaderProps> = ({ title, subtitle, isMobile }) => {
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [menuAbierto, setMenuAbierto] = useState(false);
@@ -37,10 +38,16 @@ const Header: React.FC<HeaderProps> = ({ title, isMobile }) => {
   if (isMobile) {
     return (
       <header className="header-mobile">
-        <button className="menu-btn" onClick={() => setMenuAbierto(!menuAbierto)}>
+        <button
+          className="menu-btn"
+          onClick={() => setMenuAbierto(!menuAbierto)}
+        >
           ☰
         </button>
-        <h1 className="header__title">{title}</h1>
+        <div className="header__text">
+          <h1 className="header__title">{title}</h1>
+          {subtitle && <p className="header__subtitle">{subtitle}</p>}
+        </div>
 
         {menuAbierto && (
           <div className="menu-dropdown">
@@ -55,7 +62,11 @@ const Header: React.FC<HeaderProps> = ({ title, isMobile }) => {
         <div className="header__logo" onClick={handleLogoClick}>
           <img src={logo} alt="Logo" />
         </div>
-        <h1 className="header__title">{title}</h1>
+
+        <div className="header__text">
+          <h1 className="header__title">{title}</h1>
+          {subtitle && <p className="header__subtitle">{subtitle}</p>}
+        </div>
 
         <ControlPanel /> {/* ✅ Usamos el nuevo componente aquí */}
 

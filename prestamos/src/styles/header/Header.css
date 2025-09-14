@@ -1,16 +1,17 @@
 /* 🔹 HEADER PRINCIPAL */
-.header, .header-mobile {
-  /* 🔥 Color original #282c34; */
-  /* 🔥 Color alternativo #1e1e1e; */
-  /* 🔥 Color alternativo #20232a; */
-  /* 🔥 Color alternativo #181818; */
-  /* 🔥 Color alternativo #121212; */
-  /* 🔥 Color alternativo #0d0d0d; */
-  /* 🔥 Color alternativo #0a0a0a; */
-  /* 🔥 Color alternativo #050505; */
- background-color: #282c34; /* 🔥 Color original */
- 
-
+.header,
+.header-mobile {
+  /* 🔥 Colores disponibles:
+     #282c34 (original)
+     #1e1e1e
+     #20232a
+     #181818
+     #121212
+     #0d0d0d
+     #0a0a0a
+     #050505
+  */
+  background-color: #282c34; /* 🔥 Color original */
   padding: 20px;
   color: white;
   display: flex;
@@ -34,18 +35,35 @@
   height: auto;
 }
 
-/* Título */
-.header__title {
-  width: 85%;
-  text-align: center;  
-  margin: 0;
-  font-size: 1.5em;
+/* Contenedor de textos (título + subtítulo) */
+.header__text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.header-mobile { 
+/* Título */
+.header__title {
+  margin: 0;
+  font-size: 1.5em;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+}
 
+/* Subtítulo (nuevo) */
+.header__subtitle {
+  margin-top: 4px;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: #9ca3af; /* gris claro */
+  text-align: center;
+}
+
+/* 🔹 Header Mobile */
+.header-mobile {
   background-color: #282c34; /* 🔥 Color original */
-  padding:10px;
+  padding: 10px;
   color: white;
   justify-content: center;
   align-items: center;
@@ -54,6 +72,88 @@
   position: relative;
 }
 
+.header-mobile .header__text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
+.header-mobile .header__title {
+  font-size: 1.2em;
+}
 
+.header-mobile .header__subtitle {
+  font-size: 0.85rem;
+  color: #d1d5db; /* un gris un poco más claro para móvil */
+  margin-top: 2px;
+}
 
+/* 🔹 Botón de menú en mobile */
+.menu-btn {
+  position: absolute;
+  left: 15px;
+  top: 20px;
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+/* Dropdown en mobile */
+.menu-dropdown {
+  position: absolute;
+  top: 80px;
+  left: 0;
+  width: 100%;
+  background-color: #1e1e1e;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px;
+}
+
+.menu-dropdown button {
+  background: none;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-dropdown button:hover {
+  background-color: #333;
+}
+
+/* 🔹 Tarjeta de fecha y hora */
+.header__datetime {
+  position: absolute;
+  right: 20px;
+}
+
+.time-text {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.day-text {
+  font-size: 0.9rem;
+  margin: 0;
+  opacity: 0.8;
+}
+
+.card {
+  border-radius: 1rem;
+  padding: 8px 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.day-card {
+  background-color: #374151; /* gris oscuro para el día */
+}
+
+.night-card {
+  background-color: #111827; /* más oscuro para la noche */
+}
