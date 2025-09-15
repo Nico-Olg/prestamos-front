@@ -597,3 +597,26 @@ export async function editarPago(pagoId: number, nuevoMonto: number, fechaPago?:
       }
     }
   }
+  export async function cancelarPago(prestamo_id: number, cuota_nro: number) {
+    try {
+      const token = getAuthToken();
+      const response = await axios.post(
+        `${API_BASE_URL}/prestamos/cancelar/pago`,
+        { prestamo_id, cuota_nro },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          withCredentials: true,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Error al cancelar el pago: ${error.response?.status} ${error.response?.statusText}`);
+      } else {
+        throw new Error('Error desconocido al cancelar el pago');
+      }
+    }
+  }

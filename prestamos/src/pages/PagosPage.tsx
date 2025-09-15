@@ -10,6 +10,7 @@ import {
   editarPago,
   cobranzaDelDia,
   getPagosPorPrestamo,
+  cancelarPago,              // ✅ NUEVO: import del endpoint
 } from "../apis/postApi";
 import { Pago } from "../interfaces/Pagos";
 import { getCajaCobrador } from "../apis/getApi";
@@ -22,9 +23,8 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   const location = useLocation();
   const { cliente, cobrador, pagos: pagosInicialesProp } = (location as any).state || {};
 
-  // ✅ cantidadClientes viene como número en location.state (propagado por clientesPorCobrador)
-  const cantidadClientes: number =
-    (location as any).state?.cantidadClientes ?? 0;
+  // viene desde clientesPorCobrador en location.state
+  const cantidadClientes: number = (location as any).state?.cantidadClientes ?? 0;
 
   const [pagos, setPagos] = useState<Pago[]>(pagosInicialesProp || []);
   const [totalCobrado, setTotalCobrado] = useState<number>(0);
@@ -63,9 +63,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
   const obtenerFechaArgentina = (): string => {
     const ahora = new Date();
     const fechaArgentina = new Date(
-      ahora.toLocaleString("en-US", {
-        timeZone: "America/Argentina/Buenos_Aires",
-      })
+      ahora.toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" })
     );
     const año = fechaArgentina.getFullYear();
     const mes = String(fechaArgentina.getMonth() + 1).padStart(2, "0");
@@ -89,12 +87,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
     if (cobradorId) {
       try {
         const fechaHoy = obtenerFechaArgentina();
-        console.log("🔁 Ejecutando actualizarCajaDelDia() para cobrador", cobradorId);
         const cajaResponse = await getCajaCobrador(cobradorId, fechaHoy);
-        console.log("📦 totalCobrado recibido:", cajaResponse?.totalCobrado);
-        console.log("📦 efectivo:", cajaResponse?.montoEfectivo);
-        console.log("📦 transferencia:", cajaResponse?.montoTransferencia);
-
         setTotalCobrado(cajaResponse?.totalCobrado || 0);
         setTransferencias(cajaResponse?.montoTransferencia || 0);
         setEfectivo(cajaResponse?.montoEfectivo || 0);
@@ -111,9 +104,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
 
     pagosOriginales.forEach((pago) => {
       const key = `${pago.prestamoId}-${pago.nroCuota}`;
-      if (!pagosPorCuota.has(key)) {
-        pagosPorCuota.set(key, []);
-      }
+      if (!pagosPorCuota.has(key)) pagosPorCuota.set(key, []);
       pagosPorCuota.get(key)!.push(pago);
     });
 
@@ -135,27 +126,15 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
         pagosDeLaCuota.forEach((pago) => {
           montoTotal += pago.montoAbonado ?? 0;
 
-          if (
-            pago.fechaPago &&
-            (!ultimaFecha ||
-              new Date(pago.fechaPago).getTime() >
-                new Date(ultimaFecha).getTime())
-          ) {
-            ultimaFecha =
-              typeof pago.fechaPago === "string"
-                ? pago.fechaPago
-                : (pago.fechaPago as Date).toISOString();
+          if (pago.fechaPago && (!ultimaFecha || new Date(pago.fechaPago).getTime() > new Date(ultimaFecha).getTime())) {
+            ultimaFecha = typeof pago.fechaPago === "string" ? pago.fechaPago : (pago.fechaPago as Date).toISOString();
           }
-
-          if (pago.formaPago) {
-            formaPagoFinal = pago.formaPago;
-          }
+          if (pago.formaPago) formaPagoFinal = pago.formaPago;
         });
 
         pagoBase.montoAbonado = montoTotal;
         pagoBase.fechaPago = ultimaFecha ? new Date(ultimaFecha) : null;
         pagoBase.formaPago = formaPagoFinal;
-
         resultado.push(pagoBase);
       }
     });
@@ -168,15 +147,15 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
       const result = await Swal.fire({
         title: "Seleccione el método de pago",
         html: `
-        <div class="d-flex flex-column gap-3">
-          <button id="btn-efectivo" class="btn btn-success btn-lg">
-            <i class="bi bi-cash-coin"></i> Pago en Efectivo
-          </button>
-          <button id="btn-transferencia" class="btn btn-primary btn-lg">
-            <i class="bi bi-bank"></i> Pago por Transferencia
-          </button>
-        </div>
-      `,
+          <div class="d-flex flex-column gap-3">
+            <button id="btn-efectivo" class="btn btn-success btn-lg">
+              <i class="bi bi-cash-coin"></i> Pago en Efectivo
+            </button>
+            <button id="btn-transferencia" class="btn btn-primary btn-lg">
+              <i class="bi bi-bank"></i> Pago por Transferencia
+            </button>
+          </div>
+        `,
         showConfirmButton: false,
         showCancelButton: true,
         cancelButtonText: "Cancelar",
@@ -186,9 +165,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
           const popup = Swal.getPopup();
           if (!popup) return;
 
-          const registrar = async (
-            metodoPago: "EFECTIVO" | "TRANSFERENCIA"
-          ) => {
+          const registrar = async (metodoPago: "EFECTIVO" | "TRANSFERENCIA") => {
             Swal.close();
 
             const confirmacion = await Swal.fire({
@@ -225,34 +202,23 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
                   return null;
                 },
               });
-
               if (isDismissed) return;
               if (nuevoMonto) montoFinal = parseFloat(nuevoMonto);
             }
 
-            const { prestamo, montoRecibido } = await registrarPago(
-              pagoId,
-              montoFinal,
-              metodoPago
-            );
+            const { prestamo, montoRecibido } = await registrarPago(pagoId, montoFinal, metodoPago);
             metodoPago === "TRANSFERENCIA"
               ? setTransferencias((prev) => prev + montoRecibido)
               : setEfectivo((prev) => prev + montoRecibido);
-            const prestamoId = prestamo.id;
-            const cobradorId = parseInt(
-              sessionStorage.getItem("cobradorId") || "0",
-              10
-            );
 
+            const prestamoId = prestamo.id;
+            const cobradorId = parseInt(sessionStorage.getItem("cobradorId") || "0", 10);
             if (!prestamoId) return;
 
             if (esPagoDeCobrador && cobradorId) {
-              const response = await cobranzaDelDia(
-                cobradorId,
-                new Date().toISOString()
-              );
+              const response = await cobranzaDelDia(cobradorId, new Date().toISOString());
               setPagos(agruparPagos(response.pagos));
-            } else if (prestamoId) {
+            } else {
               const response = await getPagosPorPrestamo(prestamoId);
               setPagos(agruparPagos(response));
             }
@@ -267,23 +233,14 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
             });
           };
 
-          popup
-            .querySelector("#btn-efectivo")
-            ?.addEventListener("click", () => registrar("EFECTIVO"));
-          popup
-            .querySelector("#btn-transferencia")
-            ?.addEventListener("click", () => registrar("TRANSFERENCIA"));
+          popup.querySelector("#btn-efectivo")?.addEventListener("click", () => registrar("EFECTIVO"));
+          popup.querySelector("#btn-transferencia")?.addEventListener("click", () => registrar("TRANSFERENCIA"));
         },
       });
       console.log("Resultado del pago:", result);
     } catch (error) {
       console.error("Error realizando el pago: ", error);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Hubo un problema al realizar el pago.",
-        width: "85%",
-      });
+      Swal.fire({ icon: "error", title: "Error", text: "Hubo un problema al realizar el pago.", width: "85%" });
     }
   };
 
@@ -292,15 +249,15 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
       const result = await Swal.fire({
         title: "Seleccione el nuevo método de pago",
         html: `
-        <div class="d-flex flex-column gap-3">
-          <button id="btn-efectivo" class="btn btn-success btn-lg">
-            <i class="bi bi-cash-coin"></i> Efectivo
-          </button>
-          <button id="btn-transferencia" class="btn btn-primary btn-lg">
-            <i class="bi bi-bank"></i> Transferencia
-          </button>
-        </div>
-      `,
+          <div class="d-flex flex-column gap-3">
+            <button id="btn-efectivo" class="btn btn-success btn-lg">
+              <i class="bi bi-cash-coin"></i> Efectivo
+            </button>
+            <button id="btn-transferencia" class="btn btn-primary btn-lg">
+              <i class="bi bi-bank"></i> Transferencia
+            </button>
+          </div>
+        `,
         showConfirmButton: false,
         showCancelButton: true,
         cancelButtonText: "Cancelar",
@@ -310,9 +267,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
           const popup = Swal.getPopup();
           if (!popup) return;
 
-          const manejarMetodo = async (
-            metodoPago: "EFECTIVO" | "TRANSFERENCIA"
-          ) => {
+          const manejarMetodo = async (metodoPago: "EFECTIVO" | "TRANSFERENCIA") => {
             Swal.close();
 
             const { value: nuevoMonto, isDismissed } = await Swal.fire({
@@ -331,7 +286,6 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
               },
               width: "85%",
             });
-
             if (isDismissed || nuevoMonto === undefined) return;
 
             try {
@@ -340,20 +294,12 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
                 ? new Date(pago.fechaPago).toISOString()
                 : new Date().toISOString();
 
-              const response = await editarPago(
-                pago.id,
-                nuevoMontoParsed,
-                fechaPagoActual,
-                metodoPago
-              );
+              const response = await editarPago(pago.id, nuevoMontoParsed, fechaPagoActual, metodoPago);
               const pagoEditado = response.pago;
               const prestamoId = pagoEditado.prestamoId;
 
               if (esPagoDeCobrador && cobrador?.id) {
-                const pagosActualizados = await cobranzaDelDia(
-                  cobrador.id,
-                  new Date().toISOString()
-                );
+                const pagosActualizados = await cobranzaDelDia(cobrador.id, new Date().toISOString());
                 setPagos(agruparPagos(pagosActualizados.pagos));
               } else if (prestamoId) {
                 const pagosActualizados = await getPagosPorPrestamo(prestamoId);
@@ -362,25 +308,15 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
 
               await actualizarCajaDelDia();
 
-              Swal.fire(
-                "Pago actualizado",
-                `Nuevo monto: $${nuevoMontoParsed.toFixed(
-                  2
-                )} registrado como ${metodoPago.toLowerCase()}`,
-                "success"
-              );
+              Swal.fire("Pago actualizado", `Nuevo monto: $${nuevoMontoParsed.toFixed(2)} registrado como ${metodoPago.toLowerCase()}`, "success");
             } catch (error) {
               console.error("Error editando el pago:", error);
               Swal.fire("Error", "No se pudo editar el pago", "error");
             }
           };
 
-          popup
-            .querySelector("#btn-efectivo")
-            ?.addEventListener("click", () => manejarMetodo("EFECTIVO"));
-          popup
-            .querySelector("#btn-transferencia")
-            ?.addEventListener("click", () => manejarMetodo("TRANSFERENCIA"));
+          popup.querySelector("#btn-efectivo")?.addEventListener("click", () => manejarMetodo("EFECTIVO"));
+          popup.querySelector("#btn-transferencia")?.addEventListener("click", () => manejarMetodo("TRANSFERENCIA"));
         },
       });
       console.log("Resultado de la edición:", result);
@@ -390,9 +326,60 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
     }
   };
 
+  // ✅ NUEVO: cancelar pago
+  const handleCancelarPago = async (pago: Pago) => {
+    try {
+      // Confirmación
+      const confirmar = await Swal.fire({
+        icon: "warning",
+        title: "Cancelar pago",
+        html: `
+          <div style="text-align:left">
+            <p>Esta seguro que desea cancelar el pago?</p>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: "Sí, cancelar",
+        cancelButtonText: "No",
+        confirmButtonColor: "#d33",
+        width: "85%",
+      });
+      if (!confirmar.isConfirmed) return;
+
+      // Llamada al endpoint
+      await cancelarPago(pago.prestamoId, pago.nroCuota);
+
+      // Refrescar datos
+      if (esPagoDeCobrador && cobrador?.id) {
+        const pagosActualizados = await cobranzaDelDia(cobrador.id, new Date().toISOString());
+        setPagos(agruparPagos(pagosActualizados.pagos));
+      } else if (pago.prestamoId) {
+        const pagosActualizados = await getPagosPorPrestamo(pago.prestamoId);
+        setPagos(agruparPagos(pagosActualizados));
+      }
+
+      await actualizarCajaDelDia();
+
+      Swal.fire({
+        icon: "success",
+        title: "Pago cancelado",
+        text: `Se canceló la cuota ${pago.nroCuota} del préstamo #${pago.prestamoId}.`,
+        width: "85%",
+      });
+    } catch (error: any) {
+      console.error("Error al cancelar el pago:", error);
+      Swal.fire({
+        icon: "error",
+        title: "No se pudo cancelar",
+        text: error?.message || "Error desconocido al cancelar el pago",
+        width: "85%",
+      });
+    }
+  };
+
   const pagosAgrupados = agruparPagos(pagos);
 
-  // ====== Solo créditos únicos (clientes vienen del prop cantidadClientes) ======
+  // Solo créditos únicos (clientes ya vienen de cantidadClientes)
   const { creditosUnicos } = useMemo(() => {
     const creditos = new Set<string | number>();
     (pagosAgrupados || []).forEach((p) => {
@@ -402,7 +389,6 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
     });
     return { creditosUnicos: creditos.size };
   }, [pagosAgrupados]);
-  // ==============================================================================
 
   return (
     <div className="pagos-page">
@@ -423,6 +409,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
           pagos={pagosAgrupados}
           handlePagoCuota={handlePagoCuota}
           handleEditarPago={handleEditarPago}
+          handleCancelarPago={handleCancelarPago}   
           mostrarCliente={esPagoDeCobrador}
           totalCobrado={totalCobrado}
           transferencias={transferencias}

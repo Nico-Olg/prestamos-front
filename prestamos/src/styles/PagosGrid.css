@@ -10,7 +10,7 @@
 .pagos-grid .rdt_Table {
   border: 1px solid #ddd;
   border-radius: 5px;
-  min-width: 800px; /* Ajuste de ancho para evitar desbordamientos */
+  min-width: 800px;
 }
 
 .pagos-grid .rdt_TableHeader {
@@ -31,23 +31,6 @@
   white-space: nowrap;
 }
 
-.pagos-grid .btn {
-  background-color: #004dff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  padding: 5px 10px;
-  font-family: 'Lato', sans-serif;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  font-size: 15px;
-}
-
-.pagos-grid .btn:hover {
-  background-color: #003bb5;
-}
-
 .pagos-grid .text-success {
   color: #4caf50;
   font-weight: bold;
@@ -57,6 +40,7 @@
   background-color: #ffeb99;
 }
 
+/* 💵 Total cobrado sticky */
 .total-cobrado {
   position: sticky;
   top: 0;
@@ -106,7 +90,7 @@
   }
 
   .pagos-list {
-    padding-top: 100px; /* ajustado para dar lugar a los 3 totales */
+    padding-top: 100px;
   }
 
   .detalle-cobros {
@@ -116,47 +100,127 @@
   }
 }
 
-.btn-icon {
-  background-color: transparent;
-  border: none;
-  font-size: 1.3rem;
+/* === Toolbar de Acciones === */
+.action-toolbar {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  max-width: 100%;
+}
+
+/* Botón base tipo "píldora" */
+.btn-action {
+  background: #ffffff;
+  border: 1px solid #d7dbe0;
+  color: #2b2f33;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   cursor: pointer;
-  padding: 4px;
-  transition: transform 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    transform 0.06s ease;
+  white-space: nowrap;
 }
 
-.btn-icon:hover {
-  transform: scale(1.2);
+.btn-action:hover {
+  background: #f5f7fa;
+  border-color: #cfd6dd;
+}
+.btn-action:active {
+  transform: translateY(1px);
 }
 
-.btn-icon.pagar {
-  color: #28a745;
+/* Jerarquías */
+.btn-action.primary {
+  background: #004dff;
+  border-color: #004dff;
+  color: #fff;
+}
+.btn-action.primary:hover {
+  background: #003bb5;
+  border-color: #003bb5;
 }
 
-.btn-icon.completar {
-  color: #ffc107;
+.btn-action.danger {
+  background: #fff;
+  border-color: #dc3545;
+  color: #dc3545;
+}
+.btn-action.danger:hover {
+  background: #dc3545;
+  color: #fff;
 }
 
-.btn-icon.edit {
-  color: #007bff;
+/* Botón ghost para acciones auxiliares (Adelantar) */
+.btn-icon.ghost {
+  background: transparent;
+  border: 1px dashed transparent;
+  color: #4a4f55;
+  border-radius: 999px;
+  padding: 6px 8px;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.06s ease;
 }
+.btn-icon.ghost:hover {
+  background: #eef1f6;
+}
+.btn-icon.ghost:active {
+  transform: translateY(1px);
+}
+
+/* Etiquetas de texto */
+.btn-action .label {
+  display: inline;
+}
+
+/* Ajuste de la celda de acciones */
+.pagos-grid .rdt_TableCell:last-child,
+.pagos-grid .rdt_TableCol:last-child {
+  white-space: normal;
+  min-width: 280px;
+}
+
+/* En pantallas medianas: ocultamos labels y dejamos solo íconos */
+@media (max-width: 1200px) {
+  .btn-action .label {
+    display: none;
+  }
+  .pagos-grid .rdt_TableCell:last-child,
+  .pagos-grid .rdt_TableCol:last-child {
+    min-width: 220px;
+  }
+}
+
+/* Ajustes responsivos adicionales */
+@media (max-width: 992px) {
+  .action-toolbar {
+    gap: 4px;
+  }
+  .pagos-grid .rdt_TableCell:last-child,
+  .pagos-grid .rdt_TableCol:last-child {
+    min-width: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .btn-action {
+    padding: 6px 8px;
+    font-size: 0.85rem;
+  }
+  .btn-icon.ghost {
+    padding: 6px 8px;
+    font-size: 1rem;
+  }
+}
+
+/* Fila completa en gris */
 .fila-completa {
   background-color: #C7C8CA !important;
-}
-
-
-/* 🟢 Hacer la tabla responsiva */
-@media (max-width: 768px) {
-  .pagos-grid {
-    padding: 10px;
-  }
-
-  .pagos-grid .rdt_Table {
-    min-width: 100%;
-    width: 100%;
-  }
-
-  .pagos-grid .rdt_TableCell {
-    font-size: 14px;
-  }
 }

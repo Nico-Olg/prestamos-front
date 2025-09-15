@@ -5,8 +5,9 @@ import { formatearNumero } from "../utils/formatters";
 
 type PagoConExtras = Pago & {
   handlePagoCuota: (pagoId: number, monto: number) => void;
-  montoAbonado?: number | null;
   handleEditarPago: (pago: Pago) => void;
+  handleCancelarPago?: (pago: Pago) => void;
+  montoAbonado?: number | null;
 };
 
 type PagoCardProps = {
@@ -25,50 +26,45 @@ const PagoCard: React.FC<PagoCardProps> = ({
   pago,
   totalCobrado,
   transferencias,
+  efectivo,
   pagosCobrados,
   showResumen,
   onCloseResumen,
   sobrante,
 }) => {
+  // Para mostrar info al usuario (incluye sobrantes)
   const montoTotalAbonado = (pago.montoAbonado || 0) + sobrante;
-  const diferencia = pago.monto - montoTotalAbonado;
-  const cuotaCompleta = montoTotalAbonado >= pago.monto;
+  const cuotaCompletaUI = montoTotalAbonado >= pago.monto;
+  const diferenciaUI = Math.max(pago.monto - montoTotalAbonado, 0);
 
-  const fueAdelantado = () => {
-    if (!pago.fechaPago) return false;
-    const hoy = new Date().toISOString().split("T")[0];
-    const fechaPago =
-      pago.fechaPago instanceof Date
-        ? pago.fechaPago.toISOString().split("T")[0]
-        : (pago.fechaPago as string).split("T")[0];
-    return fechaPago !== hoy;
-  };
+  // Para calcular acciones (no considera "sobrante", igual que en la grilla)
+  const abonadoReal = pago.montoAbonado ?? 0;
+  const sinAbono = abonadoReal <= 0;
+  const hayParcial = abonadoReal > 0 && abonadoReal < pago.monto;
+  const cuotaCompleta = abonadoReal >= pago.monto;
+  const diferenciaAccion = Math.max(pago.monto - abonadoReal, 0);
+  const tieneAbono = abonadoReal > 0;
 
   const seAdelantoParcial = () => {
-    if (!pago.montoAbonado || pago.montoAbonado <= 0 || !pago.nroCuota)
-      return false;
-
+    if (!pago.montoAbonado || pago.montoAbonado <= 0 || !pago.nroCuota) return false;
     const cuotaSiguiente = pagosCobrados.find(
       (p) =>
         p.nroCuota === pago.nroCuota + 1 &&
         (p.montoAbonado || 0) > 0 &&
         (p.montoAbonado || 0) < p.monto
     );
-
     return !!cuotaSiguiente;
   };
-  console.log("Cuota Completada:", fueAdelantado(), cuotaCompleta, pago.nroCuota, pago.montoAbonado);  //TODO: Remove this log
+
   return (
     <>
-      <div className={`pago-card-modern ${cuotaCompleta ? "completado" : ""}`}>
+      <div className={`pago-card-modern ${cuotaCompletaUI ? "completado" : ""}`}>
         <h2>{pago.nombreCliente}</h2>
         <p className="producto">{pago.nombreProducto}</p>
 
         <div className="info-linea">
           <span>📊 Cuotas Pagas</span>
-          <span>
-            {pago.nroCuota ? `${pago.nroCuota - 1} / ${pago.cantCuotas}` : "-"}
-          </span>
+          <span>{pago.nroCuota ? `${pago.nroCuota - 1} / ${pago.cantCuotas}` : "-"}</span>
         </div>
 
         <div className="info-linea">
@@ -80,60 +76,89 @@ const PagoCard: React.FC<PagoCardProps> = ({
           <span>🧾 Monto Recibido</span>
           <span>${formatearNumero(montoTotalAbonado)}</span>
         </div>
-        
+
         {seAdelantoParcial() && (
-          <div className="alerta-info">
-            ⚠ Se adelantó parcialmente la próxima cuota
-          </div>
+          <div className="alerta-info">⚠ Se adelantó parcialmente la próxima cuota</div>
         )}
 
-        {!cuotaCompleta && montoTotalAbonado > 0 && (
+        {!cuotaCompletaUI && montoTotalAbonado > 0 && (
           <div className="alerta">
-            ⚠ Cuota parcialmente abonada - faltan ${diferencia.toFixed(2)}
+            ⚠ Cuota parcialmente abonada - faltan ${diferenciaUI.toFixed(2)}
           </div>
         )}
 
-        {cuotaCompleta && (
-  <>
-    <div className="pagado">✅ Cuota completada</div>
-    {pago.nroCuota && pago.montoAbonado ? (
-      <p className="cuota-pagada">
-        <strong>💳 Se pagó la cuota nro:</strong> {pago.nroCuota}
-      </p>
-    ) : null}
-  </>
-)}
-
+        {cuotaCompletaUI && (
+          <>
+            <div className="pagado">✅ Cuota completada</div>
+            {pago.nroCuota && pago.montoAbonado ? (
+              <p className="cuota-pagada">
+                <strong>💳 Se pagó la cuota nro:</strong> {pago.nroCuota}
+              </p>
+            ) : null}
+          </>
+        )}
 
         <div className="acciones-pago">
-          {!cuotaCompleta && (
+          {/* Primario: Pagar (si no hay abono) */}
+          {sinAbono && !cuotaCompleta && (
             <button
               className="btn btn-pagar"
-              onClick={() => pago.handlePagoCuota(pago.id, diferencia)}
+              onClick={() => pago.handlePagoCuota(pago.id, pago.monto)}
+              title="Pagar cuota"
             >
               💸 Pagar
             </button>
           )}
 
-          {(pago.montoAbonado ?? 0) > 0 && (
+          {/* Primario: Completar (si hay abono parcial) */}
+          {hayParcial && (
             <button
-              className="btn btn-editar"
-              onClick={() => pago.handleEditarPago(pago)}
+              className="btn btn-pagar"
+              onClick={() => pago.handlePagoCuota(pago.id, diferenciaAccion)}
+              title="Completar cuota"
             >
-              ✏️ Editar
+              💸 Completar
             </button>
           )}
 
-          <button
-            className="btn btn-adelantar"
-            onClick={() => pago.handlePagoCuota(pago.id, pago.monto)}
-          >
-            ⏩ Adelantar
-          </button>
+          {/* Secundarios: Editar / Cancelar (si hay algo abonado) */}
+          {tieneAbono && (
+            <>
+              <button
+                className="btn btn-editar"
+                onClick={() => pago.handleEditarPago(pago)}
+                title="Editar pago"
+              >
+                ✏️ Editar
+              </button>
+
+              {pago.handleCancelarPago && (
+                <button
+                  className="btn btn-cancelar"
+                  onClick={() => pago.handleCancelarPago!(pago)}
+                  title="Cancelar pago"
+                >
+                  ❌ Cancelar
+                </button>
+              )}
+            </>
+          )}
+
+          {/* Adelantar: solo si ya hubo algún abono */}
+          {tieneAbono && (
+            <button
+              className="btn btn-adelantar"
+              onClick={() => pago.handlePagoCuota(pago.id, pago.monto)}
+              title="Adelantar cuota"
+            >
+              ⏩ Adelantar
+            </button>
+          )}
         </div>
 
         <p className="fecha">
-          📅 Fecha de Pago: {pago.fechaPago
+          📅 Fecha de Pago:{" "}
+          {pago.fechaPago
             ? new Date(pago.fechaPago).toLocaleDateString("es-AR", {
                 day: "2-digit",
                 month: "short",

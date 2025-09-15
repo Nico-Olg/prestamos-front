@@ -14,22 +14,14 @@ interface PagosGridProps {
   pagos: PagoExtendido[];
   handlePagoCuota: (pagoId: number, monto: number) => void;
   handleEditarPago: (pago: Pago) => void;
+  handleCancelarPago?: (pago: Pago) => void;
   mostrarCliente?: boolean;
   totalCobrado: number;
-  transferencias: number; 
-  efectivo: number; 
-  sobrantes?: Record<number, number>; 
+  transferencias: number;
+  efectivo: number;
+  sobrantes?: Record<number, number>;
 }
 
-// const formatearFechaLocal = (fechaISO: string | null): string => {
-//   if (!fechaISO) return "No pagado";
-//   const fecha = new Date(fechaISO);
-//   return fecha.toLocaleDateString("es-AR", {
-//     year: "numeric",
-//     month: "2-digit",
-//     day: "2-digit",
-//   });
-// };
 const formatearFechaLocal = (fechaInput: string | Date | null): string => {
   if (!fechaInput) return "No pagado";
 
@@ -38,15 +30,12 @@ const formatearFechaLocal = (fechaInput: string | Date | null): string => {
   if (fechaInput instanceof Date) {
     fecha = fechaInput;
   } else if (typeof fechaInput === "string") {
-    const isoPart = fechaInput.split("T")[0]; // Extraemos "2025-07-28"
+    const isoPart = fechaInput.split("T")[0];
     const partes = isoPart.split("-");
-
-    // Si es formato "yyyy-MM-dd"
     if (partes.length === 3) {
       const [anio, mes, dia] = partes;
-      fecha = new Date(Number(anio), Number(mes) - 1, Number(dia)); // FORZA LOCAL
+      fecha = new Date(Number(anio), Number(mes) - 1, Number(dia));
     } else {
-      // Intentamos parsear con Date por si viene como "Wed May 21 2025 21:00:00 GMT-0300"
       const tentativa = new Date(fechaInput);
       if (isNaN(tentativa.getTime())) return "Fecha inválida";
       fecha = tentativa;
@@ -64,11 +53,11 @@ const formatearFechaLocal = (fechaInput: string | Date | null): string => {
   });
 };
 
-
 const PagosGrid: React.FC<PagosGridProps> = ({
   pagos,
   handlePagoCuota,
   handleEditarPago,
+  handleCancelarPago,
   mostrarCliente = false,
   totalCobrado,
   transferencias,
@@ -119,55 +108,56 @@ const PagosGrid: React.FC<PagosGridProps> = ({
   );
 
   if (isMobile) {
-  return (
-    <div className="pagos-list">
-      <div className={`total-cobrado ${animarTotal ? "animado" : ""}`}>
-  💵 Total cobrado: ${formatearNumero(totalCobrado)}
-  <div className="detalle-cobros">
-    <div className="detalle-item">
-      🏦 Transferencia: ${formatearNumero(transferencias)}
-    </div>
-    <div className="detalle-item">
-      💵 Efectivo: ${formatearNumero(efectivo)}
-    </div>
-  </div>
-</div>
+    return (
+      <div className="pagos-list">
+        <div className={`total-cobrado ${animarTotal ? "animado" : ""}`}>
+          💵 Total cobrado: ${formatearNumero(totalCobrado)}
+          <div className="detalle-cobros">
+            <div className="detalle-item">
+              🏦 Transferencia: ${formatearNumero(transferencias)}
+            </div>
+            <div className="detalle-item">
+              💵 Efectivo: ${formatearNumero(efectivo)}
+            </div>
+          </div>
+        </div>
 
+        {pagos.map((pago) => (
+          <PagoCard
+            key={pago.id}
+            pago={{
+              ...pago,
+              handlePagoCuota: handlePagoMobile,
+              handleEditarPago,
+              handleCancelarPago,
+            } as any}
+            totalCobrado={totalCobrado}
+            transferencias={transferencias}
+            efectivo={efectivo}
+            pagosCobrados={pagosCobrados.map((p) => ({
+              ...p,
+              handlePagoCuota: handlePagoMobile,
+              handleEditarPago,
+              handleCancelarPago,
+            })) as any}
+            onFinalizarCobranza={() => setShowResumen(true)}
+            showResumen={showResumen}
+            onCloseResumen={() => setShowResumen(false)}
+            sobrante={sobrantes?.[pago.id] || 0}
+          />
+        ))}
 
-      {
-      pagos.map((pago) => (
-        <PagoCard
-          key={pago.id}
-          pago={{
-            ...pago,
-            handlePagoCuota: handlePagoMobile,
-            handleEditarPago,
-          }}
-          totalCobrado={totalCobrado}
-          transferencias={transferencias}
-          efectivo={efectivo}
-          pagosCobrados={pagosCobrados.map((p) => ({
-            ...p,
-            handlePagoCuota: handlePagoMobile,
-            handleEditarPago,
-          }))}
-          onFinalizarCobranza={() => setShowResumen(true)}
-          showResumen={showResumen}
-          onCloseResumen={() => setShowResumen(false)}
-          sobrante={sobrantes?.[pago.id] || 0}
-        />
-      ))}
+        {showResumen && (
+          <ResumenCobranza
+            totalCobrado={totalCobrado}
+            pagosParciales={pagosParciales}
+            onClose={() => setShowResumen(false)}
+          />
+        )}
+      </div>
+    );
+  }
 
-      {showResumen && (
-        <ResumenCobranza
-          totalCobrado={totalCobrado}
-          pagosParciales={pagosParciales}
-          onClose={() => setShowResumen(false)}
-        />
-      )}
-    </div>
-  );
-}
   let columns: TableColumn<PagoExtendido>[] = [
     { name: "Nro. Cuota", selector: (row) => row.nroCuota || "Sin dato" },
     {
@@ -188,10 +178,7 @@ const PagosGrid: React.FC<PagosGridProps> = ({
           ? `$${formatearNumero(row.monto - row.montoAbonado)}`
           : "No pagado",
     },
-    {
-      name: "Saldo",
-      selector: (row) => `$${formatearNumero(row.saldo)}`,
-    },
+    { name: "Saldo", selector: (row) => `$${formatearNumero(row.saldo)}` },
     {
       name: "Fecha de Pago",
       selector: (row) => formatearFechaLocal(row.fechaPago?.toString() || null),
@@ -201,76 +188,77 @@ const PagosGrid: React.FC<PagosGridProps> = ({
       selector: (row) => formatearFechaLocal(row.fechaVencimiento || null),
     },
     {
-      name: "Acción",
+      name: "Acciones",
       cell: (row) => {
-        const diferencia = row.monto - (row.montoAbonado || 0);
+        const abonado = row.montoAbonado ?? 0;
+        const sinAbono = abonado === 0 || row.montoAbonado == null;
+        const cuotaCompleta = abonado >= row.monto;
+        const diferencia = row.monto - abonado;
+        const hayAbonoParcial = abonado > 0 && abonado < row.monto;
+        const tieneAbono = abonado > 0;
 
         return (
-          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-            {/* Cuota completa */}
-            {row.montoAbonado != null && row.montoAbonado >= row.monto && (
-              <>
-                <span className="text-success">✅</span>
-                <button
-                  className="btn-icon edit"
-                  onClick={() => handleEditarPago(row)}
-                  title="Editar Pago"
-                >
-                  ✏️
-                </button>
-              </>
+          <div className="action-toolbar" role="group" aria-label="Acciones de pago">
+            {/* Primario: Pagar (sin abono) */}
+            {sinAbono && !cuotaCompleta && (
+              <button
+                className="btn-action primary"
+                onClick={() => handlePagoCuota(row.id, row.monto)}
+                title="Pagar cuota"
+              >
+                💸 <span className="label">Pagar</span>
+              </button>
             )}
 
-            {/* Cuota parcial */}
-            {row.montoAbonado != null &&
-              row.montoAbonado > 0 &&
-              row.montoAbonado < row.monto && (
-                <>
-                  <button
-                    className="btn-icon completar"
-                    onClick={() => handlePagoCuota(row.id, diferencia)}
-                    title="Completar Cuota"
-                  >
-                    💰
-                  </button>
-                  <button
-                    className="btn-icon edit"
-                    onClick={() => handleEditarPago(row)}
-                    title="Editar Pago"
-                  >
-                    ✏️
-                  </button>
-                </>
-              )}
-
-            {/* Cuota sin pagar */}
-            {(row.montoAbonado == null || row.montoAbonado === 0) && (
+            {/* Primario: Completar (abono parcial) */}
+            {hayAbonoParcial && (
               <button
-                className="btn btn-primary"
-                onClick={() => handlePagoCuota(row.id, row.monto)}
+                className="btn-action primary"
+                onClick={() => handlePagoCuota(row.id, Math.max(diferencia, 0))}
+                title="Completar cuota"
               >
-                Pagar
+                💸 <span className="label">Completar</span>
+              </button>
+            )}
+
+            {/* Secundario: Editar (si hay algo abonado) */}
+            {tieneAbono && (
+              <button
+                className="btn-action"
+                onClick={() => handleEditarPago(row)}
+                title="Editar pago"
+              >
+                ✏️ <span className="label">Editar</span>
+              </button>
+            )}
+
+            {/* Peligro: Cancelar (si hay algo abonado y existe handler) */}
+            {tieneAbono && handleCancelarPago && (
+              <button
+                className="btn-action danger"
+                onClick={() => handleCancelarPago(row)}
+                title="Cancelar pago"
+              >
+                ❌ <span className="label">Cancelar</span>
+              </button>
+            )}
+
+            {/* Ghost: Adelantar (solo si ya hubo algún pago) */}
+            {tieneAbono && (
+              <button
+                className="btn-action"
+                onClick={() => handlePagoCuota(row.id, row.monto)}
+                title="Adelantar cuota"
+              >
+                ⏩ <span className="label">Adelantar</span>
               </button>
             )}
           </div>
         );
       },
-      
       ignoreRowClick: true,
+      grow: 2,
     },
-    {
-       cell: (row) => {
-        return (
-            <button
-            className="btn-icon adelantar"
-            onClick={() => handlePagoCuota(row.id, row.monto)}
-            title="Adelantar Pago"
-            >
-            ⏩
-            </button>
-        );
-       }
-      },
   ];
 
   if (mostrarCliente) {
@@ -298,22 +286,16 @@ const PagosGrid: React.FC<PagosGridProps> = ({
           rangeSeparatorText: "de",
         }}
         conditionalRowStyles={[
-          // 👉 Fila completada (gris claro)
           {
             when: (row) => (row.montoAbonado || 0) >= row.monto,
-            style: {
-              backgroundColor: "#C7C8CA",
-            },
+            style: { backgroundColor: "#C7C8CA" },
           },
-          // 👉 Fila parcialmente abonada (amarillo claro)
           {
             when: (row) =>
               row.montoAbonado != null &&
               row.montoAbonado > 0 &&
               row.montoAbonado < row.monto,
-            style: {
-              backgroundColor: "#fff3cd",
-            },
+            style: { backgroundColor: "#fff3cd" },
           },
         ]}
       />
