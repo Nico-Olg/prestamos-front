@@ -347,7 +347,7 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
       if (!confirmar.isConfirmed) return;
 
       // Llamada al endpoint
-      await cancelarPago(pago.prestamoId, pago.nroCuota);
+      await cancelarPago(pago.prestamoId, pago.nroCuota, cobrador?.id || 0);
 
       // Refrescar datos
       if (esPagoDeCobrador && cobrador?.id) {
