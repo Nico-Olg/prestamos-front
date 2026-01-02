@@ -597,12 +597,12 @@ export async function editarPago(pagoId: number, nuevoMonto: number, fechaPago?:
       }
     }
   }
-  export async function cancelarPago(prestamo_id: number, cuota_nro: number, cobrador_id: number) {
+  export async function cancelarPago(pago_id: number, cobrador_id: number) {
     try {
       const token = getAuthToken();
       const response = await axios.post(
         `${API_BASE_URL}/prestamos/cancelar/pago`,
-        { prestamo_id, cuota_nro, cobrador_id },
+        { pago_id,  cobrador_id },
         {
           headers: {
             'Content-Type': 'application/json',

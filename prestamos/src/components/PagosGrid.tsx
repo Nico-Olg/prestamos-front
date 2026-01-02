@@ -53,6 +53,8 @@ const formatearFechaLocal = (fechaInput: string | Date | null): string => {
   });
 };
 
+const getIsMobile = () => (typeof window !== "undefined" ? window.innerWidth < 768 : false);
+
 const PagosGrid: React.FC<PagosGridProps> = ({
   pagos,
   handlePagoCuota,
@@ -64,13 +66,17 @@ const PagosGrid: React.FC<PagosGridProps> = ({
   efectivo,
   sobrantes,
 }) => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState<boolean>(() => getIsMobile());
   const [pagosCobrados, setPagosCobrados] = useState<Pago[]>([]);
   const [showResumen, setShowResumen] = useState(false);
   const [animarTotal, setAnimarTotal] = useState(false);
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const handleResize = () => setIsMobile(getIsMobile());
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);

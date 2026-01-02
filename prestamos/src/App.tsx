@@ -30,6 +30,9 @@ const RefinanciarPrestamo = lazy(() => import("./pages/refinanciacion/Refinancia
 
 // 🔹 Detección de si es móvil
 const isMobileDevice = () => {
+    if (typeof window === "undefined") {
+    return false;
+  }
   return window.innerWidth <= 768; // Consideramos mobile si el ancho es menor a 768px
 };
 
@@ -53,9 +56,13 @@ const RoleBasedRoute: React.FC<{ children: JSX.Element; allowedRoles: string[] }
 };
 
 const App: React.FC = () => {
-  const [isMobile, setIsMobile] = useState<boolean>(isMobileDevice());
+
+    const [isMobile, setIsMobile] = useState<boolean>(() => isMobileDevice());
 
   useEffect(() => {
+      if (typeof window === "undefined") {
+      return;
+    }
     const handleResize = () => {
       setIsMobile(isMobileDevice());
     };
