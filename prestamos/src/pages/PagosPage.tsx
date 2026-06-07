@@ -10,7 +10,7 @@ import {
   editarPago,
   cobranzaDelDia,
   getPagosPorPrestamo,
-  cancelarPago,              // ✅ NUEVO: import del endpoint
+  cancelarCuota,
 } from "../apis/postApi";
 import { Pago } from "../interfaces/Pagos";
 import { getCajaCobrador } from "../apis/getApi";
@@ -346,8 +346,8 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
       });
       if (!confirmar.isConfirmed) return;
 
-      // Llamada al endpoint
-      await cancelarPago(pago.id, cobrador?.id || 0);
+      // Cancela todos los pagos de la cuota (efectivo + transferencia si los hay)
+      await cancelarCuota(pago.prestamoId, pago.nroCuota, cobrador?.id || 0);
 
       // Refrescar datos
       if (esPagoDeCobrador && cobrador?.id) {
