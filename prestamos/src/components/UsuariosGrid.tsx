@@ -39,6 +39,8 @@ const UsuariosGrid: React.FC<UsuariosGridProps> = ({ usuarios, onRecargar }) => 
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<Usuario | null>(null);
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
+  const [mostrarPassword, setMostrarPassword] = useState(false);
+  const [mostrarPassword2, setMostrarPassword2] = useState(false);
   const [guardando, setGuardando] = useState(false);
 
   // Estado para el modal de confirmación de eliminación
@@ -49,12 +51,16 @@ const UsuariosGrid: React.FC<UsuariosGridProps> = ({ usuarios, onRecargar }) => 
     setUsuarioSeleccionado(usuario);
     setPassword("");
     setPassword2("");
+    setMostrarPassword(false);
+    setMostrarPassword2(false);
   };
 
   const cerrarModal = () => {
     setUsuarioSeleccionado(null);
     setPassword("");
     setPassword2("");
+    setMostrarPassword(false);
+    setMostrarPassword2(false);
   };
 
   const handleCambiarClave = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -184,24 +190,46 @@ const UsuariosGrid: React.FC<UsuariosGridProps> = ({ usuarios, onRecargar }) => 
             <form onSubmit={handleCambiarClave}>
               <div className="form-group">
                 <label htmlFor="nuevaPassword">Nueva Contraseña</label>
-                <input
-                  type="password"
-                  id="nuevaPassword"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoFocus
-                />
+                <div className="password-wrapper">
+                  <input
+                    type={mostrarPassword ? "text" : "password"}
+                    id="nuevaPassword"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    className="toggle-password"
+                    onClick={() => setMostrarPassword(!mostrarPassword)}
+                    title={mostrarPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    tabIndex={-1}
+                  >
+                    <i className={mostrarPassword ? "bi bi-eye-slash" : "bi bi-eye"}></i>
+                  </button>
+                </div>
               </div>
               <div className="form-group">
                 <label htmlFor="nuevaPassword2">Repetir Contraseña</label>
-                <input
-                  type="password"
-                  id="nuevaPassword2"
-                  value={password2}
-                  onChange={(e) => setPassword2(e.target.value)}
-                  required
-                />
+                <div className="password-wrapper">
+                  <input
+                    type={mostrarPassword2 ? "text" : "password"}
+                    id="nuevaPassword2"
+                    value={password2}
+                    onChange={(e) => setPassword2(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="toggle-password"
+                    onClick={() => setMostrarPassword2(!mostrarPassword2)}
+                    title={mostrarPassword2 ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    tabIndex={-1}
+                  >
+                    <i className={mostrarPassword2 ? "bi bi-eye-slash" : "bi bi-eye"}></i>
+                  </button>
+                </div>
               </div>
               <div className="modal-actions">
                 <button type="button" className="action-btn cancel-btn" onClick={cerrarModal} disabled={guardando}>

@@ -231,6 +231,35 @@
   background-color: #fff;
 }
 
+/* Ojito para mostrar/ocultar la contraseña */
+.prestamos-grid .modal-content .password-wrapper {
+  position: relative;
+  display: flex;
+}
+
+.prestamos-grid .modal-content .password-wrapper input {
+  width: 100%;
+  padding-right: 40px; /* lugar para el ojito */
+}
+
+.prestamos-grid .modal-content .toggle-password {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #6c757d;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.prestamos-grid .modal-content .toggle-password:hover {
+  color: #0d0c22;
+}
+
 .prestamos-grid .modal-actions {
   display: flex;
   justify-content: flex-end;
