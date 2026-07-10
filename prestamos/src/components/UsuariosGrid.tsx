@@ -26,6 +26,11 @@ const UsuariosGrid: React.FC<UsuariosGridProps> = ({ usuarios }) => {
 
   const esAdmin = localStorage.getItem("rol") === "ADMIN";
 
+  // No mostrar renglones vacíos (usuarios sin nombre ni dni)
+  const usuariosValidos = usuarios.filter(
+    (u) => (u.nombre && u.nombre.trim() !== "") || u.dni != null
+  );
+
   // Estado para el modal de cambio de clave
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<Usuario | null>(null);
   const [password, setPassword] = useState("");
@@ -108,7 +113,7 @@ const UsuariosGrid: React.FC<UsuariosGridProps> = ({ usuarios }) => {
 
       <DataTable
         columns={columns}
-        data={usuarios}
+        data={usuariosValidos}
         pagination
         highlightOnHover
 
