@@ -40,7 +40,6 @@ const AltaUsuario: React.FC = () => {
         await editarUsuario({
           id: usuarioEditar.id,
           nombre,
-          dni: Number(dni),
           rol,
         });
         toast.success('Usuario actualizado con éxito!');
@@ -105,7 +104,9 @@ const AltaUsuario: React.FC = () => {
                 name="dni"
                 value={dni}
                 onChange={(e) => setDni(Number(e.target.value))}
-                required
+                required={!esEdicion}
+                disabled={esEdicion}
+                title={esEdicion ? "El DNI no se puede modificar" : undefined}
               />
             </div>
             <div className="form-group rol">

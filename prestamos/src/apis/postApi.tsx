@@ -363,7 +363,8 @@ export async function cambiarPassword(dni: number, nuevaPassword: string) {
   }
 }
 
-export async function editarUsuario(usuarioData: { id: number, nombre: string, dni: number, rol: string }) {
+// El DNI no se edita: es la identidad del usuario. Solo nombre y rol.
+export async function editarUsuario(usuarioData: { id: number, nombre: string, rol: string }) {
   try {
     const token = getAuthToken();
     const response = await axios.post(
