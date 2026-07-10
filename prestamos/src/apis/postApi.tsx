@@ -402,7 +402,9 @@ export async function eliminarUsuario(id: number) {
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw new Error(`Error al eliminar el usuario: ${error.response?.status} ${error.response?.statusText}`);
+      // Mostrar el mensaje del backend si existe (ej: intento de auto-borrado)
+      const mensaje = error.response?.data || `${error.response?.status} ${error.response?.statusText}`;
+      throw new Error(`Error al eliminar el usuario: ${mensaje}`);
     } else {
       throw new Error('Error desconocido al eliminar el usuario');
     }

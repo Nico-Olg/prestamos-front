@@ -27,6 +27,9 @@ const UsuariosGrid: React.FC<UsuariosGridProps> = ({ usuarios, onRecargar }) => 
 
   const esAdmin = localStorage.getItem("rol") === "ADMIN";
 
+  // Id del usuario logueado (guardado en el login) para impedir el auto-borrado
+  const idUsuarioActual = Number(localStorage.getItem("id"));
+
   // No mostrar renglones vacíos (usuarios sin nombre ni dni)
   const usuariosValidos = usuarios.filter(
     (u) => (u.nombre && u.nombre.trim() !== "") || u.dni != null
@@ -87,6 +90,10 @@ const UsuariosGrid: React.FC<UsuariosGridProps> = ({ usuarios, onRecargar }) => 
       toast.error("El usuario no tiene un id válido");
       return;
     }
+    if (usuarioAEliminar.id === idUsuarioActual) {
+      toast.error("No podés eliminar tu propio usuario");
+      return;
+    }
 
     try {
       setEliminando(true);
@@ -142,8 +149,8 @@ const UsuariosGrid: React.FC<UsuariosGridProps> = ({ usuarios, onRecargar }) => 
           <button
             className="icon-btn danger"
             onClick={() => setUsuarioAEliminar(row)}
-            disabled={row.id == null}
-            title="Eliminar usuario"
+            disabled={row.id == null || row.id === idUsuarioActual}
+            title={row.id === idUsuarioActual ? "No podés eliminar tu propio usuario" : "Eliminar usuario"}
           >
             <i className="bi bi-trash"></i>
           </button>
