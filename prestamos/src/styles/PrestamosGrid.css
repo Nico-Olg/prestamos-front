@@ -136,6 +136,12 @@
   }
 }
 
+/* Grilla de usuarios: ocupa todo el ancho disponible junto al sidebar */
+.usuarios-grid {
+  flex: 1;
+  min-width: 0; /* permite que la tabla se achique sin desbordar el flex container */
+}
+
 /* Modal cambio de clave */
 .prestamos-grid .modal-overlay {
   position: fixed;

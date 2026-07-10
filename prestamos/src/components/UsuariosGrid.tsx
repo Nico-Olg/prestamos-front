@@ -104,7 +104,7 @@ const UsuariosGrid: React.FC<UsuariosGridProps> = ({ usuarios }) => {
   }
 
   return (
-    <div className="prestamos-grid">
+    <div className="prestamos-grid usuarios-grid">
 
       <DataTable
         columns={columns}
