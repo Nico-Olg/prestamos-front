@@ -339,6 +339,30 @@ export async function nuevoUsuario(usuarioData: { nombre: string, dni: number, r
   }
 }
 
+export async function cambiarPassword(dni: number, nuevaPassword: string) {
+  try {
+    const token = getAuthToken();
+    const response = await axios.post(
+      `${API_BASE_URL}/usuarios/cambiar-password`,
+      { dni, nuevaPassword },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, // Agregar el token en el header
+        },
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Error al cambiar la contraseña: ${error.response?.status} ${error.response?.statusText}`);
+    } else {
+      throw new Error('Error desconocido al cambiar la contraseña');
+    }
+  }
+}
+
 export async function altaCobrador(cobradorData: {
   nombreyApellido: string;
   dni: number;

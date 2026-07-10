@@ -136,3 +136,70 @@
   }
 }
 
+/* Modal cambio de clave */
+.prestamos-grid .modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.prestamos-grid .modal-content {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.prestamos-grid .modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 18px;
+  color: #0d0c22;
+}
+
+.prestamos-grid .modal-content .form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.prestamos-grid .modal-content .form-group label {
+  margin-bottom: 6px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.prestamos-grid .modal-content .form-group input {
+  height: 40px;
+  padding: 0 12px;
+  border: 2px solid #f3f3f4;
+  border-radius: 8px;
+  outline: none;
+  transition: .3s ease;
+}
+
+.prestamos-grid .modal-content .form-group input:focus {
+  border-color: rgba(0, 77, 255, 0.4);
+  background-color: #fff;
+}
+
+.prestamos-grid .modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.prestamos-grid .cancel-btn {
+  background: #6c757d;
+}
+
