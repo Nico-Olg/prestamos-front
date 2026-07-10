@@ -363,6 +363,52 @@ export async function cambiarPassword(dni: number, nuevaPassword: string) {
   }
 }
 
+export async function editarUsuario(usuarioData: { id: number, nombre: string, dni: number, rol: string }) {
+  try {
+    const token = getAuthToken();
+    const response = await axios.post(
+      `${API_BASE_URL}/usuarios/editar-usuario`,
+      usuarioData,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, // Agregar el token en el header
+        },
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Error al editar el usuario: ${error.response?.status} ${error.response?.statusText}`);
+    } else {
+      throw new Error('Error desconocido al editar el usuario');
+    }
+  }
+}
+
+export async function eliminarUsuario(id: number) {
+  try {
+    const token = getAuthToken();
+    const response = await axios.delete(
+      `${API_BASE_URL}/usuarios/${id}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`, // Agregar el token en el header
+        },
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Error al eliminar el usuario: ${error.response?.status} ${error.response?.statusText}`);
+    } else {
+      throw new Error('Error desconocido al eliminar el usuario');
+    }
+  }
+}
+
 export async function altaCobrador(cobradorData: {
   nombreyApellido: string;
   dni: number;

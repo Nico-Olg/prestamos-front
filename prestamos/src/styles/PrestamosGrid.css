@@ -142,6 +142,39 @@
   min-width: 0; /* permite que la tabla se achique sin desbordar el flex container */
 }
 
+/* Botones de acciones de la grilla de usuarios */
+.usuarios-grid .acciones {
+  display: flex;
+  gap: 6px;
+}
+
+.usuarios-grid .icon-btn {
+  border: none;
+  border-radius: 5px;
+  padding: 6px 10px;
+  cursor: pointer;
+  color: #fff;
+  background: #004dff;
+  transition: opacity 0.2s ease;
+}
+
+.usuarios-grid .icon-btn:hover {
+  opacity: 0.85;
+}
+
+.usuarios-grid .icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.usuarios-grid .icon-btn.danger {
+  background: #dc3545;
+}
+
+.prestamos-grid .danger-btn {
+  background: #dc3545;
+}
+
 /* Modal cambio de clave */
 .prestamos-grid .modal-overlay {
   position: fixed;

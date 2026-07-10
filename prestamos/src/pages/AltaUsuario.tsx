@@ -2,21 +2,56 @@ import React, { useState } from 'react';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import '../styles/AltaUsuario.css';
-import { useNavigate } from 'react-router-dom';
-import { nuevoUsuario } from '../apis/postApi';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { nuevoUsuario, editarUsuario } from '../apis/postApi';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+interface UsuarioEditar {
+  id?: number;
+  dni: number | null;
+  nombre: string;
+  rol: string;
+}
+
 const AltaUsuario: React.FC = () => {
-  const [nombre, setNombre] = useState('');
-  const [dni, setDni] = useState<number | ''>('');
-  const [rol, setRol] = useState('');
+  const location = useLocation();
+  // Si viene un usuario por state, la pantalla funciona en modo edición
+  const usuarioEditar: UsuarioEditar | undefined = location.state?.usuario;
+  const esEdicion = usuarioEditar != null;
+
+  const [nombre, setNombre] = useState(usuarioEditar?.nombre ?? '');
+  const [dni, setDni] = useState<number | ''>(usuarioEditar?.dni != null ? Number(usuarioEditar.dni) : '');
+  const [rol, setRol] = useState(usuarioEditar?.rol ?? '');
   const [password, setPassword] = useState('');
   const [password2, setPassword2] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (esEdicion) {
+      if (usuarioEditar?.id == null) {
+        toast.error('El usuario no tiene un id válido');
+        return;
+      }
+
+      try {
+        await editarUsuario({
+          id: usuarioEditar.id,
+          nombre,
+          dni: Number(dni),
+          rol,
+        });
+        toast.success('Usuario actualizado con éxito!');
+        setTimeout(() => {
+          navigate('/usuarios'); // Volver al listado de usuarios
+        }, 2000);
+      } catch (error: any) {
+        toast.error(error.message);
+      }
+      return;
+    }
 
     // Validar si las contraseñas coinciden
     if (password !== password2) {
@@ -46,40 +81,40 @@ const AltaUsuario: React.FC = () => {
 
   return (
     <div className="alta-usuario-page">
-      <Header title="Alta Usuario" />
+      <Header title={esEdicion ? 'Editar Usuario' : 'Alta Usuario'} />
       <div className="content">
         <Sidebar />
         <div className="form-container">
           <form onSubmit={handleSubmit}>
             <div className="form-group nombre">
               <label htmlFor="nombre">Nombre Completo</label>
-              <input 
-                type="text" 
-                id="nombre" 
-                name="nombre" 
-                value={nombre} 
-                onChange={(e) => setNombre(e.target.value)} 
-                required 
+              <input
+                type="text"
+                id="nombre"
+                name="nombre"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                required
               />
             </div>
             <div className="form-group dni">
               <label htmlFor="dni">DNI</label>
-              <input 
-                type="number" 
-                id="dni" 
-                name="dni" 
-                value={dni} 
-                onChange={(e) => setDni(Number(e.target.value))} 
-                required 
+              <input
+                type="number"
+                id="dni"
+                name="dni"
+                value={dni}
+                onChange={(e) => setDni(Number(e.target.value))}
+                required
               />
             </div>
             <div className="form-group rol">
               <label htmlFor="rol">Rol</label>
-              <select 
-                id="rol" 
-                name="rol" 
-                value={rol} 
-                onChange={(e) => setRol(e.target.value)} 
+              <select
+                id="rol"
+                name="rol"
+                value={rol}
+                onChange={(e) => setRol(e.target.value)}
                 required
               >
                 <option value="">Seleccione un rol</option>
@@ -88,28 +123,32 @@ const AltaUsuario: React.FC = () => {
                 {/* Agregar más roles si es necesario */}
               </select>
             </div>
-            <div className="form-group password">
-              <label htmlFor="password">Contraseña</label>
-              <input 
-                type="password" 
-                id="password" 
-                name="password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                required 
-              />
-            </div>
-            <div className="form-group password2">
-              <label htmlFor="password2">Repetir Contraseña</label>
-              <input 
-                type="password" 
-                id="password2" 
-                name="password2" 
-                value={password2} 
-                onChange={(e) => setPassword2(e.target.value)} 
-                required 
-              />
-            </div>
+            {!esEdicion && (
+              <>
+                <div className="form-group password">
+                  <label htmlFor="password">Contraseña</label>
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group password2">
+                  <label htmlFor="password2">Repetir Contraseña</label>
+                  <input
+                    type="password"
+                    id="password2"
+                    name="password2"
+                    value={password2}
+                    onChange={(e) => setPassword2(e.target.value)}
+                    required
+                  />
+                </div>
+              </>
+            )}
             <button type="submit" className="btn">
               Guardar
             </button>

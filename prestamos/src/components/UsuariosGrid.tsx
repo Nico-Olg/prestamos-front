@@ -3,7 +3,7 @@ import DataTable, { TableColumn } from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { cambiarPassword } from "../apis/postApi";
+import { cambiarPassword, eliminarUsuario } from "../apis/postApi";
 import "../styles/PrestamosGrid.css";
 
 
@@ -18,9 +18,10 @@ interface Usuario {
 
 interface UsuariosGridProps {
   usuarios: Usuario[];
+  onRecargar?: () => void;
 }
 
-const UsuariosGrid: React.FC<UsuariosGridProps> = ({ usuarios }) => {
+const UsuariosGrid: React.FC<UsuariosGridProps> = ({ usuarios, onRecargar }) => {
 
   const navigate = useNavigate();
 
@@ -36,6 +37,10 @@ const UsuariosGrid: React.FC<UsuariosGridProps> = ({ usuarios }) => {
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
   const [guardando, setGuardando] = useState(false);
+
+  // Estado para el modal de confirmación de eliminación
+  const [usuarioAEliminar, setUsuarioAEliminar] = useState<Usuario | null>(null);
+  const [eliminando, setEliminando] = useState(false);
 
   const abrirModal = (usuario: Usuario) => {
     setUsuarioSeleccionado(usuario);
@@ -73,6 +78,29 @@ const UsuariosGrid: React.FC<UsuariosGridProps> = ({ usuarios }) => {
     }
   };
 
+  const handleEditar = (usuario: Usuario) => {
+    navigate("/alta-usuario", { state: { usuario } });
+  };
+
+  const confirmarEliminar = async () => {
+    if (!usuarioAEliminar || usuarioAEliminar.id == null) {
+      toast.error("El usuario no tiene un id válido");
+      return;
+    }
+
+    try {
+      setEliminando(true);
+      await eliminarUsuario(usuarioAEliminar.id);
+      toast.success(`Usuario ${usuarioAEliminar.nombre} eliminado`);
+      setUsuarioAEliminar(null);
+      onRecargar?.();
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setEliminando(false);
+    }
+  };
+
   const columns: TableColumn<Usuario>[] = [
     {
       name: "Nombre",
@@ -95,16 +123,34 @@ const UsuariosGrid: React.FC<UsuariosGridProps> = ({ usuarios }) => {
     columns.push({
       name: "Acciones",
       cell: (row) => (
-        <button
-          className="action-btn"
-          onClick={() => abrirModal(row)}
-          disabled={row.dni == null}
-          title={row.dni == null ? "El usuario no tiene DNI" : "Cambiar clave"}
-        >
-          Cambiar Clave
-        </button>
+        <div className="acciones">
+          <button
+            className="icon-btn"
+            onClick={() => handleEditar(row)}
+            title="Editar usuario"
+          >
+            <i className="bi bi-pencil"></i>
+          </button>
+          <button
+            className="icon-btn"
+            onClick={() => abrirModal(row)}
+            disabled={row.dni == null}
+            title={row.dni == null ? "El usuario no tiene DNI" : "Cambiar clave"}
+          >
+            <i className="bi bi-key"></i>
+          </button>
+          <button
+            className="icon-btn danger"
+            onClick={() => setUsuarioAEliminar(row)}
+            disabled={row.id == null}
+            title="Eliminar usuario"
+          >
+            <i className="bi bi-trash"></i>
+          </button>
+        </div>
       ),
       ignoreRowClick: true,
+      minWidth: "160px",
     });
   }
 
@@ -159,6 +205,36 @@ const UsuariosGrid: React.FC<UsuariosGridProps> = ({ usuarios }) => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {usuarioAEliminar && (
+        <div className="modal-overlay" onClick={() => setUsuarioAEliminar(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Eliminar usuario</h3>
+            <p>
+              ¿Estás seguro de que querés eliminar a <strong>{usuarioAEliminar.nombre}</strong>?
+              Esta acción no se puede deshacer.
+            </p>
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="action-btn cancel-btn"
+                onClick={() => setUsuarioAEliminar(null)}
+                disabled={eliminando}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="action-btn danger-btn"
+                onClick={confirmarEliminar}
+                disabled={eliminando}
+              >
+                {eliminando ? "Eliminando..." : "Eliminar"}
+              </button>
+            </div>
           </div>
         </div>
       )}
