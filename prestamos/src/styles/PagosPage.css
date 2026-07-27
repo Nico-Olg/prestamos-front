@@ -54,3 +54,94 @@ button.back-button:hover {
     height: 2.5em;
   }
 }
+
+/* ===== Editar pago desglosado por medio (efectivo + transferencia) ===== */
+.edm {
+  text-align: left;
+}
+.edm-cuota {
+  font-size: 0.92rem;
+  color: #6b7280;
+  margin-bottom: 14px;
+}
+.edm-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.edm-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid #e3e6ea;
+  border-radius: 12px;
+  background: #fafbfc;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.edm-row:focus-within {
+  border-color: #2b8a3e;
+  box-shadow: 0 0 0 3px rgba(43, 138, 62, 0.12);
+}
+.edm-metodo {
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+}
+.edm-input {
+  flex: 1;
+  max-width: 170px;
+  text-align: right;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #111827;
+  padding: 9px 12px;
+  border: 1px solid #cfd4da;
+  border-radius: 9px;
+  outline: none;
+  background: #fff;
+}
+.edm-input:focus {
+  border-color: #2b8a3e;
+}
+.edm-total {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed #e3e6ea;
+  font-size: 0.95rem;
+  color: #374151;
+}
+.edm-pend {
+  margin-left: 6px;
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+.edm-pend.pendiente { color: #b8860b; }
+.edm-pend.excede { color: #c92a2a; }
+.edm-pend.ok { color: #2b8a3e; }
+
+@media (max-width: 480px) {
+  .edm-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .edm-input {
+    max-width: 100%;
+    text-align: right;
+  }
+}
+.edm-select {
+  font-weight: 600;
+  color: #374151;
+  padding: 8px 10px;
+  border: 1px solid #cfd4da;
+  border-radius: 9px;
+  background: #fff;
+  outline: none;
+  cursor: pointer;
+}
+.edm-select:focus {
+  border-color: #2b8a3e;
+}

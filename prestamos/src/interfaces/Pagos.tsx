@@ -24,6 +24,9 @@ export interface Pago {
     estaPagada?: boolean;
   saldoPendiente?: number;
     prestamoId:      number;
+    // Pagos individuales que componen la cuota (1 o 2: efectivo y/o transferencia).
+    // Lo arma agruparPagos en el front para poder editar cada medio por separado.
+    detalle?:        Pago[];
 }
 
 // ✅ Clase para mapear datos desde JSON

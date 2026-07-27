@@ -717,3 +717,29 @@ export async function editarPago(pagoId: number, nuevoMonto: number, fechaPago?:
       }
     }
   }
+
+  // Edita una cuota fijando el monto abonado por cada medio (efectivo y transferencia).
+  // El backend crea/ajusta/des-cobra cada medio y recalcula la caja en una sola operación.
+  export async function editarCuota(prestamo_id: number, cuota_nro: number, efectivo: number, transferencia: number) {
+    try {
+      const token = getAuthToken();
+      const response = await axios.post(
+        `${API_BASE_URL}/prestamos/editar-cuota`,
+        { prestamo_id, cuota_nro, efectivo, transferencia },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          withCredentials: true,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Error al editar la cuota: ${error.response?.status} ${error.response?.statusText}`);
+      } else {
+        throw new Error('Error desconocido al editar la cuota');
+      }
+    }
+  }

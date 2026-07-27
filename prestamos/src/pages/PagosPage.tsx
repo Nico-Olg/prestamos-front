@@ -7,13 +7,14 @@ import "../styles/PagosPage.css";
 import Swal from "sweetalert2";
 import {
   registrarPago,
-  editarPago,
+  editarCuota,
   cobranzaDelDia,
   getPagosPorPrestamo,
   cancelarCuota,
 } from "../apis/postApi";
 import { Pago } from "../interfaces/Pagos";
 import { getCajaCobrador } from "../apis/getApi";
+import { formatearNumero } from "../utils/formatters";
 
 interface PagosPageProps {
   isMobile?: boolean;
@@ -112,7 +113,9 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
 
     pagosPorCuota.forEach((pagosDeLaCuota) => {
       if (pagosDeLaCuota.length === 1) {
-        resultado.push(pagosDeLaCuota[0]);
+        const base = pagosDeLaCuota[0];
+        // Preservo el detalle si ya venía agrupado; si es un pago crudo, el detalle es él mismo.
+        resultado.push({ ...base, detalle: base.detalle ?? [base] });
       } else {
         const pagoBase = { ...pagosDeLaCuota[0] };
         let montoTotal = 0;
@@ -135,6 +138,8 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
         pagoBase.montoAbonado = montoTotal;
         pagoBase.fechaPago = ultimaFecha ? new Date(ultimaFecha) : null;
         pagoBase.formaPago = formaPagoFinal;
+        // Guardo los pagos individuales (aplanando por si ya venían agrupados) para editar cada medio.
+        pagoBase.detalle = pagosDeLaCuota.flatMap((p) => p.detalle ?? [p]);
         resultado.push(pagoBase);
       }
     });
@@ -244,86 +249,130 @@ const PagosPage: React.FC<PagosPageProps> = ({ isMobile = false }) => {
     }
   };
 
-  const handleEditarPago = async (pago: Pago) => {
-    try {
-      const result = await Swal.fire({
-        title: "Seleccione el nuevo método de pago",
-        html: `
-          <div class="d-flex flex-column gap-3">
-            <button id="btn-efectivo" class="btn btn-success btn-lg">
-              <i class="bi bi-cash-coin"></i> Efectivo
-            </button>
-            <button id="btn-transferencia" class="btn btn-primary btn-lg">
-              <i class="bi bi-bank"></i> Transferencia
-            </button>
+  // Editar una cuota mostrando SIEMPRE el desglose por medio de pago (efectivo y transferencia),
+  // aunque se haya abonado con un solo medio (el otro arranca en 0). Permite mover montos entre
+  // medios libremente; el backend crea/ajusta/des-cobra cada medio y recalcula la caja.
+  const editarPagoDesglosado = async (pago: Pago, detalle: Pago[]) => {
+    const montoPorMetodo = (metodo: string) =>
+      detalle
+        .filter((p) => (p.formaPago || "").trim().toUpperCase() === metodo)
+        .reduce((acc, p) => acc + (p.montoAbonado || 0), 0);
+
+    const efectivoInicial = montoPorMetodo("EFECTIVO");
+    const transferenciaInicial = montoPorMetodo("TRANSFERENCIA");
+
+    const result = await Swal.fire({
+      title: `Editar pago · Cuota ${pago.nroCuota}`,
+      html: `
+        <div class="edm">
+          <div class="edm-cuota">Monto de la cuota: <strong>$${formatearNumero(pago.monto)}</strong></div>
+          <div class="edm-rows">
+            <label class="edm-row">
+              <span class="edm-metodo">💵 Efectivo</span>
+              <input id="edm-efectivo" class="edm-input" type="number" inputmode="numeric" min="0" step="any" value="${efectivoInicial}" />
+            </label>
+            <label class="edm-row">
+              <span class="edm-metodo">🏦 Transferencia</span>
+              <input id="edm-transferencia" class="edm-input" type="number" inputmode="numeric" min="0" step="any" value="${transferenciaInicial}" />
+            </label>
           </div>
-        `,
-        showConfirmButton: false,
-        showCancelButton: true,
-        cancelButtonText: "Cancelar",
-        allowOutsideClick: false,
-        width: "85%",
-        didOpen: () => {
-          const popup = Swal.getPopup();
-          if (!popup) return;
+          <div class="edm-total">
+            Total abonado: <strong>$<span id="edm-total">0</span></strong>
+            <span id="edm-pend" class="edm-pend"></span>
+          </div>
+        </div>`,
+      width: "85%",
+      showCancelButton: true,
+      confirmButtonText: "Guardar",
+      cancelButtonText: "Cancelar",
+      focusConfirm: false,
+      didOpen: () => {
+        const efectivoEl = document.getElementById("edm-efectivo") as HTMLInputElement | null;
+        const transferenciaEl = document.getElementById("edm-transferencia") as HTMLInputElement | null;
+        const totalEl = document.getElementById("edm-total");
+        const pendEl = document.getElementById("edm-pend");
 
-          const manejarMetodo = async (metodoPago: "EFECTIVO" | "TRANSFERENCIA") => {
-            Swal.close();
-
-            const { value: nuevoMonto, isDismissed } = await Swal.fire({
-              title: "Editar Monto Pagado",
-              input: "number",
-              inputLabel: "Nuevo Monto Abonado",
-              inputValue: pago.montoAbonado || 0,
-              showCancelButton: true,
-              confirmButtonText: "Guardar",
-              cancelButtonText: "Cancelar",
-              inputValidator: (value) => {
-                if (!value || parseFloat(value) < 0) {
-                  return "Debe ingresar un monto válido";
-                }
-                return null;
-              },
-              width: "85%",
-            });
-            if (isDismissed || nuevoMonto === undefined) return;
-
-            try {
-              const nuevoMontoParsed = parseFloat(nuevoMonto);
-              const fechaPagoActual = pago.fechaPago
-                ? new Date(pago.fechaPago).toISOString()
-                : new Date().toISOString();
-
-              const response = await editarPago(pago.id, nuevoMontoParsed, fechaPagoActual, metodoPago);
-              const pagoEditado = response.pago;
-              const prestamoId = pagoEditado.prestamoId;
-
-              if (esPagoDeCobrador && cobrador?.id) {
-                const pagosActualizados = await cobranzaDelDia(cobrador.id, new Date().toISOString());
-                setPagos(agruparPagos(pagosActualizados.pagos));
-              } else if (prestamoId) {
-                const pagosActualizados = await getPagosPorPrestamo(prestamoId);
-                setPagos(agruparPagos(pagosActualizados));
-              }
-
-              await actualizarCajaDelDia();
-
-              Swal.fire("Pago actualizado", `Nuevo monto: $${nuevoMontoParsed.toFixed(2)} registrado como ${metodoPago.toLowerCase()}`, "success");
-            } catch (error) {
-              console.error("Error editando el pago:", error);
-              Swal.fire("Error", "No se pudo editar el pago", "error");
+        const recalcular = () => {
+          const total =
+            (parseFloat(efectivoEl?.value || "0") || 0) +
+            (parseFloat(transferenciaEl?.value || "0") || 0);
+          if (totalEl) totalEl.textContent = formatearNumero(total);
+          if (pendEl) {
+            const pend = pago.monto - total;
+            if (pend > 0) {
+              pendEl.textContent = `· faltan $${formatearNumero(pend)}`;
+              pendEl.className = "edm-pend pendiente";
+            } else if (pend < 0) {
+              pendEl.textContent = `· excede $${formatearNumero(-pend)}`;
+              pendEl.className = "edm-pend excede";
+            } else {
+              pendEl.textContent = "· cuota completa";
+              pendEl.className = "edm-pend ok";
             }
-          };
+          }
+        };
 
-          popup.querySelector("#btn-efectivo")?.addEventListener("click", () => manejarMetodo("EFECTIVO"));
-          popup.querySelector("#btn-transferencia")?.addEventListener("click", () => manejarMetodo("TRANSFERENCIA"));
-        },
-      });
-      console.log("Resultado de la edición:", result);
-    } catch (error) {
-      console.error("Error al iniciar edición de pago:", error);
-      Swal.fire("Error", "No se pudo iniciar la edición del pago", "error");
+        efectivoEl?.addEventListener("input", recalcular);
+        transferenciaEl?.addEventListener("input", recalcular);
+        recalcular();
+      },
+      preConfirm: () => {
+        const efectivoEl = document.getElementById("edm-efectivo") as HTMLInputElement | null;
+        const transferenciaEl = document.getElementById("edm-transferencia") as HTMLInputElement | null;
+        const efectivo = parseFloat(efectivoEl?.value || "0") || 0;
+        const transferencia = parseFloat(transferenciaEl?.value || "0") || 0;
+        if (efectivo < 0 || transferencia < 0) {
+          Swal.showValidationMessage("Los montos no pueden ser negativos.");
+          return false;
+        }
+        if (efectivo + transferencia <= 0) {
+          Swal.showValidationMessage("El total debe ser mayor a 0. Para anular la cuota usá Cancelar.");
+          return false;
+        }
+        return { efectivo, transferencia };
+      },
+    });
+
+    if (!result.isConfirmed || !result.value) return;
+    const { efectivo, transferencia } = result.value as { efectivo: number; transferencia: number };
+
+    // Si no cambió nada, evito el viaje al backend
+    if (efectivo === efectivoInicial && transferencia === transferenciaInicial) {
+      Swal.fire({ icon: "info", title: "Sin cambios", text: "No se modificó ningún monto.", width: "85%" });
+      return;
     }
+
+    try {
+      // Un solo viaje al backend: fija el desglose completo de la cuota y recalcula la caja.
+      await editarCuota(pago.prestamoId, pago.nroCuota, efectivo, transferencia);
+
+      // Refrescar datos
+      if (esPagoDeCobrador && cobrador?.id) {
+        const pagosActualizados = await cobranzaDelDia(cobrador.id, new Date().toISOString());
+        setPagos(agruparPagos(pagosActualizados.pagos));
+      } else if (pago.prestamoId) {
+        const pagosActualizados = await getPagosPorPrestamo(pago.prestamoId);
+        setPagos(agruparPagos(pagosActualizados));
+      }
+
+      await actualizarCajaDelDia();
+
+      Swal.fire({
+        icon: "success",
+        title: "Pago actualizado",
+        text: `Se actualizaron los montos de la cuota ${pago.nroCuota}.`,
+        width: "85%",
+      });
+    } catch (error) {
+      console.error("Error al editar el pago desglosado:", error);
+      Swal.fire({ icon: "error", title: "Error", text: "No se pudo actualizar el pago.", width: "85%" });
+    }
+  };
+
+  const handleEditarPago = async (pago: Pago) => {
+    // Siempre mostramos el desglose por medio de pago (1 o 2 pagos).
+    const detalle = pago.detalle && pago.detalle.length > 0 ? pago.detalle : [pago];
+    await editarPagoDesglosado(pago, detalle);
   };
 
   // ✅ NUEVO: cancelar pago
